@@ -37,7 +37,7 @@
 |---|---|---|---|---|
 | B0 | Repo, contracts, CI | agent-antigravity | DONE | 9/9 |
 | B1 | Capture adapters | agent-antigravity | DONE | 9/9 |
-| B2 | Stream conditioning | — | TODO | 0/8 |
+| B2 | Stream conditioning | agent-antigravity | DONE | 8/8 |
 | B3 | Data & corpus engineering | — | TODO | 0/11 |
 | B4 | Head A — SSL anti-spoof | — | TODO | 0/10 |
 | B5 | Head B — DSP & scene | — | TODO | 0/6 |
@@ -89,14 +89,14 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B2 — Stream conditioning
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B2-T01 | Jitter buffer + PLC | — | TODO | B1-T01 | | |
-| B2-T02 | Resampler incl. 8k µ-law/A-law | — | TODO | B1-T01 | | |
-| B2-T03 | VAD integration with hysteresis | — | TODO | B2-T02 | | Silero |
-| B2-T04 | Windowing 3.0s/1.0s | — | TODO | B2-T03 | | |
-| B2-T05 | **Quality gate / abstain logic** | — | TODO | B2-T04 | | highest FP-reduction value |
-| B2-T06 | Loudness normalization + pre-norm logging | — | TODO | B2-T02 | | |
-| B2-T07 | Music/tone/IVR detector | — | TODO | B2-T03 | | |
-| B2-T08 | Redis per-window feature cache | — | TODO | B2-T04 | | |
+| B2-T01 | Jitter buffer + PLC | agent-antigravity | DONE | B1-T01 | packages/vg_audio/jitter_buffer.py | |
+| B2-T02 | Resampler incl. 8k µ-law/A-law | agent-antigravity | DONE | B1-T01 | packages/vg_audio/resample.py, codecs.py | |
+| B2-T03 | VAD integration with hysteresis | agent-antigravity | DONE | B2-T02 | packages/vg_audio/vad.py | Silero + Energy |
+| B2-T04 | Windowing 3.0s/1.0s | agent-antigravity | DONE | B2-T03 | packages/vg_audio/windowing.py | |
+| B2-T05 | **Quality gate / abstain logic** | agent-antigravity | DONE | B2-T04 | packages/vg_audio/quality.py | highest FP-reduction value |
+| B2-T06 | Loudness normalization + pre-norm logging | agent-antigravity | DONE | B2-T02 | packages/vg_audio/quality.py | |
+| B2-T07 | Music/tone/IVR detector | agent-antigravity | DONE | B2-T03 | packages/vg_audio/quality.py | Goertzel + HF ratio |
+| B2-T08 | Redis per-window feature cache | agent-antigravity | DONE | B2-T04 | packages/vg_audio/features.py | log-mel, LFCC, MFCC, F0 |
 
 ### B3 — Data & corpus engineering
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,7 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-08-30T17:50Z | agent-antigravity | B2-T01-08 | WIP -> DONE | packages/vg_audio/, services/conditioner/ | 82 tests pass, 81.8% cov |
 | 2026-08-30T16:47Z | agent-antigravity | B1-T01-09 | WIP -> DONE | services/ingest/ | 36 tests pass, 79% cov |
 | 2026-08-30T10:35Z | agent-antigravity | B0-T01-09 | TODO -> DONE | vg_core/, schemas/ | Scaffolded repo, contracts, pipelines |
 | — | — | — | board created | — | initial seed |
