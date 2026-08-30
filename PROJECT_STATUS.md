@@ -36,7 +36,7 @@
 | Block | Title | Owner | Status | Done / Total |
 |---|---|---|---|---|
 | B0 | Repo, contracts, CI | agent-antigravity | DONE | 9/9 |
-| B1 | Capture adapters | — | TODO | 0/9 |
+| B1 | Capture adapters | agent-antigravity | DONE | 9/9 |
 | B2 | Stream conditioning | — | TODO | 0/8 |
 | B3 | Data & corpus engineering | — | TODO | 0/11 |
 | B4 | Head A — SSL anti-spoof | — | TODO | 0/10 |
@@ -76,15 +76,15 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B1 — Capture adapters
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B1-T01 | WAV replay adapter (real-time + jitter/loss) | — | TODO | B0-T04 | | do first, unblocks everyone |
-| B1-T02 | Generic WebSocket PCM adapter | — | TODO | B1-T01 | | |
-| B1-T03 | Asterisk AudioSocket adapter + configs | — | TODO | B1-T02 | | needs lab setup |
-| B1-T04 | FreeSWITCH mod_audio_stream adapter | — | TODO | B1-T02 | | |
-| B1-T05 | Twilio Media Streams adapter | — | TODO | B1-T02 | | 8k µ-law path |
-| B1-T06 | SIPREC receiver | — | TODO | B1-T03 | | stretch |
-| B1-T07 | Browser/WebRTC capture | — | TODO | B1-T02 | | |
-| B1-T08 | Metadata envelope extraction | — | TODO | B0-T03 | | |
-| B1-T09 | Session lifecycle + orphan reaper | — | TODO | B1-T01 | | |
+| B1-T01 | WAV replay adapter (real-time + jitter/loss) | agent-antigravity | DONE | B0-T04 | services/ingest/adapters/replay_wav.py | |
+| B1-T02 | Generic WebSocket PCM adapter | agent-antigravity | DONE | B1-T01 | services/ingest/adapters/websocket_pcm.py | |
+| B1-T03 | Asterisk AudioSocket adapter + configs | agent-antigravity | DONE | B1-T02 | services/ingest/adapters/asterisk_audiosocket.py | |
+| B1-T04 | FreeSWITCH mod_audio_stream adapter | agent-antigravity | DONE | B1-T02 | services/ingest/adapters/freeswitch_ws.py | |
+| B1-T05 | Twilio Media Streams adapter | agent-antigravity | DONE | B1-T02 | services/ingest/adapters/twilio_stream.py | 8k µ-law |
+| B1-T06 | SIPREC receiver | agent-antigravity | DONE | B1-T03 | services/ingest/adapters/siprec.py | stretch |
+| B1-T07 | Browser/WebRTC capture | agent-antigravity | DONE | B1-T02 | services/ingest/adapters/websocket_pcm.py | via WS adapter |
+| B1-T08 | Metadata envelope extraction | agent-antigravity | DONE | B0-T03 | services/ingest/metadata.py | |
+| B1-T09 | Session lifecycle + orphan reaper | agent-antigravity | DONE | B1-T01 | services/ingest/session.py | |
 
 ### B2 — Stream conditioning
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,7 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-08-30T16:47Z | agent-antigravity | B1-T01-09 | WIP -> DONE | services/ingest/ | 36 tests pass, 79% cov |
 | 2026-08-30T10:35Z | agent-antigravity | B0-T01-09 | TODO -> DONE | vg_core/, schemas/ | Scaffolded repo, contracts, pipelines |
 | — | — | — | board created | — | initial seed |
 
