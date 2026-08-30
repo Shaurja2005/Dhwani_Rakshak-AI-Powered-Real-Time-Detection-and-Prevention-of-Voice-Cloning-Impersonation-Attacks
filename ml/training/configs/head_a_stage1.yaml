@@ -1,0 +1,8 @@
+run_name: head_a_stage1
+lineage: research        # research | commercial
+allow_noncommercial: true   # license gate (invariant I7)
+frontend: facebook/wav2vec2-xls-r-300m
+frontend_layers: [5, 6, 7, 8, 9]
+backend: nes2net
+loss: oc_softmax
+seed: 1337

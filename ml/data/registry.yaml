@@ -1,0 +1,17 @@
+# Dataset registry. Every entry MUST declare commercial_use (invariant I7).
+datasets:
+  - name: asvspoof5
+    role: train
+    license: TODO
+    commercial_use: false
+    url: TODO
+  - name: in_the_wild
+    role: eval_only
+    license: TODO
+    commercial_use: false
+    url: TODO
+  - name: indicsynth
+    role: train_research
+    license: CC-BY-NC-4.0
+    commercial_use: false
+    url: TODO

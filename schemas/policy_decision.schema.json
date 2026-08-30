@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voiceguard.dev/schemas/policy_decision.schema.json",
+  "title": "PolicyDecision",
+  "description": "Action decision from B11 policy engine. See SOURCE_OF_TRUTH.md §4.8",
+  "type": "object",
+  "properties": {
+    "session_id":        { "type": "string", "format": "uuid" },
+    "decided_at":        { "type": "string", "format": "date-time" },
+    "threshold_profile": { "type": "string", "description": "e.g. bfsi-wealth-v2" },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["agent_banner", "force_callback", "hold_transaction", "supervisor_escalate", "soc_ticket", "flag_recording", "send_sms", "send_email", "push_notification", "siem_webhook", "step_up_mfa", "dual_approval"]
+      }
+    },
+    "rationale":          { "type": "string" },
+    "evidence_bundle_id": { "type": "string", "description": "SHA256 content hash of the evidence bundle" },
+    "shadow_mode":        { "type": "boolean" },
+    "suppressed":         { "type": "boolean", "description": "True when shadow_mode is active and alert was suppressed" }
+  },
+  "required": ["session_id", "decided_at", "threshold_profile", "actions", "rationale", "evidence_bundle_id", "shadow_mode", "suppressed"],
+  "additionalProperties": false
+}

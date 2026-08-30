@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voiceguard.dev/schemas/fused_window_score.schema.json",
+  "title": "FusedWindowScore",
+  "description": "Output of B9 fusion per analysis window. See SOURCE_OF_TRUTH.md §4.5",
+  "type": "object",
+  "properties": {
+    "session_id":      { "type": "string", "format": "uuid" },
+    "window_id":       { "type": "integer", "minimum": 0 },
+    "p_spoof":         { "type": "number", "minimum": 0, "maximum": 1 },
+    "state":           { "type": "string", "enum": ["LOW", "ELEVATED", "HIGH", "ABSTAIN"] },
+    "contributions":   {
+      "type": "object",
+      "additionalProperties": { "type": "number" },
+      "propertyNames": { "enum": ["A", "B", "C", "D", "E", "F"] },
+      "description": "Per-head contribution weights summing to 1.0"
+    },
+    "heads_abstained": { "type": "array", "items": { "type": "string", "enum": ["A", "B", "C", "D", "E", "F"] } },
+    "fusion_version":  { "type": "string", "description": "e.g. fuse-lr-v0.2" }
+  },
+  "required": ["session_id", "window_id", "p_spoof", "state", "contributions", "heads_abstained", "fusion_version"],
+  "additionalProperties": false
+}

@@ -1,0 +1,40 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files: []
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: vg-api-gateway
+    static_configs:
+      - targets: ["host.docker.internal:8080"]
+    metrics_path: /metrics
+
+  - job_name: vg-conditioner
+    static_configs:
+      - targets: ["host.docker.internal:50051"]
+    metrics_path: /metrics
+
+  - job_name: vg-inference
+    static_configs:
+      - targets: ["host.docker.internal:50052"]
+    metrics_path: /metrics
+
+  - job_name: vg-fusion
+    static_configs:
+      - targets: ["host.docker.internal:50053"]
+    metrics_path: /metrics
+
+  - job_name: vg-context
+    static_configs:
+      - targets: ["host.docker.internal:50054"]
+    metrics_path: /metrics
+
+  - job_name: vg-policy
+    static_configs:
+      - targets: ["host.docker.internal:8085"]
+    metrics_path: /metrics

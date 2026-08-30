@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voiceguard.dev/schemas/call_metadata.schema.json",
+  "title": "CallMetadata",
+  "description": "One per session, emitted at session start. See SOURCE_OF_TRUTH.md §4.1",
+  "type": "object",
+  "properties": {
+    "session_id":          { "type": "string", "format": "uuid", "description": "UUIDv7" },
+    "tenant_id":           { "type": "string" },
+    "direction":           { "type": "string", "enum": ["inbound", "outbound"] },
+    "started_at":          { "type": "string", "format": "date-time" },
+    "caller_number":       { "type": ["string", "null"], "description": "E.164 format" },
+    "callee_number":       { "type": ["string", "null"], "description": "E.164 format" },
+    "claimed_identity_id": { "type": ["string", "null"], "description": "Keys the voiceprint lookup" },
+    "channel":             { "type": "string", "enum": ["pstn", "voip", "webrtc", "mobile", "file"] },
+    "codec_hint":          { "type": "string", "enum": ["g711u", "g711a", "g729", "amrnb", "opus", "evs", "pcm", "unknown"] },
+    "source_sample_rate":  { "type": "integer", "enum": [8000, 16000, 32000, 48000] },
+    "trunk_id":            { "type": ["string", "null"] },
+    "source_asn":          { "type": ["string", "null"] },
+    "sip_headers":         { "type": "object", "additionalProperties": { "type": "string" } },
+    "language_hint":       { "type": ["string", "null"], "description": "BCP-47 tag, e.g. hi, ta, en-IN" },
+    "consent_basis":       { "type": "string", "enum": ["legitimate_use", "explicit_consent", "none"] },
+    "shadow_mode":         { "type": "boolean", "default": true }
+  },
+  "required": ["session_id", "tenant_id", "direction", "started_at", "channel", "codec_hint", "source_sample_rate", "consent_basis", "shadow_mode"],
+  "additionalProperties": false
+}

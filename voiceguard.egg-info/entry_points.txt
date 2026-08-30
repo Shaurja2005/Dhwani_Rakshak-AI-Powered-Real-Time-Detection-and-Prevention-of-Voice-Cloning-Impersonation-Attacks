@@ -1,0 +1,3 @@
+[console_scripts]
+vg-eval = ml.eval.run_eval:main
+vg-replay = scripts.replay:main

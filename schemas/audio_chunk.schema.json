@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voiceguard.dev/schemas/audio_chunk.schema.json",
+  "title": "AudioChunk",
+  "description": "Transport-level audio packet. See SOURCE_OF_TRUTH.md §4.2",
+  "type": "object",
+  "properties": {
+    "session_id": { "type": "string", "format": "uuid" },
+    "seq":        { "type": "integer", "minimum": 0 },
+    "ts_ms":      { "type": "integer", "minimum": 0, "description": "Milliseconds from session start" },
+    "sample_rate":{ "type": "integer", "enum": [8000, 16000, 32000, 48000] },
+    "encoding":   { "type": "string", "enum": ["pcm_s16le", "mulaw", "alaw"] },
+    "payload":    { "type": "string", "contentEncoding": "base64", "description": "Raw audio bytes (base64 in JSON transport)" }
+  },
+  "required": ["session_id", "seq", "ts_ms", "sample_rate", "encoding", "payload"],
+  "additionalProperties": false
+}

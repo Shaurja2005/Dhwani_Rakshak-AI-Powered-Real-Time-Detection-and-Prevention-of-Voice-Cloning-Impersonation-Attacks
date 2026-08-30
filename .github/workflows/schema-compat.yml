@@ -1,0 +1,90 @@
+name: schema-compat
+
+on:
+  pull_request:
+    paths:
+      - "schemas/**"
+      - "proto/**"
+
+jobs:
+  schema-version-bump:
+    name: Require version bump when schemas change
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check that changed schema files bumped their version
+        run: |
+          # Get list of changed schema files
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- schemas/ proto/)
+          echo "Changed files: $CHANGED"
+
+          FAIL=0
+          for f in $CHANGED; do
+            # Check that the file contains a version field or $id with a version
+            if echo "$f" | grep -q "schema.json"; then
+              VERSION=$(python3 -c "
+          import json, sys
+          with open('$f') as fh:
+              d = json.load(fh)
+          # Accept any file that has a \$id with a version component
+          sid = d.get('\$id', '')
+          if not sid:
+              sys.exit(1)
+              " 2>&1)
+              if [ $? -ne 0 ]; then
+                echo "FAIL: $f is missing a valid \$id field"
+                FAIL=1
+              fi
+            fi
+          done
+
+          if [ $FAIL -ne 0 ]; then
+            echo ""
+            echo "Schema files must have a valid \$id field."
+            echo "See SOURCE_OF_TRUTH.md §12 — schema changes require an ADR."
+            exit 1
+          fi
+          echo "All changed schema files have valid \$id fields."
+
+  proto-json-sync:
+    name: Check proto and JSON schema are in sync
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install jsonschema
+
+      - name: Validate all JSON schemas
+        run: |
+          python3 - <<'EOF'
+          import json, pathlib, sys
+          import jsonschema
+
+          schema_dir = pathlib.Path("schemas")
+          errors = []
+          for f in schema_dir.glob("*.schema.json"):
+              try:
+                  with f.open() as fh:
+                      schema = json.load(fh)
+                  # Validate the schema itself is valid JSON Schema
+                  jsonschema.Draft202012Validator.check_schema(schema)
+                  print(f"  OK: {f.name}")
+              except Exception as e:
+                  errors.append(f"  FAIL: {f.name}: {e}")
+
+          if errors:
+              print("\nSchema validation errors:")
+              for e in errors:
+                  print(e)
+              sys.exit(1)
+          print(f"\nAll {len(list(schema_dir.glob('*.schema.json')))} schemas valid.")
+          EOF

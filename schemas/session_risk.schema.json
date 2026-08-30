@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voiceguard.dev/schemas/session_risk.schema.json",
+  "title": "SessionRisk",
+  "description": "The headline session-level output. See SOURCE_OF_TRUTH.md §4.7",
+  "type": "object",
+  "properties": {
+    "session_id":           { "type": "string", "format": "uuid" },
+    "updated_at":           { "type": "string", "format": "date-time" },
+    "risk_score":           { "type": "integer", "minimum": 0, "maximum": 100 },
+    "state":                { "type": "string", "enum": ["LOW", "ELEVATED", "HIGH", "ABSTAIN"] },
+    "p_spoof_session_max":  { "type": "number", "minimum": 0, "maximum": 1, "description": "Any-segment trigger" },
+    "p_spoof_session_mean": { "type": "number", "minimum": 0, "maximum": 1 },
+    "drivers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "factor": { "type": "string" },
+          "weight": { "type": "number" },
+          "detail": { "type": "string" }
+        },
+        "required": ["factor", "weight", "detail"]
+      }
+    },
+    "timeline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "window_id": { "type": "integer" },
+          "p_spoof":   { "type": "number" },
+          "state":     { "type": "string", "enum": ["LOW", "ELEVATED", "HIGH", "ABSTAIN"] }
+        },
+        "required": ["window_id", "p_spoof", "state"]
+      }
+    },
+    "model_versions": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "head_id -> model_version string"
+    },
+    "abstain_ratio": { "type": "number", "minimum": 0, "maximum": 1 }
+  },
+  "required": ["session_id", "updated_at", "risk_score", "state", "p_spoof_session_max", "p_spoof_session_mean", "drivers", "timeline", "model_versions", "abstain_ratio"],
+  "additionalProperties": false
+}

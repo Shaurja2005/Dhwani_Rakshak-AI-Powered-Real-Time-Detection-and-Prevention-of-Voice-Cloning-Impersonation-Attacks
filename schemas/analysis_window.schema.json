@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voiceguard.dev/schemas/analysis_window.schema.json",
+  "title": "AnalysisWindow",
+  "description": "Output of B2 conditioner; input to every detection head. See SOURCE_OF_TRUTH.md §4.3",
+  "type": "object",
+  "properties": {
+    "session_id":           { "type": "string", "format": "uuid" },
+    "window_id":            { "type": "integer", "minimum": 0, "description": "Monotonically increasing per session" },
+    "start_ms":             { "type": "integer", "minimum": 0 },
+    "end_ms":               { "type": "integer", "minimum": 0 },
+    "sample_rate":          { "type": "integer", "const": 16000, "description": "Always 16 kHz after conditioning" },
+    "samples_ref":          { "type": "string", "description": "shm:// reference — never persisted to disk (I5)" },
+    "voiced_ms":            { "type": "integer", "minimum": 0 },
+    "snr_db":               { "type": "number" },
+    "clipping_ratio":       { "type": "number", "minimum": 0, "maximum": 1 },
+    "quality_ok":           { "type": "boolean" },
+    "quality_flags":        { "type": "array", "items": { "type": "string" }, "description": "e.g. ['hold_music', 'low_snr']" },
+    "original_sample_rate": { "type": "integer", "description": "Source sample rate before resampling — it is a feature" },
+    "detected_codec":       { "type": ["string", "null"] }
+  },
+  "required": ["session_id", "window_id", "start_ms", "end_ms", "sample_rate", "samples_ref", "voiced_ms", "snr_db", "clipping_ratio", "quality_ok", "quality_flags", "original_sample_rate"],
+  "additionalProperties": false
+}

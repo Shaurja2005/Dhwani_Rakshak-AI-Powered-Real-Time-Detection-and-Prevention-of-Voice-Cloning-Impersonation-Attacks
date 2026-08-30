@@ -1,0 +1,274 @@
+syntax = "proto3";
+
+package voiceguard.v1;
+
+option python_package = "vg_core.generated";
+
+// ---------------------------------------------------------------------------
+// VoiceGuard gRPC service
+// Contracts are authoritative in SOURCE_OF_TRUTH.md §4.
+// Keep this file and schemas/*.json in sync; CI enforces it (B0-T07).
+// ---------------------------------------------------------------------------
+
+service VoiceIntegrity {
+  // Real-time bidirectional streaming: audio chunks in, risk events out.
+  rpc AnalyzeStream(stream StreamRequest) returns (stream RiskEvent);
+
+  // Post-call batch analysis of a single file.
+  rpc AnalyzeFile(AnalyzeFileRequest) returns (AnalyzeFileResponse);
+
+  // Speaker voiceprint enrollment (multi-session streaming).
+  rpc Enroll(stream EnrollChunk) returns (EnrollResponse);
+}
+
+// ---------------------------------------------------------------------------
+// Enumerations
+// ---------------------------------------------------------------------------
+
+enum RiskState {
+  RISK_STATE_UNSPECIFIED = 0;
+  RISK_STATE_LOW         = 1;
+  RISK_STATE_ELEVATED    = 2;
+  RISK_STATE_HIGH        = 3;
+  RISK_STATE_ABSTAIN     = 4;
+}
+
+enum AudioEncoding {
+  AUDIO_ENCODING_UNSPECIFIED = 0;
+  AUDIO_ENCODING_PCM_S16LE   = 1;
+  AUDIO_ENCODING_MULAW       = 2;
+  AUDIO_ENCODING_ALAW        = 3;
+}
+
+enum Channel {
+  CHANNEL_UNSPECIFIED = 0;
+  CHANNEL_PSTN        = 1;
+  CHANNEL_VOIP        = 2;
+  CHANNEL_WEBRTC      = 3;
+  CHANNEL_MOBILE      = 4;
+  CHANNEL_FILE        = 5;
+}
+
+enum ConsentBasis {
+  CONSENT_BASIS_UNSPECIFIED    = 0;
+  CONSENT_BASIS_LEGITIMATE_USE = 1;
+  CONSENT_BASIS_EXPLICIT       = 2;
+  CONSENT_BASIS_NONE           = 3;
+}
+
+enum AbstainReason {
+  ABSTAIN_REASON_UNSPECIFIED        = 0;
+  ABSTAIN_REASON_NO_ENROLLMENT      = 1;
+  ABSTAIN_REASON_INSUFFICIENT_SPEECH = 2;
+  ABSTAIN_REASON_TIMEOUT            = 3;
+  ABSTAIN_REASON_QUALITY_GATE       = 4;
+  ABSTAIN_REASON_NO_CHALLENGE       = 5;
+}
+
+// ---------------------------------------------------------------------------
+// §4.1 CallMetadata — one per session, emitted at session start
+// ---------------------------------------------------------------------------
+
+message CallMetadata {
+  string session_id          = 1;   // UUIDv7
+  string tenant_id           = 2;
+  string direction           = 3;   // "inbound" | "outbound"
+  string started_at          = 4;   // RFC3339
+  string caller_number       = 5;   // E.164 or empty
+  string callee_number       = 6;   // E.164 or empty
+  string claimed_identity_id = 7;   // keys the voiceprint lookup; empty if unknown
+  Channel channel            = 8;
+  string codec_hint          = 9;   // "g711u"|"g711a"|"g729"|"amrnb"|"opus"|"evs"|"pcm"|"unknown"
+  uint32 source_sample_rate  = 10;
+  string trunk_id            = 11;
+  string source_asn          = 12;
+  map<string, string> sip_headers = 13;
+  string language_hint       = 14;  // BCP-47
+  ConsentBasis consent_basis = 15;
+  bool shadow_mode           = 16;
+}
+
+// ---------------------------------------------------------------------------
+// §4.2 AudioChunk — transport level
+// ---------------------------------------------------------------------------
+
+message AudioChunk {
+  string session_id  = 1;
+  uint64 seq         = 2;
+  uint64 ts_ms       = 3;
+  uint32 sample_rate = 4;
+  AudioEncoding encoding = 5;
+  bytes payload      = 6;
+}
+
+// ---------------------------------------------------------------------------
+// §4.3 AnalysisWindow — output of B2, input to every head
+// ---------------------------------------------------------------------------
+
+message AnalysisWindow {
+  string session_id            = 1;
+  uint64 window_id             = 2;
+  uint64 start_ms              = 3;
+  uint64 end_ms                = 4;
+  uint32 sample_rate           = 5;   // always 16000 after conditioning
+  string samples_ref           = 6;   // "shm://..." — never persisted
+  uint32 voiced_ms             = 7;
+  float  snr_db                = 8;
+  float  clipping_ratio        = 9;
+  bool   quality_ok            = 10;
+  repeated string quality_flags = 11;
+  uint32 original_sample_rate  = 12;
+  string detected_codec        = 13;
+}
+
+// ---------------------------------------------------------------------------
+// §4.4 HeadScore — every head emits exactly this
+// ---------------------------------------------------------------------------
+
+message HeadScore {
+  string session_id           = 1;
+  uint64 window_id            = 2;
+  string head_id              = 3;   // "A".."F"
+  float  raw_score            = 4;
+  float  p_spoof              = 5;   // calibrated; 0 when abstain=true
+  bool   abstain              = 6;
+  AbstainReason abstain_reason = 7;
+  float  confidence           = 8;
+  uint32 latency_ms           = 9;
+  string model_version        = 10;
+  string calibration_version  = 11;
+  string evidence_json        = 12;  // JSON-encoded head-specific evidence dict
+}
+
+// ---------------------------------------------------------------------------
+// §4.5 FusedWindowScore
+// ---------------------------------------------------------------------------
+
+message FusedWindowScore {
+  string session_id              = 1;
+  uint64 window_id               = 2;
+  float  p_spoof                 = 3;
+  RiskState state                = 4;
+  map<string, float> contributions = 5;   // head_id -> contribution weight
+  repeated string heads_abstained = 6;
+  string fusion_version          = 7;
+}
+
+// ---------------------------------------------------------------------------
+// §4.6 ContextSignals — output of B10
+// ---------------------------------------------------------------------------
+
+message TranscriptSnippet {
+  uint64 start_ms = 1;
+  string text     = 2;
+  string label    = 3;
+}
+
+message ContextSignals {
+  string session_id          = 1;
+  uint64 as_of_ms            = 2;
+  float  metadata_risk       = 3;
+  float  transaction_risk    = 4;
+  float  intent_risk         = 5;
+  repeated string intent_labels = 6;
+  repeated TranscriptSnippet transcript_snippets = 7;
+  string language_detected   = 8;
+  bool   code_switched       = 9;
+}
+
+// ---------------------------------------------------------------------------
+// §4.7 SessionRisk — the headline output
+// ---------------------------------------------------------------------------
+
+message RiskDriver {
+  string factor  = 1;
+  float  weight  = 2;
+  string detail  = 3;
+}
+
+message WindowSummary {
+  uint64 window_id = 1;
+  float  p_spoof   = 2;
+  RiskState state  = 3;
+}
+
+message SessionRisk {
+  string session_id           = 1;
+  string updated_at           = 2;   // RFC3339
+  uint32 risk_score           = 3;   // 0–100
+  RiskState state             = 4;
+  float  p_spoof_session_max  = 5;
+  float  p_spoof_session_mean = 6;
+  repeated RiskDriver drivers = 7;
+  repeated WindowSummary timeline = 8;
+  map<string, string> model_versions = 9;
+  float abstain_ratio         = 10;
+}
+
+// ---------------------------------------------------------------------------
+// §4.8 PolicyDecision
+// ---------------------------------------------------------------------------
+
+message PolicyDecision {
+  string session_id        = 1;
+  string decided_at        = 2;
+  string threshold_profile = 3;
+  repeated string actions  = 4;
+  string rationale         = 5;
+  string evidence_bundle_id = 6;
+  bool   shadow_mode       = 7;
+  bool   suppressed        = 8;
+}
+
+// ---------------------------------------------------------------------------
+// RiskEvent — the composite streaming output emitted by the gateway
+// ---------------------------------------------------------------------------
+
+message RiskEvent {
+  oneof payload {
+    CallMetadata   call_metadata    = 1;
+    FusedWindowScore window_score   = 2;
+    SessionRisk    session_risk     = 3;
+    PolicyDecision policy_decision  = 4;
+    ContextSignals context_signals  = 5;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// RPC request/response wrappers
+// ---------------------------------------------------------------------------
+
+message StreamRequest {
+  oneof payload {
+    CallMetadata call_metadata = 1;
+    AudioChunk   audio_chunk   = 2;
+  }
+}
+
+message AnalyzeFileRequest {
+  CallMetadata metadata = 1;
+  bytes        audio    = 2;   // raw PCM or compressed audio bytes
+  string       filename = 3;
+}
+
+message AnalyzeFileResponse {
+  SessionRisk   session_risk    = 1;
+  PolicyDecision policy         = 2;
+  ContextSignals context        = 3;
+  repeated FusedWindowScore windows = 4;
+}
+
+message EnrollChunk {
+  string session_id  = 1;
+  string speaker_id  = 2;
+  string tenant_id   = 3;
+  AudioChunk chunk   = 4;
+  bool   finalize    = 5;  // true on last chunk
+}
+
+message EnrollResponse {
+  bool   success     = 1;
+  string speaker_id  = 2;
+  string message     = 3;
+  float  quality_score = 4;
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voiceguard.dev/schemas/evidence_bundle.schema.json",
+  "title": "EvidenceBundle",
+  "description": "Immutable, content-hashed audit record justifying an alert. Created by B11.",
+  "type": "object",
+  "properties": {
+    "bundle_id":           { "type": "string", "description": "SHA256 of the canonical JSON serialisation" },
+    "session_id":          { "type": "string", "format": "uuid" },
+    "created_at":          { "type": "string", "format": "date-time" },
+    "policy_decision":     { "$ref": "policy_decision.schema.json" },
+    "session_risk":        { "$ref": "session_risk.schema.json" },
+    "context_signals":     { "$ref": "context_signals.schema.json" },
+    "window_scores": {
+      "type": "array",
+      "items": { "$ref": "fused_window_score.schema.json" }
+    },
+    "head_scores": {
+      "type": "array",
+      "items": { "$ref": "head_score.schema.json" }
+    },
+    "call_metadata":       { "$ref": "call_metadata.schema.json" },
+    "model_versions":      { "type": "object", "additionalProperties": { "type": "string" } },
+    "threshold_profile_snapshot": { "type": "object", "description": "Exact threshold config applied at decision time" },
+    "schema_version":      { "type": "string", "description": "JSON Schema version of this bundle" }
+  },
+  "required": ["bundle_id", "session_id", "created_at", "policy_decision", "session_risk", "model_versions", "threshold_profile_snapshot", "schema_version"],
+  "additionalProperties": false
+}

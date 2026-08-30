@@ -35,7 +35,7 @@
 
 | Block | Title | Owner | Status | Done / Total |
 |---|---|---|---|---|
-| B0 | Repo, contracts, CI | — | TODO | 0/9 |
+| B0 | Repo, contracts, CI | agent-antigravity | DONE | 9/9 |
 | B1 | Capture adapters | — | TODO | 0/9 |
 | B2 | Stream conditioning | — | TODO | 0/8 |
 | B3 | Data & corpus engineering | — | TODO | 0/11 |
@@ -63,15 +63,15 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B0 — Repo, contracts, CI
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B0-T01 | Monorepo scaffold | — | TODO | — | | |
-| B0-T02 | proto + generated stubs | — | TODO | B0-T01 | | |
-| B0-T03 | JSON Schemas + Pydantic models | — | TODO | B0-T01 | | |
-| B0-T04 | vg_core: config, logging, tracing | — | TODO | B0-T01 | | |
-| B0-T05 | DetectionHead ABC + StubHead | — | TODO | B0-T03 | | unblocks B9/B11/B13 |
-| B0-T06 | docker-compose dev stack | — | TODO | B0-T01 | | |
-| B0-T07 | CI: lint, types, tests, schema-compat | — | TODO | B0-T03 | | |
-| B0-T08 | Makefile targets | — | TODO | B0-T06 | | |
-| B0-T09 | Seed SoT / STATUS / AGENTS docs | — | TODO | B0-T01 | | |
+| B0-T01 | Monorepo scaffold | agent-antigravity | DONE | — | bootstrap_repo.sh | |
+| B0-T02 | proto + generated stubs | agent-antigravity | DONE | B0-T01 | proto/voiceguard.proto | |
+| B0-T03 | JSON Schemas + Pydantic models | agent-antigravity | DONE | B0-T01 | schemas/*.json | |
+| B0-T04 | vg_core: config, logging, tracing | agent-antigravity | DONE | B0-T01 | packages/vg_core/ | |
+| B0-T05 | DetectionHead ABC + StubHead | agent-antigravity | DONE | B0-T03 | packages/vg_core/head_api.py | unblocks B9/B11/B13 |
+| B0-T06 | docker-compose dev stack | agent-antigravity | DONE | B0-T01 | deploy/docker-compose.dev.yml | |
+| B0-T07 | CI: lint, types, tests, schema-compat | agent-antigravity | DONE | B0-T03 | .github/workflows/ci.yml | |
+| B0-T08 | Makefile targets | agent-antigravity | DONE | B0-T06 | Makefile | |
+| B0-T09 | Seed SoT / STATUS / AGENTS docs | agent-antigravity | DONE | B0-T01 | PROJECT_STATUS.md | |
 
 ### B1 — Capture adapters
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,7 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-08-30T10:35Z | agent-antigravity | B0-T01-09 | TODO -> DONE | vg_core/, schemas/ | Scaffolded repo, contracts, pipelines |
 | — | — | — | board created | — | initial seed |
 
 ## 6. Open questions

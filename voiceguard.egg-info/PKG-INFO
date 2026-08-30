@@ -1,0 +1,61 @@
+Metadata-Version: 2.4
+Name: voiceguard
+Version: 0.1.0
+Summary: AI-Powered Real-Time Detection and Prevention of Voice Cloning Impersonation Attacks
+Requires-Python: <3.12,>=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: pydantic<3,>=2.7
+Requires-Dist: pydantic-settings<3,>=2.3
+Requires-Dist: python-dotenv>=1.0
+Requires-Dist: PyYAML>=6.0
+Requires-Dist: structlog>=24.1
+Requires-Dist: rich>=13.7
+Requires-Dist: uuid7>=0.1
+Requires-Dist: grpcio>=1.63
+Requires-Dist: grpcio-tools>=1.63
+Requires-Dist: protobuf>=4.25
+Requires-Dist: redis[hiredis]>=5.0
+Requires-Dist: asyncpg>=0.29
+Requires-Dist: sqlalchemy[asyncio]>=2.0
+Requires-Dist: fastapi>=0.111
+Requires-Dist: uvicorn[standard]>=0.29
+Requires-Dist: httpx>=0.27
+Requires-Dist: websockets>=12.0
+Requires-Dist: soundfile>=0.12
+Requires-Dist: numpy<2,>=1.26
+Requires-Dist: scipy>=1.13
+Provides-Extra: ml
+Requires-Dist: torch>=2.3; extra == "ml"
+Requires-Dist: torchaudio>=2.3; extra == "ml"
+Requires-Dist: transformers>=4.41; extra == "ml"
+Requires-Dist: speechbrain>=1.0; extra == "ml"
+Requires-Dist: onnxruntime>=1.18; extra == "ml"
+Requires-Dist: scikit-learn>=1.5; extra == "ml"
+Requires-Dist: lightgbm>=4.3; extra == "ml"
+Requires-Dist: datasets>=2.19; extra == "ml"
+Requires-Dist: huggingface-hub>=0.23; extra == "ml"
+Provides-Extra: dev
+Requires-Dist: pytest>=8.2; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23; extra == "dev"
+Requires-Dist: pytest-cov>=5.0; extra == "dev"
+Requires-Dist: ruff>=0.4; extra == "dev"
+Requires-Dist: black>=24.4; extra == "dev"
+Requires-Dist: mypy>=1.10; extra == "dev"
+Requires-Dist: datamodel-code-generator>=0.25; extra == "dev"
+Requires-Dist: jsonschema>=4.22; extra == "dev"
+Requires-Dist: types-PyYAML; extra == "dev"
+Requires-Dist: types-redis; extra == "dev"
+
+# VoiceGuard
+
+Real-time detection and prevention of voice cloning impersonation attacks.
+
+**Read `SOURCE_OF_TRUTH.md` before writing any code.** Task board: `PROJECT_STATUS.md`. Working rules: `AGENTS.md`.
+
+Quickstart:
+
+```bash
+make dev-up
+make fetch-models
+python scripts/replay.py --wav tests/fixtures/sample.wav
+```

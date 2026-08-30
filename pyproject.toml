@@ -1,0 +1,99 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["packages*", "services*", "ml*", "scripts*", "sdks*"]
+
+[project]
+name = "voiceguard"
+version = "0.1.0"
+requires-python = ">=3.11,<3.12"
+description = "AI-Powered Real-Time Detection and Prevention of Voice Cloning Impersonation Attacks"
+readme = "README.md"
+
+dependencies = [
+    # Core runtime
+    "pydantic>=2.7,<3",
+    "pydantic-settings>=2.3,<3",
+    "python-dotenv>=1.0",
+    "PyYAML>=6.0",
+    "structlog>=24.1",
+    "rich>=13.7",
+    "uuid7>=0.1",
+
+    # gRPC / protobuf
+    "grpcio>=1.63",
+    "grpcio-tools>=1.63",
+    "protobuf>=4.25",
+
+    # Redis / persistence
+    "redis[hiredis]>=5.0",
+    "asyncpg>=0.29",
+    "sqlalchemy[asyncio]>=2.0",
+
+    # HTTP / async
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.29",
+    "httpx>=0.27",
+    "websockets>=12.0",
+
+    # Audio (without ML deps — those go in extras)
+    "soundfile>=0.12",
+    "numpy>=1.26,<2",
+    "scipy>=1.13",
+]
+
+[project.optional-dependencies]
+ml = [
+    "torch>=2.3",
+    "torchaudio>=2.3",
+    "transformers>=4.41",
+    "speechbrain>=1.0",
+    "onnxruntime>=1.18",
+    "scikit-learn>=1.5",
+    "lightgbm>=4.3",
+    "datasets>=2.19",
+    "huggingface-hub>=0.23",
+]
+dev = [
+    "pytest>=8.2",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=5.0",
+    "ruff>=0.4",
+    "black>=24.4",
+    "mypy>=1.10",
+    "datamodel-code-generator>=0.25",
+    "jsonschema>=4.22",
+    "types-PyYAML",
+    "types-redis",
+]
+
+[project.scripts]
+vg-replay  = "scripts.replay:main"
+vg-eval    = "ml.eval.run_eval:main"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "N", "W", "UP", "ANN", "S", "B", "A"]
+ignore = ["ANN101", "ANN102", "ANN204", "S101"]
+exclude = ["packages/vg_core/generated/", "third_party/"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+exclude = "packages/vg_core/generated/"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+exclude = ["packages/vg_core/generated/", "third_party/", "ml/data/generators/"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "--cov=packages --cov-report=term-missing --cov-fail-under=60"
+filterwarnings = ["ignore::DeprecationWarning"]

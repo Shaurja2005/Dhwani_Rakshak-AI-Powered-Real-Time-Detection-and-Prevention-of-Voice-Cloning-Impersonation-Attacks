@@ -1,0 +1,4 @@
+name: eval
+# Regenerates docs/benchmarks/REPORT.md. TODO(B15-T10).
+on: workflow_dispatch
+jobs: {}

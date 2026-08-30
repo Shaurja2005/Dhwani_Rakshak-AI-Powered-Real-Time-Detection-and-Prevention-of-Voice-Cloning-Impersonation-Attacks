@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voiceguard.dev/schemas/head_score.schema.json",
+  "title": "HeadScore",
+  "description": "Every detection head emits exactly this structure. See SOURCE_OF_TRUTH.md §4.4",
+  "type": "object",
+  "properties": {
+    "session_id":          { "type": "string", "format": "uuid" },
+    "window_id":           { "type": "integer", "minimum": 0 },
+    "head_id":             { "type": "string", "enum": ["A", "B", "C", "D", "E", "F"] },
+    "raw_score":           { "type": "number", "description": "Head-native scale, uncalibrated" },
+    "p_spoof":             { "type": ["number", "null"], "minimum": 0, "maximum": 1, "description": "Calibrated probability; null when abstain=true" },
+    "abstain":             { "type": "boolean" },
+    "abstain_reason":      { "type": ["string", "null"], "enum": ["no_enrollment", "insufficient_speech", "timeout", "quality_gate", "no_challenge", null] },
+    "confidence":          { "type": "number", "minimum": 0, "maximum": 1 },
+    "latency_ms":          { "type": "integer", "minimum": 0 },
+    "model_version":       { "type": "string", "description": "e.g. A@xlsr300m-nes2net-v0.3.1" },
+    "calibration_version": { "type": "string", "description": "e.g. cal-2026-02-11" },
+    "evidence":            { "type": "object", "description": "Free-form head-specific evidence, human-readable where possible" }
+  },
+  "required": ["session_id", "window_id", "head_id", "raw_score", "abstain", "confidence", "latency_ms", "model_version", "calibration_version", "evidence"],
+  "if": { "properties": { "abstain": { "const": false } } },
+  "then": { "required": ["p_spoof"] },
+  "additionalProperties": false
+}
