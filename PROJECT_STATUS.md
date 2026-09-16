@@ -40,8 +40,8 @@
 | B2 | Stream conditioning | agent-antigravity | DONE | 8/8 |
 | B3 | Data & corpus engineering | claude-b3 | WIP | 7/11 |
 | B4 | Head A — SSL anti-spoof | claude-b4 | WIP | 3/10 |
-| B5 | Head B — DSP & scene | — | TODO | 0/6 |
-| B6 | Head C — prosody | — | TODO | 0/6 |
+| B5 | Head B — DSP & scene | claude-b5 | WIP | 4/6 |
+| B6 | Head C — prosody | claude-b6 | WIP | 3/6 |
 | B7 | Head D — speaker verification | — | TODO | 0/6 |
 | B8 | Heads E/F — liveness & watermark | — | TODO | 0/6 |
 | B9 | Fusion & risk engine | — | TODO | 0/8 |
@@ -130,22 +130,22 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B5 — Head B (DSP & scene)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B5-T01 | CQT/LFCC/MGD/LTAS/bicoherence extractors | — | TODO | B2-T04 | | |
-| B5-T02 | Vocoder/NAC fingerprinting | — | TODO | B5-T01 | | |
-| B5-T03 | GBDT/CNN classifier | — | TODO | B5-T01, B3-T04 | | |
-| B5-T04 | RIR / scene-consistency analyzer | — | TODO | B5-T01 | | distinctive component |
-| B5-T05 | Codec chain identifier | — | TODO | B5-T01 | | |
-| B5-T06 | Human-readable explanations | — | TODO | B5-T03 | | |
+| B5-T01 | CQT/LFCC/MGD/LTAS/bicoherence extractors | claude-b5 | DONE | B2-T04 | packages/vg_models/heads/head_b_dsp/features.py | LFCC, CQT-approx, MGD, LTAS, roll-off, bicoherence, breath band; ~10 ms/window CPU incl. all B5 analysis |
+| B5-T02 | Vocoder/NAC fingerprinting | claude-b5 | REVIEW | B5-T01 | packages/vg_models/heads/head_b_dsp/vocoder.py | upsampling tones, brick-wall edge, phase regularity; validated on synthetic artifacts only, needs real HiFi-GAN/EnCodec outputs |
+| B5-T03 | GBDT/CNN classifier | claude-b5 | REVIEW | B5-T01, B3-T04 | packages/vg_models/heads/head_b_dsp/gbdt.py, ml/training/train_head_b.py, ml/training/configs/head_b.yaml | numpy GBDT (vectorised predict); trained on synthetic smoke data only |
+| B5-T04 | RIR / scene-consistency analyzer | claude-b5 | DONE | B5-T01 | packages/vg_models/heads/head_b_dsp/scene.py | onset-based late-decay RT60; flags dry voice over RT60 0.4 s background incl. after G.711; RT60 >~0.7 s needs longer pauses than a 3 s window |
+| B5-T05 | Codec chain identifier | claude-b5 | DONE | B5-T01 | packages/vg_models/heads/head_b_dsp/codec_id.py | wideband clean/compressed vs narrowband; cannot separate AMR from G.711 |
+| B5-T06 | Human-readable explanations | claude-b5 | DONE | B5-T03 | packages/vg_models/heads/head_b_dsp/explain.py | 1-3 plain-English reasons, always includes channel |
 
 ### B6 — Head C (prosody)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B6-T01 | F0 dynamics, jitter, shimmer | — | TODO | B2-T04 | | |
-| B6-T02 | Breath-group detection | — | TODO | B6-T01 | | |
-| B6-T03 | Pause distribution & rate variance | — | TODO | B6-T01 | | |
-| B6-T04 | Disfluency detection from ASR | — | TODO | B10-T01 | | |
-| B6-T05 | Temporal model + calibrated score | — | TODO | B6-T03 | | |
-| B6-T06 | Indic prosody normalization + per-language eval | — | TODO | B6-T05, B15-T04 | | FP risk on retroflex/code-switch |
+| B6-T01 | F0 dynamics, jitter, shimmer | claude-b6 | DONE | B2-T04 | packages/vg_models/heads/head_c_prosody/pitch.py | vectorised YIN, <2% F0 error 85-350 Hz; frame-level jitter/shimmer |
+| B6-T02 | Breath-group detection | claude-b6 | DONE | B6-T01 | packages/vg_models/heads/head_c_prosody/breath_rhythm.py | inhalations before phrase onsets |
+| B6-T03 | Pause distribution & rate variance | claude-b6 | DONE | B6-T01 | packages/vg_models/heads/head_c_prosody/breath_rhythm.py | pause/phrase/syllable-rate CV + over_regularity; acoustic filled-pause detector |
+| B6-T04 | Disfluency detection from ASR | claude-b6 | REVIEW | B10-T01 | packages/vg_models/heads/head_c_prosody/disfluency.py | lexical fillers (en + 5 Indic), repetitions, restarts; not fed until B10 ASR exists |
+| B6-T05 | Temporal model + calibrated score | claude-b6 | REVIEW | B6-T03 | packages/vg_models/heads/head_c_prosody/model.py, ml/training/train_head_c.py, ml/training/configs/head_c.yaml | BiGRU + global features; trained on synthetic smoke data only |
+| B6-T06 | Indic prosody normalization + per-language eval | claude-b6 | REVIEW | B6-T05, B15-T04 | packages/vg_models/heads/head_c_prosody/normalize.py | Indic min-pause 220 ms, per-language z-norm, per-language FPR gate fails training run; real per-language eval needs data + B15 |
 
 ### B7 — Head D (speaker verification)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,9 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-17T03:00Z | claude-b6 | B6-T01-06 | TODO -> DONE(T01-03) / REVIEW(T04-06) | packages/vg_models/heads/head_c_prosody/, ml/training/train_head_c.py, tests/unit/test_b6_head_c.py | 174 tests pass; training deferred |
+| 2026-09-17T02:00Z | claude-b5 | B5-T01-06 | TODO -> DONE(T01,T04-06) / REVIEW(T02,T03) | packages/vg_models/heads/head_b_dsp/, ml/training/train_head_b.py, tests/unit/test_b5_head_b.py | CPU ~10 ms/window; training deferred |
+| 2026-09-17T01:30Z | claude-b4 | Q6/Q7 | answered | docs/adr/0006-untrained-abstain-reason.md, schemas/head_score.schema.json, proto/voiceguard.proto | `untrained` abstain reason; cross-block edits accepted; fixed pre-warmup model_version bug in HeadA |
 | 2026-09-17T01:00Z | claude-b4 | B4-T01-10 | TODO -> DONE(T03-05) / REVIEW(T02,06,07,09,10) / WIP(T08) / BLOCKED(T01) | packages/vg_models/heads/head_a_ssl/, ml/training/, tests/unit/test_b4_head_a.py | 135 tests pass; training deferred (docs/SETUP_PENDING.md) |
 | 2026-09-17T00:00Z | claude-b3 | Q1 | answered | PROJECT_STATUS.md §6 | ASVspoof 5 on hand; IndicSynth planned; build structure first, data setup deferred |
 | 2026-09-16T19:41Z | claude-b3 | B3-T01-11 | TODO -> DONE(T01,04,07-11) / REVIEW(T02,03,06) / WIP(T05) | ml/data/, tests/unit/test_b3_data.py | 106 tests pass; corpus not built (needs data access + GPU) |
@@ -314,8 +317,8 @@ Anything that needs a human decision. Agents append here rather than guessing.
 | Q3 | Commercial or research lineage for the primary demo model? | — | B3-T09 | Implied research: ASVspoof 5 EULA + IndicSynth (CC BY-NC 4.0) are both non-commercial. Needs explicit human confirmation. |
 | Q4 | Which telephony stack does the pilot tenant actually run? | — | B1 | |
 | Q5 | Which Indic languages are in scope for v1 (all 12, or 3–4 done well)? | — | B3, B15 | 2026-09-17 (user): all 12, subject to IndicSynth coverage. |
-| Q6 | Add `untrained` to AbstainReason? Untrained Head A currently abstains with reason null. Contract change, needs ADR. | claude-b4 | B0, B9 | |
-| Q7 | Accept cross-block edits from B4: `packages/vg_core/sample_store.py` (B0; resolves samples_ref) and `scripts/replay.py` (--real-heads, real model versions)? | claude-b4 | B0, B2 | |
+| Q6 | Add `untrained` to AbstainReason? Untrained Head A currently abstains with reason null. Contract change, needs ADR. | claude-b4 | B0, B9 | 2026-09-17 (user): implement if useful beyond setup. Done: ADR 0006, `untrained` added to schema/proto/models; used by heads A, B, C. |
+| Q7 | Accept cross-block edits from B4: `packages/vg_core/sample_store.py` (B0; resolves samples_ref) and `scripts/replay.py` (--real-heads, real model versions)? | claude-b4 | B0, B2 | 2026-09-17 (user): accepted. |
 
 ## 7. Blocked items
 

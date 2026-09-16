@@ -39,3 +39,20 @@ non-commercial → the primary model is **research lineage**.
 - [ ] Stage 2 with IndicSynth (`head_a_stage2.yaml`), Stage 3 robustness (`head_a_stage3.yaml`).
 - [ ] Measure Head A p95 latency on target hardware; set `VG_HEAD_A_BUDGET_MS`.
 - [ ] Run with `VG_HEAD_A_CHECKPOINT=runs/<run>/best.pt` and confirm scores appear in replay.
+
+## B5 — Head B (DSP + scene)
+
+- [ ] Build a manifest of real vocoder / neural-codec outputs (HiFi-GAN, BigVGAN,
+      EnCodec) and check `vocoder.py` detectors fire on them (B5-T02 validation).
+- [ ] Train: `python -m ml.training.train_head_b --config ml/training/configs/head_b.yaml` (CPU).
+- [ ] Measure p95 latency per window on target hardware (budget 15 ms).
+- [ ] B9 fusion ablation: fused EER with Head B vs Head A alone (block DoD).
+
+## B6 — Head C (prosody)
+
+- [ ] Train: `python -m ml.training.train_head_c --config ml/training/configs/head_c.yaml` (CPU).
+      The run fails if the per-language bona fide FPR gap exceeds 5 points; fix
+      data balance / normalisation rather than loosening the gate.
+- [ ] Per-language evaluation across all 12 languages on a codec-degraded set (B15).
+- [ ] Wire ASR tokens from B10 into `analyse(..., tokens=...)` once B10 exists.
+- [ ] Set `language_hint` in CallMetadata from the tenant/IVR language, or from B10 language ID.

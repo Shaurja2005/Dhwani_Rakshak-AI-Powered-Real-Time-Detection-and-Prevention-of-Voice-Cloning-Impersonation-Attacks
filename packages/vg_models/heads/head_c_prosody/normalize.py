@@ -88,7 +88,10 @@ class LanguageNorm:
 
 
 def per_language_report(
-    p_spoof: np.ndarray, is_spoof: np.ndarray, languages: list[str | None], threshold: float = 0.5,
+    p_spoof: np.ndarray,
+    is_spoof: np.ndarray,
+    languages: list[str | None],
+    threshold: float = 0.5,
     max_fpr_gap: float = 0.05,
 ) -> dict[str, object]:
     """FPR (bona fide flagged) and miss rate per language at ``threshold``, plus a gap verdict."""
@@ -101,8 +104,15 @@ def per_language_report(
             "n_bona_fide": int(bona.sum()),
             "n_spoof": int(spoof.sum()),
             "fpr": float((p_spoof[bona] >= threshold).mean()) if bona.any() else float("nan"),
-            "miss_rate": float((p_spoof[spoof] < threshold).mean()) if spoof.any() else float("nan"),
+            "miss_rate": (
+                float((p_spoof[spoof] < threshold).mean()) if spoof.any() else float("nan")
+            ),
         }
     fprs = [v["fpr"] for v in table.values() if not math.isnan(v["fpr"]) and v["n_bona_fide"] >= 20]
     gap = (max(fprs) - min(fprs)) if len(fprs) >= 2 else 0.0
-    return {"threshold": threshold, "languages": table, "max_fpr_gap": gap, "fairness_ok": gap <= max_fpr_gap}
+    return {
+        "threshold": threshold,
+        "languages": table,
+        "max_fpr_gap": gap,
+        "fairness_ok": gap <= max_fpr_gap,
+    }

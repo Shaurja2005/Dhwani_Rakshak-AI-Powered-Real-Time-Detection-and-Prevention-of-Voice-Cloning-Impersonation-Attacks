@@ -50,7 +50,12 @@ def breath_features(x: np.ndarray, p: PitchTrack, speech: np.ndarray) -> dict[st
 
     floor = np.percentile(p.frame_db, 10)
     speech_level = np.median(p.frame_db[p.voiced]) if p.voiced.sum() > 5 else p.frame_db.max()
-    cand = (~p.voiced) & (p.frame_db > floor + 4.0) & (p.frame_db < speech_level - 10.0) & (flat > 0.15)
+    cand = (
+        (~p.voiced)
+        & (p.frame_db > floor + 4.0)
+        & (p.frame_db < speech_level - 10.0)
+        & (flat > 0.15)
+    )
 
     phrase_starts = [a for a, _ in _runs(p.voiced) if a > 0]
     breaths: list[tuple[int, int]] = []
@@ -78,13 +83,20 @@ def rhythm_features(p: PitchTrack, speech: np.ndarray, min_pause_ms: float) -> d
     pauses = [(a, b) for a, b in _runs(~speech) if b - a >= min_pause and a > 0 and b < len(speech)]
     # Phrases: speech between qualifying pauses (short closures merged in).
     cuts = [0] + [x for a, b in pauses for x in (a, b)] + [len(speech)]
-    phrases = [(cuts[i], cuts[i + 1]) for i in range(0, len(cuts) - 1, 2) if cuts[i + 1] - cuts[i] >= 10]
+    phrases = [
+        (cuts[i], cuts[i + 1]) for i in range(0, len(cuts) - 1, 2) if cuts[i + 1] - cuts[i] >= 10
+    ]
 
     env = np.convolve(p.frame_db, np.ones(3) / 3, mode="same")
     rates = []
     for a, b in phrases:
         seg = env[a:b]
-        peaks = np.where((seg[1:-1] > seg[:-2]) & (seg[1:-1] >= seg[2:]) & (seg[1:-1] > seg.max() - 15))[0] + 1
+        peaks = (
+            np.where(
+                (seg[1:-1] > seg[:-2]) & (seg[1:-1] >= seg[2:]) & (seg[1:-1] > seg.max() - 15)
+            )[0]
+            + 1
+        )
         keep: list[int] = []
         for pk in peaks:  # syllable nuclei >= 80 ms apart
             if not keep or pk - keep[-1] >= 8:

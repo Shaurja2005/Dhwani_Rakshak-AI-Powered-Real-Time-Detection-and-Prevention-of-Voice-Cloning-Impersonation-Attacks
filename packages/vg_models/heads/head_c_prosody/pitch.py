@@ -82,10 +82,13 @@ def track(x: np.ndarray, threshold: float = 0.2) -> PitchTrack:
     i = np.clip(idx, 1, search.shape[1] - 2)
     a, b, c = (search[np.arange(len(i)), i + k] for k in (-1, 0, 1))
     denom = a - 2 * b + c
-    lag = np.where(np.abs(denom) > 1e-9, i + _LAG_MIN + 0.5 * (a - c) / denom, lag)
+    safe = np.where(np.abs(denom) > 1e-9, denom, 1.0)
+    lag = np.where(np.abs(denom) > 1e-9, i + _LAG_MIN + 0.5 * (a - c) / safe, lag)
 
-    floor = np.percentile(frame_db, 10)
-    voiced = (best < threshold + 0.15) & (frame_db > floor + 10.0)
+    # Energy gate relative to the loudest frame (a percentile floor fails when
+    # the window has no silence at all), plus an absolute -70 dBFS floor.
+    loud = (frame_db > frame_db.max() - 35.0) & (frame_db > -70.0)
+    voiced = (best < threshold + 0.15) & loud
     f0 = np.where(voiced, SR / np.maximum(lag, 1.0), 0.0)
     voiced &= (f0 >= FMIN) & (f0 <= FMAX)
     f0[~voiced] = 0.0
@@ -122,7 +125,7 @@ def contour_features(p: PitchTrack) -> dict[str, float]:
         prob = hist / hist.sum()
         prob = prob[prob > 0]
         out["f0_slope_entropy"] = float(-(prob * np.log(prob)).sum() / np.log(20))
-        periods = 1.0 / p.f0_hz
+        periods = 1.0 / np.where(v, p.f0_hz, 1.0)
         dper = np.abs(periods[1:] - periods[:-1])[both]
         out["jitter_rel"] = float(dper.mean() / periods[v].mean())
         out["shimmer_db"] = float(np.abs(p.peak_db[1:] - p.peak_db[:-1])[both].mean())

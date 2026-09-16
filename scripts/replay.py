@@ -170,6 +170,14 @@ def run_replay(
             from packages.vg_models.heads.head_a_ssl.head import HeadA
 
             registry.register(HeadA())  # VG_HEAD_A_CHECKPOINT selects trained weights
+        elif hid == "B" and "B" in real:
+            from packages.vg_models.heads.head_b_dsp.head import HeadB
+
+            registry.register(HeadB())  # VG_HEAD_B_MODEL selects a trained GBDT
+        elif hid == "C" and "C" in real:
+            from packages.vg_models.heads.head_c_prosody.head import HeadC
+
+            registry.register(HeadC())  # VG_HEAD_C_MODEL selects a trained prosody model
         else:
             registry.register(StubHead(head_id=hid))
     registry.warmup_all()
