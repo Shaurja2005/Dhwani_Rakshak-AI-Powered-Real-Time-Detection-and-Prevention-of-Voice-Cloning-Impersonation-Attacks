@@ -45,6 +45,7 @@ from packages.vg_core.models import (
     RiskDriver,
     WindowSummary,
 )
+from packages.vg_core.sample_store import put_samples
 from packages.vg_core.stub_head import StubHead
 from packages.vg_core.versioning import STUB_MODEL_VERSION
 
@@ -154,15 +155,23 @@ def _emit(obj: object) -> None:
     sys.stdout.flush()
 
 
-def run_replay(wav_path: Path, head_ids: list[str] | None = None) -> None:
+def run_replay(
+    wav_path: Path, head_ids: list[str] | None = None, real_heads: list[str] | None = None
+) -> None:
     session_id = _make_session_id()
     now = datetime.now(tz=timezone.utc)
 
     # Register stub heads (real heads can be loaded by head_ids parameter)
     registry = HeadRegistry.get_instance()
     configured_ids = head_ids or list("ABCDEF")
+    real = set(real_heads or [])
     for hid in configured_ids:
-        registry.register(StubHead(head_id=hid))
+        if hid == "A" and "A" in real:
+            from packages.vg_models.heads.head_a_ssl.head import HeadA
+
+            registry.register(HeadA())  # VG_HEAD_A_CHECKPOINT selects trained weights
+        else:
+            registry.register(StubHead(head_id=hid))
     registry.warmup_all()
 
     metadata = CallMetadata(
@@ -190,13 +199,14 @@ def run_replay(wav_path: Path, head_ids: list[str] | None = None) -> None:
     p_sum = 0.0
     abstain_count = 0
 
-    for window_id, start_s, end_s, _chunk, voiced_ms in _load_wav_windows(wav_path):
+    for window_id, start_s, end_s, chunk, voiced_ms in _load_wav_windows(wav_path):
+        samples_ref = put_samples(f"shm://replay/{session_id}/{window_id}", chunk)
         window = AnalysisWindow(
             session_id=session_id,
             window_id=window_id,
             start_ms=int(start_s * 1000),
             end_ms=int(end_s * 1000),
-            samples_ref=f"shm://replay/{session_id}/{window_id}",
+            samples_ref=samples_ref,
             voiced_ms=voiced_ms,
             snr_db=18.0,  # replay: assume clean audio
             clipping_ratio=0.0,
@@ -251,7 +261,7 @@ def run_replay(wav_path: Path, head_ids: list[str] | None = None) -> None:
             WindowSummary(window_id=w.window_id, p_spoof=w.p_spoof, state=w.state)
             for w in window_scores
         ],
-        model_versions={hid: STUB_MODEL_VERSION for hid in configured_ids},
+        model_versions={hid: registry.get(hid).model_version for hid in configured_ids},
         abstain_ratio=abstain_ratio,
     )
     _emit(session_risk)
@@ -266,6 +276,12 @@ def main() -> None:
         default=None,
         help="Head IDs to enable (default: all stub heads A-F)",
     )
+    parser.add_argument(
+        "--real-heads",
+        nargs="*",
+        default=None,
+        help="Head IDs to run with the real implementation instead of a stub (e.g. A)",
+    )
     parser.add_argument("--log-level", default="WARNING", help="Log level (default: WARNING)")
     args = parser.parse_args()
 
@@ -276,7 +292,7 @@ def main() -> None:
         sys.exit(1)
 
     log.info("replay_start", wav=str(args.wav))
-    run_replay(args.wav, head_ids=args.heads)
+    run_replay(args.wav, head_ids=args.heads, real_heads=args.real_heads)
 
 
 if __name__ == "__main__":

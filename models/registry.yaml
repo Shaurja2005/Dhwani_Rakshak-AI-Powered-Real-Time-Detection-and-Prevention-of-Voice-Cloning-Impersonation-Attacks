@@ -1,2 +1,28 @@
 # Pinned checkpoints. revision = commit SHA, plus sha256 per artifact.
-models: []
+# `revision: null` means NOT YET PINNED — fill in on first verified download
+# (deferred setup, see docs/SETUP_PENDING.md). Never run a reportable
+# experiment against an unpinned model.
+models:
+  - id: facebook/wav2vec2-xls-r-300m
+    role: head_a_frontend
+    default: true
+    source: huggingface
+    license: Apache-2.0
+    revision: null
+    size_gb: 1.3
+
+  - id: microsoft/wavlm-large
+    role: head_a_frontend
+    default: false
+    source: huggingface
+    license: MIT
+    revision: null
+    size_gb: 1.3
+
+  - id: facebook/wav2vec2-xls-r-1b
+    role: head_a_frontend
+    default: false
+    source: huggingface
+    license: Apache-2.0
+    revision: null
+    size_gb: 3.9

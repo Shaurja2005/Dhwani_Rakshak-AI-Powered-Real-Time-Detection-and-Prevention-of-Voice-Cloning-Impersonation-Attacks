@@ -1,8 +1,35 @@
+# B4-T06 Stage 1: ASVspoof 5 train partition -> baseline.
 run_name: head_a_stage1
-lineage: research        # research | commercial
-allow_noncommercial: true   # license gate (invariant I7)
-frontend: facebook/wav2vec2-xls-r-300m
-frontend_layers: [5, 6, 7, 8, 9]
-backend: nes2net
-loss: oc_softmax
+lineage: research           # research | commercial
+allow_noncommercial: true   # license gate (invariant I7); ASVspoof 5 EULA is non-commercial
 seed: 1337
+out_dir: runs
+
+frontend: facebook/wav2vec2-xls-r-300m
+frontend_revision: null     # pin commit SHA from models/registry.yaml before a reportable run
+frontend_layers: [5, 6, 7, 8, 9]
+freeze_frontend: true       # 8 GB GPU (RTX 4060): freeze front-end, train back-end only
+backend: nes2net
+emb_dim: 160
+loss: oc_softmax
+version: 0.1.0
+
+data:
+  manifests: data/manifests/asvspoof5*.jsonl
+  splits: splits/asvspoof5.json
+  data_root: data
+  languages: []             # empty = all
+
+augment:
+  rawboost_algo: 3
+
+train:
+  epochs: 20
+  batch_size: 8
+  seconds: 4.0
+  lr: 1.0e-4
+  weight_decay: 1.0e-4
+  num_workers: 4
+  balance_families: true
+
+robust: {}

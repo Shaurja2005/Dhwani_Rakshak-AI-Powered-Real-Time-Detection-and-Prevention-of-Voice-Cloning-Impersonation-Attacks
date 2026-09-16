@@ -39,7 +39,7 @@
 | B1 | Capture adapters | agent-antigravity | DONE | 9/9 |
 | B2 | Stream conditioning | agent-antigravity | DONE | 8/8 |
 | B3 | Data & corpus engineering | claude-b3 | WIP | 7/11 |
-| B4 | Head A — SSL anti-spoof | — | TODO | 0/10 |
+| B4 | Head A — SSL anti-spoof | claude-b4 | WIP | 3/10 |
 | B5 | Head B — DSP & scene | — | TODO | 0/6 |
 | B6 | Head C — prosody | — | TODO | 0/6 |
 | B7 | Head D — speaker verification | — | TODO | 0/6 |
@@ -116,16 +116,16 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B4 — Head A (SSL anti-spoof)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B4-T01 | Stage 0: reproduce published baseline | — | TODO | B3-T02 | | sanity gate |
-| B4-T02 | SSL front-end wrapper + layer selection | — | TODO | B4-T01 | | layers 5–9 |
-| B4-T03 | Nes2Net back-end (+AASIST secondary) | — | TODO | B4-T02 | | |
-| B4-T04 | OC-Softmax / AM-Softmax loss | — | TODO | B4-T03 | | |
-| B4-T05 | RawBoost + channel aug in train loop | — | TODO | B3-T07 | | |
-| B4-T06 | Stage 1 training run | — | TODO | B4-T04 | | |
-| B4-T07 | Stage 2 multi-corpus pooling | — | TODO | B4-T06, B3-T06 | | balance by family |
-| B4-T08 | Stage 3 robustness techniques | — | TODO | B4-T07 | | |
-| B4-T09 | Real-time inference wrapper | — | TODO | B4-T06 | | budget + timeout abstain |
-| B4-T10 | Continual-learning update procedure | — | TODO | B4-T08 | | |
+| B4-T01 | Stage 0: reproduce published baseline | claude-b4 | BLOCKED | B3-T02 |  | deferred setup: needs ASVspoof 2019 LA + XLS-R weights + CUDA torch (docs/SETUP_PENDING.md) |
+| B4-T02 | SSL front-end wrapper + layer selection | claude-b4 | REVIEW | B4-T01 | packages/vg_models/heads/head_a_ssl/frontend.py | HF path untested: transformers import broken in dev env; tiny front-end tested |
+| B4-T03 | Nes2Net back-end (+AASIST secondary) | claude-b4 | DONE | B4-T02 | packages/vg_models/heads/head_a_ssl/backends.py, docs/adr/0001-nes2net-primary-backend.md | re-implementations; parity check is part of B4-T01 |
+| B4-T04 | OC-Softmax / AM-Softmax loss | claude-b4 | DONE | B4-T03 | ml/training/losses.py | OC-Softmax + AM-Softmax |
+| B4-T05 | RawBoost + channel aug in train loop | claude-b4 | DONE | B3-T07 | ml/training/augment.py | RawBoost 1-4 + B3 channel simulator, label-blind |
+| B4-T06 | Stage 1 training run | claude-b4 | REVIEW | B4-T04 | ml/training/train_head_a.py, ml/training/configs/head_a_stage1.yaml | loop verified on synthetic smoke config; real run deferred |
+| B4-T07 | Stage 2 multi-corpus pooling | claude-b4 | REVIEW | B4-T06, B3-T06 | ml/training/dataset.py, ml/training/configs/head_a_stage2.yaml | family-balanced sampler tested; 12 languages configured; run deferred |
+| B4-T08 | Stage 3 robustness techniques | claude-b4 | WIP | B4-T07 | ml/training/robust.py, ml/training/configs/head_a_stage3.yaml | SAM, mixup, consistency, GRL, LoRA done; 2-front-end ensemble deferred to B9 |
+| B4-T09 | Real-time inference wrapper | claude-b4 | REVIEW | B4-T06 | packages/vg_models/heads/head_a_ssl/head.py, packages/vg_core/sample_store.py | budget/timeout/never-raise tested; untrained mode abstains; p95 on target hw pending |
+| B4-T10 | Continual-learning update procedure | claude-b4 | REVIEW | B4-T08 | ml/training/continual.py | EWC + replay buffer + procedure; not exercised on a real new family |
 
 ### B5 — Head B (DSP & scene)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,7 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-17T01:00Z | claude-b4 | B4-T01-10 | TODO -> DONE(T03-05) / REVIEW(T02,06,07,09,10) / WIP(T08) / BLOCKED(T01) | packages/vg_models/heads/head_a_ssl/, ml/training/, tests/unit/test_b4_head_a.py | 135 tests pass; training deferred (docs/SETUP_PENDING.md) |
 | 2026-09-17T00:00Z | claude-b3 | Q1 | answered | PROJECT_STATUS.md §6 | ASVspoof 5 on hand; IndicSynth planned; build structure first, data setup deferred |
 | 2026-09-16T19:41Z | claude-b3 | B3-T01-11 | TODO -> DONE(T01,04,07-11) / REVIEW(T02,03,06) / WIP(T05) | ml/data/, tests/unit/test_b3_data.py | 106 tests pass; corpus not built (needs data access + GPU) |
 | 2026-08-30T17:50Z | agent-antigravity | B2-T01-08 | WIP -> DONE | packages/vg_audio/, services/conditioner/ | 82 tests pass, 81.8% cov |
@@ -312,10 +313,12 @@ Anything that needs a human decision. Agents append here rather than guessing.
 | Q2 | Target deployment hardware for the latency claim (T4? L4? CPU-only?) | — | B14 | |
 | Q3 | Commercial or research lineage for the primary demo model? | — | B3-T09 | Implied research: ASVspoof 5 EULA + IndicSynth (CC BY-NC 4.0) are both non-commercial. Needs explicit human confirmation. |
 | Q4 | Which telephony stack does the pilot tenant actually run? | — | B1 | |
-| Q5 | Which Indic languages are in scope for v1 (all 12, or 3–4 done well)? | — | B3, B15 | |
+| Q5 | Which Indic languages are in scope for v1 (all 12, or 3–4 done well)? | — | B3, B15 | 2026-09-17 (user): all 12, subject to IndicSynth coverage. |
+| Q6 | Add `untrained` to AbstainReason? Untrained Head A currently abstains with reason null. Contract change, needs ADR. | claude-b4 | B0, B9 | |
+| Q7 | Accept cross-block edits from B4: `packages/vg_core/sample_store.py` (B0; resolves samples_ref) and `scripts/replay.py` (--real-heads, real model versions)? | claude-b4 | B0, B2 | |
 
 ## 7. Blocked items
 
 | Task | Blocked since | Blocked by | Owner of the blocker | Escalation |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| B4-T01 | 2026-09-17 | deferred user setup (datasets, weights, CUDA torch) | project owner | docs/SETUP_PENDING.md |

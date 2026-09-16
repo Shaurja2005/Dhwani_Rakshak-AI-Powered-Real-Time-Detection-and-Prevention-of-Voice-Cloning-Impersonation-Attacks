@@ -1,0 +1,41 @@
+# B4-T08 Stage 3: robustness. Turn techniques on one at a time and keep each only
+# if B15 cross-dataset EER improves (ordered by value-per-effort in the plan).
+run_name: head_a_stage3
+lineage: research
+allow_noncommercial: true
+seed: 1337
+out_dir: runs
+
+frontend: facebook/wav2vec2-xls-r-300m
+frontend_revision: null
+frontend_layers: [5, 6, 7, 8, 9]
+freeze_frontend: true
+backend: nes2net
+emb_dim: 160
+loss: oc_softmax
+version: 0.3.0
+
+data:
+  manifests: data/manifests/*.jsonl
+  splits: splits/pooled_v1.json
+  data_root: data
+  languages: [hi, bn, ta, te, mr, gu, kn, ml, pa, or, as, ur, en]
+
+augment:
+  rawboost_algo: 4
+
+train:
+  epochs: 30
+  batch_size: 8
+  seconds: 4.0
+  lr: 5.0e-5
+  num_workers: 4
+  balance_families: true
+
+robust:
+  sam: true
+  sam_rho: 0.05
+  mixup_alpha: 0.2
+  consistency_weight: 0.1
+  domain_adversarial: true
+  domain_adv_lambda: 0.1

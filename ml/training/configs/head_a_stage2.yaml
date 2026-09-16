@@ -1,0 +1,36 @@
+# B4-T07 Stage 2: multi-corpus pooling incl. IndicSynth + our Indic telephony corpus.
+run_name: head_a_stage2
+lineage: research
+allow_noncommercial: true   # IndicSynth is CC BY-NC 4.0 -> research lineage only
+seed: 1337
+out_dir: runs
+init_checkpoint: runs/head_a_stage1/best.pt
+
+frontend: facebook/wav2vec2-xls-r-300m
+frontend_revision: null
+frontend_layers: [5, 6, 7, 8, 9]
+freeze_frontend: true
+backend: nes2net
+emb_dim: 160
+loss: oc_softmax
+version: 0.2.0
+
+data:
+  manifests: data/manifests/*.jsonl       # asvspoof5 + indicsynth + vg_indic_telephony
+  splits: splits/pooled_v1.json           # held-out generator families live in eval only
+  data_root: data
+  # All 12 IndicSynth languages, subject to what the dataset actually contains.
+  languages: [hi, bn, ta, te, mr, gu, kn, ml, pa, or, as, ur, en]
+
+augment:
+  rawboost_algo: 4
+
+train:
+  epochs: 30
+  batch_size: 8
+  seconds: 4.0
+  lr: 5.0e-5
+  num_workers: 4
+  balance_families: true    # balance by attack family, not utterance count
+
+robust: {}

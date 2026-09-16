@@ -22,3 +22,6 @@ mlruns/
 node_modules/
 .next/
 dist/
+
+# training runs / checkpoints
+/runs/
