@@ -157,8 +157,9 @@ class HeadA(BaseDetectionHead):
                 return self._abstain(window, AbstainReason.TIMEOUT, t0, budget_ms=self._budget_ms)
 
             if self._untrained and not self._emit_untrained:
-                # No AbstainReason fits yet; adding one is a contract change (ADR needed).
-                return self._abstain(window, None, t0, untrained=True, raw_score=round(raw, 4))
+                return self._abstain(
+                    window, AbstainReason.UNTRAINED, t0, untrained=True, raw_score=round(raw, 4)
+                )
 
             scale, bias = self._cal
             p_spoof = 1.0 / (1.0 + math.exp(scale * raw + bias))  # higher raw = more bona fide

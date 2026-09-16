@@ -105,7 +105,7 @@ JSON Schema lives in `schemas/`; protobuf in `proto/voiceguard.proto`. These two
   "raw_score": -1.87,                   // head-native scale, uncalibrated
   "p_spoof": 0.83,                      // calibrated; null when abstain=true
   "abstain": false,
-  "abstain_reason": "no_enrollment|insufficient_speech|timeout|null",
+  "abstain_reason": "no_enrollment|insufficient_speech|timeout|quality_gate|no_challenge|untrained|null",
   "confidence": 0.71,
   "latency_ms": 42,
   "model_version": "A@xlsr300m-nes2net-v0.3.1",
@@ -304,6 +304,7 @@ Any change to §2, §3, §4, or §6 requires a new ADR file in `docs/adr/NNNN-ti
 | 0003 | — | Local LLM only for intent analysis (data residency) | Accepted |
 | 0004 | — | Two model lineages (`research` / `commercial`) due to dataset licensing | Accepted |
 | 0005 | — | `ABSTAIN` as a first-class pipeline state | Accepted |
+| 0006 | 2026-09-17 | `untrained` abstain reason for heads without weights | Accepted |
 
 ## 13. Glossary of external references
 

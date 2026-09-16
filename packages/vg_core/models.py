@@ -66,6 +66,7 @@ class AbstainReason(str, Enum):
     TIMEOUT = "timeout"
     QUALITY_GATE = "quality_gate"
     NO_CHALLENGE = "no_challenge"
+    UNTRAINED = "untrained"  # ADR 0006: head has no trained weights loaded
 
 
 # ---------------------------------------------------------------------------

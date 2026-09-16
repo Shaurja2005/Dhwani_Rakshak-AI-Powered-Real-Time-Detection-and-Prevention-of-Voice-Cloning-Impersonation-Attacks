@@ -63,6 +63,7 @@ enum AbstainReason {
   ABSTAIN_REASON_TIMEOUT            = 3;
   ABSTAIN_REASON_QUALITY_GATE       = 4;
   ABSTAIN_REASON_NO_CHALLENGE       = 5;
+  ABSTAIN_REASON_UNTRAINED          = 6;   // ADR 0006
 }
 
 // ---------------------------------------------------------------------------

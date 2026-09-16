@@ -293,6 +293,7 @@ def head() -> HeadA:
 def test_untrained_head_abstains_but_records_raw_score(head: HeadA) -> None:
     s = head.score(_window(0), CTX)
     assert isinstance(s, HeadScore) and s.abstain and s.p_spoof is None
+    assert s.abstain_reason == AbstainReason.UNTRAINED
     assert s.evidence["untrained"] is True and "raw_score" in s.evidence
     assert s.model_version.startswith("A@tiny-")
 
