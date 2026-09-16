@@ -42,7 +42,7 @@
 | B4 | Head A — SSL anti-spoof | claude-b4 | WIP | 3/10 |
 | B5 | Head B — DSP & scene | claude-b5 | WIP | 4/6 |
 | B6 | Head C — prosody | claude-b6 | WIP | 3/6 |
-| B7 | Head D — speaker verification | — | TODO | 0/6 |
+| B7 | Head D — speaker verification | claude-b7 | WIP | 4/6 |
 | B8 | Heads E/F — liveness & watermark | — | TODO | 0/6 |
 | B9 | Fusion & risk engine | — | TODO | 0/8 |
 | B10 | Context & intent | — | TODO | 0/7 |
@@ -150,12 +150,12 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B7 — Head D (speaker verification)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B7-T01 | Embedding model benchmark & selection | — | TODO | B2-T04 | | test on Indian-accented audio |
-| B7-T02 | Enrollment service API | — | TODO | B0-T03 | | |
-| B7-T03 | Encrypted voiceprint vault | — | TODO | B7-T02, B16-T07 | | biometric data |
-| B7-T04 | Cosine scoring + AS-norm | — | TODO | B7-T01 | | |
-| B7-T05 | Channel compensation for enrollment | — | TODO | B7-T04, B3-T07 | | |
-| B7-T06 | No-enrollment abstain path | — | TODO | B7-T04 | | invariant I2 |
+| B7-T01 | Embedding model benchmark & selection | claude-b7 | REVIEW | B2-T04 | packages/vg_models/heads/head_d_speaker/embedders.py, packages/vg_models/heads/head_d_speaker/benchmark.py | ECAPA / WeSpeaker / TitaNet wrappers (lazy, not installed) + per-language EER-with-CI benchmark; selection needs Indian-accented data. MFCC baseline is plumbing-only (not a verifier) |
+| B7-T02 | Enrollment service API | claude-b7 | DONE | B0-T03 | services/enrollment/core.py, services/enrollment/api.py, services/enrollment/main.py | REST: enrol/status/list/erase; quality gates, multi-session, consistency check, expiry, consent required. gRPC Enroll via B12 |
+| B7-T03 | Encrypted voiceprint vault | claude-b7 | DONE | B7-T02, B16-T07 | packages/vg_models/heads/head_d_speaker/vault.py | AES-256-GCM per tenant key, tenant+speaker bound as AAD, embeddings only, key rotation, erasure; env key provider is dev-only (KMS in B16-T07) |
+| B7-T04 | Cosine scoring + AS-norm | claude-b7 | REVIEW | B7-T01 | packages/vg_models/heads/head_d_speaker/scoring.py | cohort-centred cosine + AS-norm, calibration fit, EER/gap bootstrap CIs; needs real cohort + calibration data |
+| B7-T05 | Channel compensation for enrollment | claude-b7 | DONE | B7-T04, B3-T07 | services/enrollment/core.py, packages/vg_models/heads/head_d_speaker/head.py | enrolment embedded through G.711 (+AMR-NB) channel; 8 kHz calls scored against narrowband centroid |
+| B7-T06 | No-enrollment abstain path | claude-b7 | DONE | B7-T04 | packages/vg_models/heads/head_d_speaker/head.py | no claim / not enrolled / expired / embedder mismatch -> no_enrollment abstain |
 
 ### B8 — Heads E/F (liveness & watermark)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,7 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-17T04:00Z | claude-b7 | B7-T01-06 | TODO -> DONE(T02,T03,T05,T06) / REVIEW(T01,T04) | packages/vg_models/heads/head_d_speaker/, services/enrollment/, tests/unit/test_b7_speaker.py | 188 tests pass; neural embedder + cohort deferred to setup |
 | 2026-09-17T03:00Z | claude-b6 | B6-T01-06 | TODO -> DONE(T01-03) / REVIEW(T04-06) | packages/vg_models/heads/head_c_prosody/, ml/training/train_head_c.py, tests/unit/test_b6_head_c.py | 174 tests pass; training deferred |
 | 2026-09-17T02:00Z | claude-b5 | B5-T01-06 | TODO -> DONE(T01,T04-06) / REVIEW(T02,T03) | packages/vg_models/heads/head_b_dsp/, ml/training/train_head_b.py, tests/unit/test_b5_head_b.py | CPU ~10 ms/window; training deferred |
 | 2026-09-17T01:30Z | claude-b4 | Q6/Q7 | answered | docs/adr/0006-untrained-abstain-reason.md, schemas/head_score.schema.json, proto/voiceguard.proto | `untrained` abstain reason; cross-block edits accepted; fixed pre-warmup model_version bug in HeadA |

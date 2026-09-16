@@ -56,3 +56,20 @@ non-commercial → the primary model is **research lineage**.
 - [ ] Per-language evaluation across all 12 languages on a codec-degraded set (B15).
 - [ ] Wire ASR tokens from B10 into `analyse(..., tokens=...)` once B10 exists.
 - [ ] Set `language_hint` in CallMetadata from the tenant/IVR language, or from B10 language ID.
+
+## B7 — Head D (speaker verification)
+
+- [ ] Install one or more embedders: `pip install speechbrain` (ECAPA, default),
+      `onnxruntime` + a WeSpeaker ResNet34 ONNX export, or NVIDIA NeMo (TitaNet-L).
+- [ ] Build a speaker benchmark manifest of Indian-accented + Indic bona fide speech
+      (several utterances per speaker) and run
+      `python -m packages.vg_models.heads.head_d_speaker.benchmark --manifest <m> --embedders ecapa,wespeaker,titanet`;
+      pick the embedder with the best per-language EER (B7-T01).
+- [ ] Build an AS-norm cohort (~1-5k impostor embeddings from public corpora, not
+      enrolled customers) and store it with `VoiceprintVault.set_cohort(<embedder>, ...)`.
+- [ ] Fit calibration on target / non-target trials (`scoring.fit_calibration`) and
+      pass it to `HeadD(calibration=...)`.
+- [ ] Generate per-tenant vault keys: `VG_VAULT_KEY_<TENANT>` = base64 of 32 random bytes
+      (dev only; production keys from KMS/HSM, B16-T07).
+- [ ] Demo DoD: enrol a consenting volunteer ("CEO"), clone them (consent register!),
+      score genuine vs clone windows and report `scoring.gap_with_ci`.
