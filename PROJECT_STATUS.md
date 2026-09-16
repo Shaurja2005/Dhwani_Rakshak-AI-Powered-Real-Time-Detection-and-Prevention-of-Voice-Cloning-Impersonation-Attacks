@@ -38,7 +38,7 @@
 | B0 | Repo, contracts, CI | agent-antigravity | DONE | 9/9 |
 | B1 | Capture adapters | agent-antigravity | DONE | 9/9 |
 | B2 | Stream conditioning | agent-antigravity | DONE | 8/8 |
-| B3 | Data & corpus engineering | — | TODO | 0/11 |
+| B3 | Data & corpus engineering | claude-b3 | WIP | 7/11 |
 | B4 | Head A — SSL anti-spoof | — | TODO | 0/10 |
 | B5 | Head B — DSP & scene | — | TODO | 0/6 |
 | B6 | Head C — prosody | — | TODO | 0/6 |
@@ -101,17 +101,17 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B3 — Data & corpus engineering
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B3-T01 | Dataset registry with license field | — | TODO | B0-T01 | | |
-| B3-T02 | Downloaders: core anti-spoof corpora | — | TODO | B3-T01 | | start EULA requests day 1 |
-| B3-T03 | Downloaders: Indic corpora | — | TODO | B3-T01 | | |
-| B3-T04 | Unified manifest schema + writer | — | TODO | B3-T01 | | |
-| B3-T05 | Clone zoo containers (TTS + VC) | — | TODO | B3-T04 | | 1 image per generator |
-| B3-T06 | Batch cloning job | — | TODO | B3-T05 | | GPU-heavy |
-| B3-T07 | Channel destruction simulator | — | TODO | B3-T04 | | |
-| B3-T08 | **Symmetry test in CI** | — | TODO | B3-T07 | | invariant I3 |
-| B3-T09 | License gate in data loader | — | TODO | B3-T01 | | invariant I7 |
-| B3-T10 | Speaker/generator-disjoint splits | — | TODO | B3-T04 | | |
-| B3-T11 | Consent + ethics register | — | TODO | — | | invariant I9 |
+| B3-T01 | Dataset registry with license field | claude-b3 | DONE | B0-T01 | ml/data/registry.yaml, ml/data/registry.py | 22 corpora; unverified licenses default commercial_use:false |
+| B3-T02 | Downloaders: core anti-spoof corpora | claude-b3 | REVIEW | B3-T01 | ml/data/download.py | tooling done; no corpus fetched yet, sha256 unpinned, EULAs pending (Q1) |
+| B3-T03 | Downloaders: Indic corpora | claude-b3 | REVIEW | B3-T01 | ml/data/download.py | same as T02; sea_spoof/indic_codecfake/rtcfake URLs need confirming |
+| B3-T04 | Unified manifest schema + writer | claude-b3 | DONE | B3-T01 | ml/data/manifest.py | + corpus report (make corpus-report) |
+| B3-T05 | Clone zoo containers (TTS + VC) | claude-b3 | WIP | B3-T04 | ml/data/generators/, ml/data/generators.yaml | contract + xtts_v2 image written (not yet built); 12 images remain |
+| B3-T06 | Batch cloning job | claude-b3 | REVIEW | B3-T05 | ml/data/clone_job.py, ml/data/degrade.py | planner + dry-run tested; no GPU run yet |
+| B3-T07 | Channel destruction simulator | claude-b3 | DONE | B3-T04 | ml/data/channel/ | G.711, Opus, AMR-NB, GSM, G.722, loss, jitter, RIR, noise, AGC, NS. No G.729/EVS (no open encoder) |
+| B3-T08 | **Symmetry test in CI** | claude-b3 | DONE | B3-T07 | ml/data/channel/test_symmetry.py | pass acc 0.48 vs 0.50 baseline; negative control catches leak at 0.90 |
+| B3-T09 | License gate in data loader | claude-b3 | DONE | B3-T01 | ml/data/license_gate.py | also blocks eval-only corpora from training |
+| B3-T10 | Speaker/generator-disjoint splits | claude-b3 | DONE | B3-T04 | ml/data/splits.py | speaker-disjoint + leave-generator-out |
+| B3-T11 | Consent + ethics register | claude-b3 | DONE | — | ml/data/consent_register.yaml, ml/data/consent.py, docs/ETHICS.md | register empty: clone_job refuses everything until a human adds entries |
 
 ### B4 — Head A (SSL anti-spoof)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,8 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-17T00:00Z | claude-b3 | Q1 | answered | PROJECT_STATUS.md §6 | ASVspoof 5 on hand; IndicSynth planned; build structure first, data setup deferred |
+| 2026-09-16T19:41Z | claude-b3 | B3-T01-11 | TODO -> DONE(T01,04,07-11) / REVIEW(T02,03,06) / WIP(T05) | ml/data/, tests/unit/test_b3_data.py | 106 tests pass; corpus not built (needs data access + GPU) |
 | 2026-08-30T17:50Z | agent-antigravity | B2-T01-08 | WIP -> DONE | packages/vg_audio/, services/conditioner/ | 82 tests pass, 81.8% cov |
 | 2026-08-30T16:47Z | agent-antigravity | B1-T01-09 | WIP -> DONE | services/ingest/ | 36 tests pass, 79% cov |
 | 2026-08-30T10:35Z | agent-antigravity | B0-T01-09 | TODO -> DONE | vg_core/, schemas/ | Scaffolded repo, contracts, pipelines |
@@ -306,9 +308,9 @@ Anything that needs a human decision. Agents append here rather than guessing.
 
 | # | Question | Raised by | Blocks | Answer |
 |---|---|---|---|---|
-| Q1 | Which datasets have we actually been granted access to? | — | B3, B4 | |
+| Q1 | Which datasets have we actually been granted access to? | — | B3, B4 | 2026-09-17 (user): ASVspoof 5 available locally (132 GB). IndicSynth planned, not yet obtained. Nothing else requested. |
 | Q2 | Target deployment hardware for the latency claim (T4? L4? CPU-only?) | — | B14 | |
-| Q3 | Commercial or research lineage for the primary demo model? | — | B3-T09 | |
+| Q3 | Commercial or research lineage for the primary demo model? | — | B3-T09 | Implied research: ASVspoof 5 EULA + IndicSynth (CC BY-NC 4.0) are both non-commercial. Needs explicit human confirmation. |
 | Q4 | Which telephony stack does the pilot tenant actually run? | — | B1 | |
 | Q5 | Which Indic languages are in scope for v1 (all 12, or 3–4 done well)? | — | B3, B15 | |
 

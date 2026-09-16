@@ -1,0 +1,22 @@
+# Clone zoo (B3-T05). One Docker image per generator: vg-gen-<name>.
+# Every image implements the CLI contract in ml/data/generators/README.md.
+#
+# commercial_use refers to using the generator's OUTPUT for training a commercial
+# model. Unverified entries are false (same policy as registry.yaml).
+
+generators:
+  # zero-shot TTS (needs text)
+  - {name: xtts_v2,      family: tts_xtts,      kind: tts, license: Coqui CPML (non-commercial), commercial_use: false}
+  - {name: openvoice_v2, family: tts_openvoice, kind: tts, license: MIT (verify),                commercial_use: false}
+  - {name: f5_tts,       family: tts_flow,      kind: tts, license: CC-BY-NC-4.0 weights,        commercial_use: false}
+  - {name: cosyvoice2,   family: tts_cosyvoice, kind: tts, license: Apache-2.0 (verify),         commercial_use: false}
+  - {name: fish_speech,  family: tts_fish,      kind: tts, license: CC-BY-NC-SA-4.0 weights,     commercial_use: false}
+  - {name: styletts2,    family: tts_style,     kind: tts, license: MIT (verify),                commercial_use: false}
+  - {name: melotts,      family: tts_vits,      kind: tts, license: MIT (verify),                commercial_use: false}
+  - {name: indic_parler, family: tts_parler,    kind: tts, license: Apache-2.0 (verify),         commercial_use: false}
+  - {name: bark,         family: tts_bark,      kind: tts, license: MIT (verify),                commercial_use: false}
+  # voice conversion (needs a source utterance instead of text)
+  - {name: freevc,       family: vc_freevc,     kind: vc,  license: MIT (verify),                commercial_use: false}
+  - {name: rvc,          family: vc_rvc,        kind: vc,  license: MIT (verify),                commercial_use: false}
+  - {name: seedvc,       family: vc_seed,       kind: vc,  license: GPL-3.0 (verify),            commercial_use: false}
+  - {name: knnvc,        family: vc_knn,        kind: vc,  license: MIT (verify),                commercial_use: false}

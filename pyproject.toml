@@ -93,7 +93,7 @@ ignore_missing_imports = true
 exclude = ["packages/vg_core/generated/", "third_party/", "ml/data/generators/"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "ml/data/channel"]
 asyncio_mode = "auto"
 addopts = "--cov=packages --cov-report=term-missing --cov-fail-under=60"
 filterwarnings = ["ignore::DeprecationWarning"]

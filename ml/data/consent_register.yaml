@@ -1,0 +1,23 @@
+# Consent register (B3-T11, invariant I9). Machine-readable mirror of docs/ETHICS.md.
+#
+# clone_job.py refuses to clone any speaker not covered here.
+#
+# corpora: public corpora whose speakers consented to redistribution AND whose
+#          terms do not forbid synthesis research. A human must add each one.
+# speakers: individuals who signed a written consent form (e.g. demo volunteers).
+#           Never add a real executive, official, or public figure.
+
+corpora: []
+#  - name: common_voice_indic
+#    approved_by: <name>
+#    date: YYYY-MM-DD
+#    basis: Common Voice terms; CC0 audio; used only for defensive research
+
+speakers: []
+#  - speaker_id: demo_volunteer_01
+#    name: <full name>
+#    date: YYYY-MM-DD
+#    scope: clone for internal detector training and live demo only
+#    expires: YYYY-MM-DD
+#    withdrawal_contact: <email>
+#    form_ref: consent/2026-09-17-demo_volunteer_01.pdf   # stored outside git

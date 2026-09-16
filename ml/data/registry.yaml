@@ -1,17 +1,311 @@
-# Dataset registry. Every entry MUST declare commercial_use (invariant I7).
+# Dataset registry (B3-T01). Authoritative per SOURCE_OF_TRUTH.md §8.
+#
+# Every entry MUST declare `commercial_use: true|false` (invariant I7).
+# Policy: when a license has not been verified by a human, commercial_use is
+# `false`. Flip it only after reading the EULA, and record who checked it in
+# `license_checked_by`.
+#
+# Fields
+#   name              unique id, used as data/raw/<name>/
+#   kind              spoof_corpus | bona_fide | augmentation
+#   role              train | train_research | eval_only | comparability | augmentation | bona_fide_source
+#   license           SPDX id or a short description
+#   commercial_use    bool (enforced by ml/data/license_gate.py)
+#   license_checked_by  person who verified the license, or null
+#   access            public | eula | gated_hf | request_form
+#   url               landing page or direct download
+#   size_gb           approximate
+#   languages         list of ISO 639-1 codes
+#   files             list of {name, url, sha256}; sha256 null until pinned after first verified download
+#   notes             free text
+
 datasets:
+  # ---------------------------------------------------------------- core anti-spoof (B3-T02)
   - name: asvspoof5
+    kind: spoof_corpus
     role: train
-    license: TODO
+    license: ASVspoof 5 EULA
     commercial_use: false
-    url: TODO
+    license_checked_by: null
+    access: eula
+    url: https://www.asvspoof.org/
+    size_gb: 300
+    languages: [en]
+    files: []
+    notes: Register and accept the EULA; download links are sent by email.
+
+  - name: asvspoof2019_la
+    kind: spoof_corpus
+    role: comparability
+    license: ODC-BY 1.0
+    commercial_use: false
+    license_checked_by: null
+    access: public
+    url: https://datashare.ed.ac.uk/handle/10283/3336
+    size_gb: 7.6
+    languages: [en]
+    files:
+      - name: LA.zip
+        url: https://datashare.ed.ac.uk/bitstream/handle/10283/3336/LA.zip
+        sha256: null
+    notes: Used only to reproduce published baselines (B4-T01).
+
+  - name: asvspoof2021_la_df
+    kind: spoof_corpus
+    role: comparability
+    license: ODC-BY 1.0
+    commercial_use: false
+    license_checked_by: null
+    access: public
+    url: https://zenodo.org/communities/asvspoof2021/
+    size_gb: 60
+    languages: [en]
+    files: []
+    notes: Split across several Zenodo records; list each part after first download.
+
   - name: in_the_wild
+    kind: spoof_corpus
     role: eval_only
-    license: TODO
+    license: Research use (see landing page)
     commercial_use: false
-    url: TODO
+    license_checked_by: null
+    access: public
+    url: https://deepfake-total.com/in_the_wild
+    size_gb: 8
+    languages: [en]
+    files: []
+    notes: Honesty check. EVAL ONLY, permanently (AGENTS.md §5).
+
+  - name: spoofceleb
+    kind: spoof_corpus
+    role: train
+    license: CC BY-NC-SA 4.0
+    commercial_use: false
+    license_checked_by: null
+    access: gated_hf
+    url: https://huggingface.co/datasets/jungjee/spoofceleb
+    size_gb: 150
+    languages: [en]
+    files: []
+
+  - name: mlaad
+    kind: spoof_corpus
+    role: train
+    license: CC BY-NC-SA 4.0
+    commercial_use: false
+    license_checked_by: null
+    access: public
+    url: https://deepfake-total.com/mlaad
+    size_gb: 100
+    languages: [en, de, fr, es, it, pl, ru, uk]
+    files: []
+    notes: Pair with M-AILABS for bona fide.
+
+  - name: m_ailabs
+    kind: bona_fide
+    role: bona_fide_source
+    license: M-AILABS license (BSD-style)
+    commercial_use: false
+    license_checked_by: null
+    access: public
+    url: https://github.com/imdatceleste/m-ailabs-dataset
+    size_gb: 75
+    languages: [en, de, fr, es, it, pl, ru, uk]
+    files: []
+
+  - name: partialspoof
+    kind: spoof_corpus
+    role: train
+    license: CC BY-NC-SA 4.0
+    commercial_use: false
+    license_checked_by: null
+    access: public
+    url: https://zenodo.org/records/5766198
+    size_gb: 30
+    languages: [en]
+    files: []
+
+  - name: codecfake
+    kind: spoof_corpus
+    role: train
+    license: Research use (see landing page)
+    commercial_use: false
+    license_checked_by: null
+    access: request_form
+    url: https://github.com/xieyuankun/Codecfake
+    size_gb: 80
+    languages: [en, zh]
+    files: []
+
+  - name: dfadd
+    kind: spoof_corpus
+    role: train
+    license: Research use (see landing page)
+    commercial_use: false
+    license_checked_by: null
+    access: gated_hf
+    url: https://huggingface.co/datasets/isjwdu/DFADD
+    size_gb: 10
+    languages: [en]
+    files: []
+
+  - name: rtcfake
+    kind: spoof_corpus
+    role: train
+    license: Research use (see landing page)
+    commercial_use: false
+    license_checked_by: null
+    access: request_form
+    url: TODO-confirm-official-release
+    size_gb: 40
+    languages: [en, zh]
+    files: []
+    notes: Confirm the official release page before downloading.
+
+  # ---------------------------------------------------------------- augmentation
+  - name: musan
+    kind: augmentation
+    role: augmentation
+    license: CC BY 4.0 (mixed; see README)
+    commercial_use: false
+    license_checked_by: null
+    access: public
+    url: https://www.openslr.org/17/
+    size_gb: 11
+    languages: []
+    files:
+      - name: musan.tar.gz
+        url: https://www.openslr.org/resources/17/musan.tar.gz
+        sha256: null
+    notes: Music subset contains mixed licenses - verify before commercial lineage.
+
+  - name: rirs_noises
+    kind: augmentation
+    role: augmentation
+    license: Apache-2.0
+    commercial_use: false  # likely true; awaiting human license check
+    license_checked_by: null
+    access: public
+    url: https://www.openslr.org/28/
+    size_gb: 1.3
+    languages: []
+    files:
+      - name: rirs_noises.zip
+        url: https://www.openslr.org/resources/28/rirs_noises.zip
+        sha256: null
+
+  # ---------------------------------------------------------------- Indic (B3-T03)
   - name: indicsynth
+    kind: spoof_corpus
     role: train_research
     license: CC-BY-NC-4.0
     commercial_use: false
-    url: TODO
+    license_checked_by: SOURCE_OF_TRUTH.md §8
+    access: gated_hf
+    url: https://huggingface.co/datasets/vdivyasharma/IndicSynth
+    size_gb: 500
+    languages: [hi, bn, ta, te, mr, gu, kn, ml, pa, or, as, ur]
+    files: []
+    notes: Research lineage only (I7).
+
+  - name: sea_spoof
+    kind: spoof_corpus
+    role: train_research
+    license: Academic use only
+    commercial_use: false
+    license_checked_by: SOURCE_OF_TRUTH.md §8
+    access: request_form
+    url: TODO-confirm-official-release
+    size_gb: 50
+    languages: [hi, ta, id, th, vi, ms]
+    files: []
+    notes: Research lineage only (I7).
+
+  - name: indic_codecfake
+    kind: spoof_corpus
+    role: train
+    license: Research use (see landing page)
+    commercial_use: false
+    license_checked_by: null
+    access: request_form
+    url: TODO-confirm-official-release
+    size_gb: 20
+    languages: [hi, ta, te, bn]
+    files: []
+
+  - name: indicvoices
+    kind: bona_fide
+    role: bona_fide_source
+    license: CC BY 4.0
+    commercial_use: false
+    license_checked_by: null
+    access: request_form
+    url: https://ai4bharat.iitm.ac.in/datasets/indicvoices
+    size_gb: 400
+    languages: [hi, bn, ta, te, mr, gu, kn, ml, pa, or, as, ur]
+    files: []
+    notes: Likely commercially usable (CC BY 4.0) - needs human verification.
+
+  - name: kathbath
+    kind: bona_fide
+    role: bona_fide_source
+    license: CC BY 4.0
+    commercial_use: false
+    license_checked_by: null
+    access: public
+    url: https://github.com/AI4Bharat/IndicSUPERB
+    size_gb: 150
+    languages: [hi, bn, ta, te, mr, gu, kn, ml, pa, or, sa, ur]
+    files: []
+
+  - name: shrutilipi
+    kind: bona_fide
+    role: bona_fide_source
+    license: CC BY 4.0
+    commercial_use: false
+    license_checked_by: null
+    access: public
+    url: https://ai4bharat.iitm.ac.in/datasets/shrutilipi
+    size_gb: 600
+    languages: [hi, bn, ta, te, mr, gu, kn, ml, pa, or, sa, ur]
+    files: []
+
+  - name: svarah
+    kind: bona_fide
+    role: bona_fide_source
+    license: CC BY 4.0
+    commercial_use: false
+    license_checked_by: null
+    access: public
+    url: https://github.com/AI4Bharat/Svarah
+    size_gb: 2
+    languages: [en]
+    files: []
+    notes: Indian-accented English.
+
+  - name: common_voice_indic
+    kind: bona_fide
+    role: bona_fide_source
+    license: CC0-1.0
+    commercial_use: false  # likely true; awaiting human license check
+    license_checked_by: null
+    access: gated_hf
+    url: https://commonvoice.mozilla.org/datasets
+    size_gb: 30
+    languages: [hi, ta, bn, mr, pa, or, ml, as, ur]
+    files: []
+    notes: CC0 audio; speakers agreed to Common Voice terms. Default source for hackathon clone corpus.
+
+  # ---------------------------------------------------------------- ours
+  - name: vg_indic_telephony
+    kind: spoof_corpus
+    role: train
+    license: Internal - inherits the most restrictive source license
+    commercial_use: false
+    license_checked_by: null
+    access: public
+    url: internal://minio/vg-corpus
+    size_gb: 0
+    languages: [hi, ta]
+    files: []
+    notes: Generated by ml/data/clone_job.py. Per-row license comes from the manifest, not this entry.
