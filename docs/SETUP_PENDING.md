@@ -73,3 +73,13 @@ non-commercial → the primary model is **research lineage**.
       (dev only; production keys from KMS/HSM, B16-T07).
 - [ ] Demo DoD: enrol a consenting volunteer ("CEO"), clone them (consent register!),
       score genuine vs clone windows and report `scoring.gap_with_ci`.
+
+## B8 — Heads E/F (liveness + watermark)
+
+- [ ] `pip install audioseal` and fetch the `audioseal_detector_16bits` checkpoint; verify
+      an AudioSeal-watermarked clip is flagged within one window (B8 DoD).
+- [ ] Optional: set `VG_WATERMARK_KEYS=id:secret,...` for in-house / partner TTS voices
+      watermarked with `embed_spread_spectrum` (e.g. your own IVR or demo voices).
+- [ ] Commercial vendor detectors: only via tenant opt-in (`PartnerAPIDetector`, I6).
+- [ ] Wire B10 ASR tokens + prompt-end timestamps into `ChallengeRegistry` (B8-T02).
+- [ ] Tune Head E latency / content weights on real calls in shadow mode (B11-T07).

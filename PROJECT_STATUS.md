@@ -43,7 +43,7 @@
 | B5 | Head B — DSP & scene | claude-b5 | WIP | 4/6 |
 | B6 | Head C — prosody | claude-b6 | WIP | 3/6 |
 | B7 | Head D — speaker verification | claude-b7 | WIP | 4/6 |
-| B8 | Heads E/F — liveness & watermark | — | TODO | 0/6 |
+| B8 | Heads E/F — liveness & watermark | claude-b8 | WIP | 2/6 |
 | B9 | Fusion & risk engine | — | TODO | 0/8 |
 | B10 | Context & intent | — | TODO | 0/7 |
 | B11 | Policy & alerting | — | TODO | 0/8 |
@@ -160,12 +160,12 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B8 — Heads E/F (liveness & watermark)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B8-T01 | Challenge generator (code-switched nonce) | — | TODO | B0-T05 | | |
-| B8-T02 | Response verifier (ASR match + latency) | — | TODO | B8-T01, B10-T01 | | |
-| B8-T03 | Operator-triggered challenge hook | — | TODO | B8-T01, B13-T03 | | |
-| B8-T04 | AudioSeal watermark detector | — | TODO | B2-T04 | | |
-| B8-T05 | Additional commercial watermark detectors | — | TODO | B8-T04 | | |
-| B8-T06 | Enforce absence-is-neutral rule | — | TODO | B8-T04, B9-T02 | | invariant I4 |
+| B8-T01 | Challenge generator (code-switched nonce) | claude-b8 | DONE | B0-T05 | packages/vg_models/heads/head_e_liveness/challenge.py | secrets-based code-switched digits (en/hi/ta), nonce phrases, reverse order; per-session registry |
+| B8-T02 | Response verifier (ASR match + latency) | claude-b8 | REVIEW | B8-T01, B10-T01 | packages/vg_models/heads/head_e_liveness/verifier.py | ordered content match (any script/romanisation), latency, rate, gap regularity; heuristic weights need shadow-mode tuning; needs B10 ASR tokens |
+| B8-T03 | Operator-triggered challenge hook | claude-b8 | REVIEW | B8-T01, B13-T03 | packages/vg_models/heads/head_e_liveness/api.py | REST hook: issue / prompt-end / response / active; UI button is B13, auth is B12 |
+| B8-T04 | AudioSeal watermark detector | claude-b8 | REVIEW | B2-T04 | packages/vg_models/heads/head_f_watermark/detectors.py, packages/vg_models/heads/head_f_watermark/head.py | AudioSeal wrapper (not installed); keyed spread-spectrum reference detector tested: z~50 marked, ~34 after G.711, ~44 after Opus 16k, ~4 clean/wrong key |
+| B8-T05 | Additional commercial watermark detectors | claude-b8 | REVIEW | B8-T04 | packages/vg_models/heads/head_f_watermark/detectors.py | partner API detectors gated on tenant opt-in (I6); no vendor integrations obtained |
+| B8-T06 | Enforce absence-is-neutral rule | claude-b8 | DONE | B8-T04, B9-T02 | packages/vg_models/heads/head_f_watermark/asymmetry.py, docs/adr/0007-watermark-absence-neutral-abstain.md | absence = neutral abstain; fusion_inputs filter; DoD test: unwatermarked clip changes fused score by exactly 0 |
 
 ### B9 — Fusion & risk engine
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,7 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-17T05:00Z | claude-b8 | B8-T01-06 | TODO -> DONE(T01,T06) / REVIEW(T02-T05) | packages/vg_models/heads/head_e_liveness/, packages/vg_models/heads/head_f_watermark/, tests/unit/test_b8_liveness_watermark.py | 202 tests pass; ADR 0007; AudioSeal + B10 ASR deferred |
 | 2026-09-17T04:00Z | claude-b7 | B7-T01-06 | TODO -> DONE(T02,T03,T05,T06) / REVIEW(T01,T04) | packages/vg_models/heads/head_d_speaker/, services/enrollment/, tests/unit/test_b7_speaker.py | 188 tests pass; neural embedder + cohort deferred to setup |
 | 2026-09-17T03:00Z | claude-b6 | B6-T01-06 | TODO -> DONE(T01-03) / REVIEW(T04-06) | packages/vg_models/heads/head_c_prosody/, ml/training/train_head_c.py, tests/unit/test_b6_head_c.py | 174 tests pass; training deferred |
 | 2026-09-17T02:00Z | claude-b5 | B5-T01-06 | TODO -> DONE(T01,T04-06) / REVIEW(T02,T03) | packages/vg_models/heads/head_b_dsp/, ml/training/train_head_b.py, tests/unit/test_b5_head_b.py | CPU ~10 ms/window; training deferred |

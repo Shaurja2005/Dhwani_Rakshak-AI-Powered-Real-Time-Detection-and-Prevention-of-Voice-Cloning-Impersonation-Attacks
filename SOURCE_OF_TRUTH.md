@@ -198,7 +198,7 @@ One directory, one owning block. Cross-directory edits require a note in `PROJEC
 | **C** | Prosody / behavioral | F0 dynamics, jitter/shimmer, breath groups, pause distribution, disfluency | 25 ms | < 2.0 s voiced speech |
 | **D** | Speaker verification | ECAPA-TDNN / TitaNet-L + AS-norm vs enrollment | 30 ms | **no enrollment for `claimed_identity_id`** |
 | **E** | Active liveness | Nonce / code-switched challenge + latency and ASR match | on demand | no challenge issued |
-| **F** | Watermark probe | AudioSeal + commercial detectors | 5 ms | never abstains; absence ⇒ neutral (I4) |
+| **F** | Watermark probe | AudioSeal + commercial detectors | 5 ms | runs whenever a detector is installed; absence ⇒ neutral abstain, never exoneration (I4, ADR 0007) |
 
 ## 7. Model registry (pin every version)
 
@@ -305,6 +305,7 @@ Any change to §2, §3, §4, or §6 requires a new ADR file in `docs/adr/NNNN-ti
 | 0004 | — | Two model lineages (`research` / `commercial`) due to dataset licensing | Accepted |
 | 0005 | — | `ABSTAIN` as a first-class pipeline state | Accepted |
 | 0006 | 2026-09-17 | `untrained` abstain reason for heads without weights | Accepted |
+| 0007 | 2026-09-17 | Watermark absence represented as a neutral abstain; fusion filters Head F | Accepted |
 
 ## 13. Glossary of external references
 
