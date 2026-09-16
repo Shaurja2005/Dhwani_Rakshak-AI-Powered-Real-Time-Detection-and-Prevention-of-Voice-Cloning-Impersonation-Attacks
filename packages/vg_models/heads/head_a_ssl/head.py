@@ -35,11 +35,12 @@ log = get_logger(__name__)
 
 MIN_VOICED_MS = 1500
 UNCALIBRATED = "uncalibrated"
+UNTRAINED_VERSION = "A@tiny-nes2net-v0.0.0"
 
 
 class HeadA(BaseDetectionHead):
     head_id: ClassVar[str] = "A"
-    model_version: ClassVar[str] = "A@tiny-nes2net-v0.0.0"
+    model_version: ClassVar[str] = UNTRAINED_VERSION
     budget_ms: ClassVar[int] = int(os.getenv("VG_HEAD_A_BUDGET_MS", "400"))  # CPU budget (SoT §6)
 
     def __init__(
@@ -60,12 +61,12 @@ class HeadA(BaseDetectionHead):
         )
         self._checkpoint = checkpoint or os.getenv("VG_HEAD_A_CHECKPOINT")
         self._device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        self._budget_ms = budget_ms or type(self).budget_ms
+        self._budget_ms = budget_ms or int(os.getenv("VG_HEAD_A_BUDGET_MS", "400"))
         self._cal = (cal_scale, cal_bias)
         self._cal_version = calibration_version
         self._model: HeadAModel | None = None
         self._untrained = True
-        self._version = type(self).model_version
+        self._version = UNTRAINED_VERSION
         self._pool = cf.ThreadPoolExecutor(max_workers=1, thread_name_prefix="head-a")
 
     @property

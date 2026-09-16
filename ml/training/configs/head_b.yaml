@@ -1,0 +1,20 @@
+# B5-T03 Head B GBDT. CPU-only; feature extraction dominates run time.
+run_name: head_b_v1
+lineage: research
+allow_noncommercial: true
+seed: 1337
+out_dir: runs
+version: 0.1.0
+
+data:
+  manifests: data/manifests/*.jsonl
+  splits: splits/pooled_v1.json
+  data_root: data
+  languages: [hi, bn, ta, te, mr, gu, kn, ml, pa, or, as, ur, en]
+  # For a pipeline smoke test: source: synthetic, n_train: 60, n_dev: 30
+
+gbdt:
+  n_trees: 200
+  depth: 4
+  lr: 0.05
+  min_leaf: 20
