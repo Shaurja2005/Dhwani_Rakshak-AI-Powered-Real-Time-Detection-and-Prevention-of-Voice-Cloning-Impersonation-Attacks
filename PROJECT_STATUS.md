@@ -47,7 +47,7 @@
 | B9 | Fusion & risk engine | claude-b9 | WIP | 4/8 |
 | B10 | Context & intent | claude-b10 | WIP | 4/7 |
 | B11 | Policy & alerting | claude-b11 | WIP | 6/8 |
-| B12 | APIs & SDKs | — | TODO | 0/9 |
+| B12 | APIs & SDKs | claude-b12 | WIP | 6/9 |
 | B13 | Agent/analyst UI | — | TODO | 0/7 |
 | B14 | Serving & optimization | — | TODO | 0/6 |
 | B15 | Evaluation harness | — | TODO | 0/10 |
@@ -205,15 +205,15 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B12 — APIs & SDKs
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B12-T01 | gRPC bidirectional streaming | — | TODO | B0-T02 | | |
-| B12-T02 | REST API surface | — | TODO | B0-T03 | | |
-| B12-T03 | Signed webhooks + retry | — | TODO | B11-T05 | | |
-| B12-T04 | AuthN/AuthZ, quotas, rate limits | — | TODO | B12-T02 | | |
-| B12-T05 | Python SDK | — | TODO | B12-T01 | | |
-| B12-T06 | JS/TS SDK | — | TODO | B12-T01 | | |
-| B12-T07 | Edge/mobile SDK stub (ONNX/TFLite) | — | TODO | B14-T03 | | privacy story |
-| B12-T08 | OpenAPI docs + 10-minute quickstart | — | TODO | B12-T02 | | |
-| B12-T09 | Reference connectors | — | TODO | B1-T03, B1-T05 | | |
+| B12-T01 | gRPC bidirectional streaming | claude-b12 | DONE | B0-T02 | services/api_gateway/grpc_server.py, services/api_gateway/proto_codec.py, services/api_gateway/pipeline.py | bidi AnalyzeStream + AnalyzeFile + Enroll with key auth; tested against a real in-process gRPC server; fixed invalid proto option that broke codegen |
+| B12-T02 | REST API surface | claude-b12 | DONE | B0-T03 | services/api_gateway/app.py | sessions, WS /v1/stream, analyze/file, evidence, feedback, profile, shadow, keys, enrollment + liveness mounted with ownership checks |
+| B12-T03 | Signed webhooks + retry | claude-b12 | DONE | B11-T05 | services/api_gateway/webhooks.py | https-only tenant subscriptions, HMAC-SHA256 signed, async delivery with backoff (signing from B11 notify) |
+| B12-T04 | AuthN/AuthZ, quotas, rate limits | claude-b12 | REVIEW | B12-T02 | services/api_gateway/auth.py | hashed per-tenant keys, scopes, default-deny, tenant + session isolation, token-bucket rate limit, request + audio quotas; in-memory key store (persist + mTLS at ingress in B17) |
+| B12-T05 | Python SDK | claude-b12 | DONE | B12-T01 | sdks/python/voiceguard/ | analyze_file, stream (session REST), gRPC stream, enroll, evidence, feedback, webhooks, verify signature |
+| B12-T06 | JS/TS SDK | claude-b12 | DONE | B12-T01 | sdks/js/ | TS SDK (fetch + WebSocket stream, PCM helper, WebCrypto webhook verification); 5 node:test tests |
+| B12-T07 | Edge/mobile SDK stub (ONNX/TFLite) | claude-b12 | BLOCKED | B14-T03 | sdks/python/voiceguard/edge.py | ONNX Runtime edge scorer stub abstains "untrained" until B14 exports a distilled model |
+| B12-T08 | OpenAPI docs + 10-minute quickstart | claude-b12 | DONE | B12-T02 | docs/api/QUICKSTART.md, docs/api/openapi.json, scripts/export_openapi.py, examples/quickstart.py | quickstart path exercised in tests end to end |
+| B12-T09 | Reference connectors | claude-b12 | REVIEW | B1-T03, B1-T05 | services/api_gateway/connectors.py | Twilio / Asterisk AudioSocket / FreeSWITCH bridges via SDK (Twilio tested end to end); collaboration-platform browser extension not built |
 
 ### B13 — UI
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,7 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-17T09:00Z | claude-b12 | B12-T01-09 | TODO -> DONE(T01-T03,T05,T06,T08) / REVIEW(T04,T09) / BLOCKED(T07) | services/api_gateway/, sdks/, docs/api/, examples/, tests/unit/test_b12_api.py | 266 py + 5 JS tests pass; removed invalid `option python_package` from proto (B0 bug: codegen never worked) |
 | 2026-09-17T08:00Z | claude-b11 | B11-T01-08 | TODO -> DONE(T01-T04,T06,T07) / REVIEW(T05,T08) | services/policy/, tests/unit/test_b11_policy.py, docs/adr/0008-intent-labels-credential-payment.md | 253 tests pass; ADR 0008 fixes B10 label/schema drift caught by bundle validation |
 | 2026-09-17T07:00Z | claude-b10 | B10-T01-07 | TODO -> DONE(T02,T04,T06,T07) / REVIEW(T01,T03,T05) | services/context/, tests/unit/test_b10_context.py | 239 tests pass; ASR models + local LLM deferred to setup |
 | 2026-09-17T06:00Z | claude-b9 | B9-T01-08 | TODO -> DONE(T03,T04,T05,T07) / REVIEW(T01,T02,T06,T08) | services/fusion/, packages/vg_models/calibration.py, tests/unit/test_b9_fusion.py | 220 tests pass; replay.py now uses RiskEngine; fixed flaky sample-store TTL test (Windows clock resolution) |
@@ -330,3 +331,4 @@ Anything that needs a human decision. Agents append here rather than guessing.
 | Task | Blocked since | Blocked by | Owner of the blocker | Escalation |
 |---|---|---|---|---|
 | B4-T01 | 2026-09-17 | deferred user setup (datasets, weights, CUDA torch) | project owner | docs/SETUP_PENDING.md |
+| B12-T07 | 2026-09-17 | B14-T03 (ONNX export of distilled Head A) | B14 owner | edge stub abstains until then |

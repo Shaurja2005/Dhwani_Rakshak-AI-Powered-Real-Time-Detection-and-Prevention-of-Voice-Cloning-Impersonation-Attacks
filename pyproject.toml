@@ -94,8 +94,13 @@ exclude = ["packages/vg_core/generated/", "third_party/"]
 "services/policy/feedback.py" = ["E501"]
 "services/policy/engine.py" = ["E501"]
 "services/policy/actions.py" = ["E501"]
-# Test data literals (multilingual sentences, long fixtures).
-"tests/**" = ["E501"]
+# FastAPI Depends() defaults, gRPC servicer method names fixed by the generated interface,
+# dynamic protobuf/JSON payloads, and the gateway's intentional bind to all interfaces.
+"services/api_gateway/**" = ["ANN401", "B008", "N802", "E501", "S104"]
+"sdks/python/**" = ["ANN401", "E501"]
+"examples/**" = ["E501"]
+# Test data literals (multilingual sentences, long fixtures) and fixture plumbing.
+"tests/**" = ["E501", "ANN401", "S110"]
 
 [tool.black]
 line-length = 100

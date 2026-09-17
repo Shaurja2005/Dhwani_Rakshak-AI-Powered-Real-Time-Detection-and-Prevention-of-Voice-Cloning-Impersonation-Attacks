@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package voiceguard.v1;
 
-option python_package = "vg_core.generated";
 
 // ---------------------------------------------------------------------------
 // VoiceGuard gRPC service

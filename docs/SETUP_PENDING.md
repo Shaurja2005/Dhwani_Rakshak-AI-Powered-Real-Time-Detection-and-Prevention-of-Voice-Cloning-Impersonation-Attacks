@@ -119,3 +119,14 @@ non-commercial → the primary model is **research lineage**.
       signature verification snippet (`notify.verify_signature`).
 - [ ] Replace `RecordingProvider` with real SMS / email / push providers (on-prem or tenant-approved).
 - [ ] Production evidence store: PostgreSQL with append-only role + retention policy (B16), or WORM storage.
+
+## B12 — APIs & SDKs
+
+- [ ] Persist API keys (hashed) in PostgreSQL instead of the in-memory `KeyStore`; add key
+      rotation / expiry; issue short-lived `stream`-scoped keys for browsers.
+- [ ] TLS everywhere: REST behind an ingress with TLS (+ mTLS for enterprise clients);
+      gRPC with `server_credentials(..., require_client_auth=True)` (B17).
+- [ ] `cd sdks/js && npm install && npm run build` to produce `dist/` before publishing the JS SDK.
+- [ ] Deploy telephony bridges next to the PBX / Twilio webhook (`services/api_gateway/connectors.py`);
+      Twilio needs a public HTTPS/WSS endpoint (ngrok for local dev).
+- [ ] Edge SDK needs the distilled ONNX model from B14.

@@ -1,1 +1,17 @@
-{ "name": "@voiceguard/sdk", "version": "0.1.0" }
+{
+  "name": "@voiceguard/sdk",
+  "version": "0.1.0",
+  "description": "VoiceGuard real-time voice-clone impersonation risk SDK (browser + Node)",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "files": ["dist"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test test/*.test.ts"
+  },
+  "devDependencies": { "typescript": "^5.6.0" },
+  "license": "UNLICENSED"
+}
