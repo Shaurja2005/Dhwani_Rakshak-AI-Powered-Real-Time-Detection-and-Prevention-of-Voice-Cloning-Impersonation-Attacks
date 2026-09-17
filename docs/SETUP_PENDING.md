@@ -83,3 +83,16 @@ non-commercial → the primary model is **research lineage**.
 - [ ] Commercial vendor detectors: only via tenant opt-in (`PartnerAPIDetector`, I6).
 - [ ] Wire B10 ASR tokens + prompt-end timestamps into `ChallengeRegistry` (B8-T02).
 - [ ] Tune Head E latency / content weights on real calls in shadow mode (B11-T07).
+
+## B9 — Fusion & risk engine
+
+- [ ] Collect per-window head scores on a held-out, deployment-like set (real channels,
+      all 12 languages) with labels; fit per-head calibrators (`Calibrator.fit`) and store
+      them in a `CalibrationStore` JSON keyed by head + model version.
+- [ ] Fit fusion weights: `services.fusion.fuser.fit_fusion(rows, labels)` -> `FusionModel.save`.
+- [ ] Generate the ablation table (`services.fusion.ablation.ablation_table`) and check
+      ECE < 0.05 (B9 DoD); publish via B15.
+- [ ] Per tenant: derive an `OperatingProfile` with `profile_from_scores` from *genuine-call*
+      session scores at the tenant's target FPR; set `TemporalConfig.session_prior` to the
+      tenant's attack base rate. Start in shadow mode (B11-T07).
+- [ ] Production timeline store: provision PostgreSQL + TimescaleDB and apply `TIMESCALE_DDL` (B17).

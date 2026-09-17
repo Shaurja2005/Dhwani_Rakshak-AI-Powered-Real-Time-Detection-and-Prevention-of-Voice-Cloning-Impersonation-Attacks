@@ -86,7 +86,7 @@ def test_sample_store_ttl_eviction_and_session_drop() -> None:
     st.put("shm://s2/0", np.zeros(4))
     assert st.get("shm://s1/0") is None  # evicted (bounded)
     assert st.drop_session("s1") == 1
-    time.sleep(0.06)
+    time.sleep(0.2)  # well beyond Windows monotonic-clock resolution (15.6 ms)
     assert st.get("shm://s2/0") is None  # expired
     arr = SampleStore().put("x", np.ones(3))
     assert arr == "x"

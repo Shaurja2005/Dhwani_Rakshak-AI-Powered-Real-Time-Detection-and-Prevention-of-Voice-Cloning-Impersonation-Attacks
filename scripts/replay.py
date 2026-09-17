@@ -16,13 +16,14 @@ As real heads are implemented (B4–B8) they can be loaded via:
 
 Keep this script working. It is the canonical development feedback loop.
 """
+
 from __future__ import annotations
 
 import argparse
 import json
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Add project root to path so we can import packages without installing
@@ -37,17 +38,11 @@ from packages.vg_core.models import (
     CallMetadata,
     Channel,
     ConsentBasis,
-    FusedWindowScore,
-    HeadScore,
-    RiskState,
     SessionContext,
-    SessionRisk,
-    RiskDriver,
-    WindowSummary,
 )
 from packages.vg_core.sample_store import put_samples
 from packages.vg_core.stub_head import StubHead
-from packages.vg_core.versioning import STUB_MODEL_VERSION
+from services.fusion.engine import RiskEngine
 
 log = get_logger(__name__)
 
@@ -55,18 +50,18 @@ log = get_logger(__name__)
 def _make_session_id() -> str:
     """Generate a UUIDv7-style session ID (time-ordered)."""
     import uuid
+
     return str(uuid.uuid4())
 
 
 def _load_wav_windows(wav_path: Path, window_s: float = 3.0, hop_s: float = 1.0):
     """Yield (window_id, samples_float32, voiced_ms) from a WAV file."""
     try:
-        import soundfile as sf
         import numpy as np
+        import soundfile as sf
     except ImportError:
         print(
-            "soundfile and numpy are required for WAV replay.  "
-            "pip install soundfile numpy",
+            "soundfile and numpy are required for WAV replay.  " "pip install soundfile numpy",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -77,6 +72,7 @@ def _load_wav_windows(wav_path: Path, window_s: float = 3.0, hop_s: float = 1.0)
     if sr != 16000:
         try:
             import scipy.signal as ss
+
             data = ss.resample_poly(data, 16000, sr).astype("float32")
             sr = 16000
         except ImportError:
@@ -93,7 +89,7 @@ def _load_wav_windows(wav_path: Path, window_s: float = 3.0, hop_s: float = 1.0)
     for start in range(0, len(data) - win_samples + 1, hop_samples):
         chunk = data[start : start + win_samples]
         # Simple energy-based voiced fraction
-        energy = float((chunk ** 2).mean())
+        energy = float((chunk**2).mean())
         voiced_ratio = min(1.0, energy * 100)
         voiced_ms = int(voiced_ratio * window_s * 1000)
 
@@ -105,44 +101,6 @@ def _load_wav_windows(wav_path: Path, window_s: float = 3.0, hop_s: float = 1.0)
             voiced_ms,
         )
         window_id += 1
-
-
-def _naive_fusion(scores: list[HeadScore], window_id: int, session_id: str) -> FusedWindowScore:
-    """Simple mean fusion over non-abstaining heads.  Replace with real B9 later."""
-    active = [s for s in scores if not s.abstain and s.p_spoof is not None]
-    abstained = [s.head_id.value for s in scores if s.abstain]
-
-    if not active:
-        return FusedWindowScore(
-            session_id=session_id,
-            window_id=window_id,
-            p_spoof=0.0,
-            state=RiskState.ABSTAIN,
-            contributions={},
-            heads_abstained=abstained,
-            fusion_version="stub-mean-v0.1",
-        )
-
-    p_mean = sum(s.p_spoof for s in active) / len(active)  # type: ignore[misc]
-    n = len(active)
-    contributions = {s.head_id.value: 1.0 / n for s in active}
-
-    if p_mean < 0.4:
-        state = RiskState.LOW
-    elif p_mean < 0.7:
-        state = RiskState.ELEVATED
-    else:
-        state = RiskState.HIGH
-
-    return FusedWindowScore(
-        session_id=session_id,
-        window_id=window_id,
-        p_spoof=p_mean,
-        state=state,
-        contributions=contributions,
-        heads_abstained=abstained,
-        fusion_version="stub-mean-v0.1",
-    )
 
 
 def _emit(obj: object) -> None:
@@ -159,7 +117,7 @@ def run_replay(
     wav_path: Path, head_ids: list[str] | None = None, real_heads: list[str] | None = None
 ) -> None:
     session_id = _make_session_id()
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
 
     # Register stub heads (real heads can be loaded by head_ids parameter)
     registry = HeadRegistry.get_instance()
@@ -202,10 +160,8 @@ def run_replay(
         call_metadata=metadata,
     )
 
-    window_scores: list[FusedWindowScore] = []
-    p_max = 0.0
-    p_sum = 0.0
-    abstain_count = 0
+    engine = RiskEngine(session_id)  # B9: calibration -> fusion -> temporal -> states
+    session_risk = None
 
     for window_id, start_s, end_s, chunk, voiced_ms in _load_wav_windows(wav_path):
         samples_ref = put_samples(f"shm://replay/{session_id}/{window_id}", chunk)
@@ -223,56 +179,13 @@ def run_replay(
         )
 
         head_scores = [registry.get(hid).score(window, ctx) for hid in configured_ids]
-        fused = _naive_fusion(head_scores, window_id, session_id)
-        window_scores.append(fused)
-
-        if fused.state == RiskState.ABSTAIN:
-            abstain_count += 1
-        else:
-            p_max = max(p_max, fused.p_spoof)
-            p_sum += fused.p_spoof
-
+        fused, session_risk = engine.update(window_id, head_scores)
         _emit(fused)
 
         # Simulate real-time by sleeping hop duration (1 s)
         time.sleep(0.1)  # 10× speed for dev; use time.sleep(1.0) for real-time
 
-    total_windows = len(window_scores)
-    active_windows = total_windows - abstain_count
-    p_mean = p_sum / active_windows if active_windows else 0.0
-    abstain_ratio = abstain_count / total_windows if total_windows else 0.0
-
-    if p_max < 0.4:
-        final_state = RiskState.LOW
-    elif p_max < 0.7:
-        final_state = RiskState.ELEVATED
-    else:
-        final_state = RiskState.HIGH
-
-    risk_score = int(p_max * 100)
-
-    session_risk = SessionRisk(
-        session_id=session_id,
-        updated_at=datetime.now(tz=timezone.utc),
-        risk_score=risk_score,
-        state=final_state,
-        p_spoof_session_max=p_max,
-        p_spoof_session_mean=p_mean,
-        drivers=[
-            RiskDriver(
-                factor="voice_authenticity",
-                weight=0.8,
-                detail=f"max p_spoof={p_max:.2f} over {total_windows} windows",
-            )
-        ],
-        timeline=[
-            WindowSummary(window_id=w.window_id, p_spoof=w.p_spoof, state=w.state)
-            for w in window_scores
-        ],
-        model_versions={hid: registry.get(hid).model_version for hid in configured_ids},
-        abstain_ratio=abstain_ratio,
-    )
-    _emit(session_risk)
+    _emit(session_risk if session_risk is not None else engine.session_risk())
 
 
 def main() -> None:

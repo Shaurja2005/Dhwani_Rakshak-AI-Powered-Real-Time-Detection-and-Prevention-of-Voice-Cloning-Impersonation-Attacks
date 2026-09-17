@@ -44,7 +44,7 @@
 | B6 | Head C — prosody | claude-b6 | WIP | 3/6 |
 | B7 | Head D — speaker verification | claude-b7 | WIP | 4/6 |
 | B8 | Heads E/F — liveness & watermark | claude-b8 | WIP | 2/6 |
-| B9 | Fusion & risk engine | — | TODO | 0/8 |
+| B9 | Fusion & risk engine | claude-b9 | WIP | 4/8 |
 | B10 | Context & intent | — | TODO | 0/7 |
 | B11 | Policy & alerting | — | TODO | 0/8 |
 | B12 | APIs & SDKs | — | TODO | 0/9 |
@@ -170,14 +170,14 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B9 — Fusion & risk engine
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B9-T01 | Per-head calibration | — | TODO | B0-T05 | | |
-| B9-T02 | Cross-head fusion (LR/GBDT) + abstain handling | — | TODO | B9-T01 | | |
-| B9-T03 | Temporal fusion (Bayesian / HMM) | — | TODO | B9-T02 | | |
-| B9-T04 | Any-segment trigger for partial splicing | — | TODO | B9-T03 | | |
-| B9-T05 | Four-state emission incl. ABSTAIN | — | TODO | B9-T03 | | |
-| B9-T06 | Cost-model operating point selection | — | TODO | B9-T01, B15-T09 | | not EER |
-| B9-T07 | Per-head contribution attribution | — | TODO | B9-T02 | | |
-| B9-T08 | Score timeline persistence + replay | — | TODO | B9-T05 | | |
+| B9-T01 | Per-head calibration | claude-b9 | REVIEW | B0-T05 | packages/vg_models/calibration.py | Platt/temperature per (head, model_version) + ECE; ECE<0.05 on synthetic held-out; needs deployment-like data |
+| B9-T02 | Cross-head fusion (LR/GBDT) + abstain handling | claude-b9 | REVIEW | B9-T01 | services/fusion/fuser.py | LR over calibrated logits + missing indicators (no zero fill), Head F via ADR 0007 filter; prior weights until fitted on real data |
+| B9-T03 | Temporal fusion (Bayesian / HMM) | claude-b9 | DONE | B9-T02 | services/fusion/temporal.py | two-state HMM forward filter over window LLRs; abstained windows = transition only |
+| B9-T04 | Any-segment trigger for partial splicing | claude-b9 | DONE | B9-T03 | services/fusion/temporal.py, services/fusion/engine.py | evidence-based segment posterior; 4-window splice caught in >=10/12 simulated calls, genuine false trigger <=1/12 |
+| B9-T05 | Four-state emission incl. ABSTAIN | claude-b9 | DONE | B9-T03 | services/fusion/operating_point.py | LOW/ELEVATED/HIGH/ABSTAIN with explicit abstain rules + hysteresis; ~1-2 state changes/min vs 25+ naive |
+| B9-T06 | Cost-model operating point selection | claude-b9 | REVIEW | B9-T01, B15-T09 | services/fusion/operating_point.py | thresholds at fixed FPR (1%/0.1%) + expected-cost minimiser; per-tenant profile files; needs real score distributions |
+| B9-T07 | Per-head contribution attribution | claude-b9 | DONE | B9-T02 | services/fusion/fuser.py, services/fusion/engine.py | normalised contributions (sum 1) + signed drivers; any-segment driver only when it actually fires |
+| B9-T08 | Score timeline persistence + replay | claude-b9 | REVIEW | B9-T05 | services/fusion/persistence.py, services/fusion/main.py | SQLite store + GET timeline replay API tested; Timescale DDL provided but not run (B17) |
 
 ### B10 — Context & intent
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,7 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-17T06:00Z | claude-b9 | B9-T01-08 | TODO -> DONE(T03,T04,T05,T07) / REVIEW(T01,T02,T06,T08) | services/fusion/, packages/vg_models/calibration.py, tests/unit/test_b9_fusion.py | 220 tests pass; replay.py now uses RiskEngine; fixed flaky sample-store TTL test (Windows clock resolution) |
 | 2026-09-17T05:00Z | claude-b8 | B8-T01-06 | TODO -> DONE(T01,T06) / REVIEW(T02-T05) | packages/vg_models/heads/head_e_liveness/, packages/vg_models/heads/head_f_watermark/, tests/unit/test_b8_liveness_watermark.py | 202 tests pass; ADR 0007; AudioSeal + B10 ASR deferred |
 | 2026-09-17T04:00Z | claude-b7 | B7-T01-06 | TODO -> DONE(T02,T03,T05,T06) / REVIEW(T01,T04) | packages/vg_models/heads/head_d_speaker/, services/enrollment/, tests/unit/test_b7_speaker.py | 188 tests pass; neural embedder + cohort deferred to setup |
 | 2026-09-17T03:00Z | claude-b6 | B6-T01-06 | TODO -> DONE(T01-03) / REVIEW(T04-06) | packages/vg_models/heads/head_c_prosody/, ml/training/train_head_c.py, tests/unit/test_b6_head_c.py | 174 tests pass; training deferred |
