@@ -96,3 +96,16 @@ non-commercial → the primary model is **research lineage**.
       session scores at the tenant's target FPR; set `TemporalConfig.session_prior` to the
       tenant's attack base rate. Start in shadow mode (B11-T07).
 - [ ] Production timeline store: provision PostgreSQL + TimescaleDB and apply `TIMESCALE_DDL` (B17).
+
+## B10 — Context & intent
+
+- [ ] ASR: `pip install faster-whisper` (Whisper large-v3, ~3 GB) and/or NVIDIA NeMo +
+      AI4Bharat IndicConformer checkpoints; pick per language and benchmark WER on call audio.
+- [ ] Local LLM: run Ollama (`ollama pull qwen2.5:7b-instruct`) or vLLM on-prem; set
+      `VG_CONTEXT_LLM_BASE_URL`, `VG_CONTEXT_LLM_MODEL`, `VG_CONTEXT_LLM_ENABLED=1`.
+      A non-local endpoint is refused unless the tenant opts in (I6). ~16 GB VRAM for a 7B
+      at good latency, or a quantized 7B on CPU for demos.
+- [ ] Measure intent accuracy on transcripts of *real, consented* calls (the seed set is
+      self-authored and only a regression check) — B15.
+- [ ] Implement the tenant's real `TransactionConnector` (core banking / ERP) and the
+      call-history / registered-numbers / trunk-reputation backend for metadata risk.

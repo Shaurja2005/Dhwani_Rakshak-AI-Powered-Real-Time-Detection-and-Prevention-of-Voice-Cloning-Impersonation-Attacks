@@ -1,0 +1,196 @@
+{"text": "Sir main director bol raha hoon, 1.2 crore naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "This is the COO. I need you to wire 18 lakh to the new vendor account within 10 minutes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 4.5 crore within 10 minutes.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "Sir main managing director bol raha hoon, 1.2 crore naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Hi, it's the chairman. I'm in a board meeting so I can't take a call back. Transfer 18 lakh immediately.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "मेरा एटीएम कार्ड काम नहीं कर रहा है।", "language": "hi", "fraud": false, "labels": []}
+{"text": "Sir main director bol raha hoon, 18 lakh naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 9,80,000 rupees within 10 minutes.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "This is the COO. I need you to wire 7 lakh to the new vendor account within 10 minutes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Hi, I'd like to check my account balance and whether my cheque has cleared. Sorry to bother you.", "language": "en", "fraud": false, "labels": []}
+{"text": "My debit card is not working at the ATM, can you help me? Dhanyavaad.", "language": "en", "fraud": false, "labels": []}
+{"text": "Calling from the CBI. Your account will be frozen right now unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Hi, it's the chairman. I'm in a board meeting so I can't take a call back. Transfer 18 lakh before the market closes.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Sir main managing director bol raha hoon, 18 lakh naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Hi, it's the director. I'm in a board meeting so I can't take a call back. Transfer 4.5 crore immediately.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Can you tell me the branch timings on Saturday? Dhanyavaad.", "language": "en", "fraud": false, "labels": []}
+{"text": "Hi, I'd like to check my account balance and whether my cheque has cleared. Please help.", "language": "en", "fraud": false, "labels": []}
+{"text": "The vendor has updated bank details, please pay 25 lakh to this account and keep it confidential.", "language": "en", "fraud": true, "labels": ["payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Please call me back on my registered number when the loan statement is ready. Dhanyavaad.", "language": "en", "fraud": false, "labels": []}
+{"text": "मेरा एटीएम कार्ड काम नहीं कर रहा है। Thanks a lot.", "language": "hi", "fraud": false, "labels": []}
+{"text": "Hi, it's the director. I'm in a board meeting so I can't take a call back. Transfer 18 lakh immediately.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Mujhe apne loan ki EMI date change karni hai. Dhanyavaad.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "I want to update my address; I moved last month. Sorry to bother you.", "language": "en", "fraud": false, "labels": []}
+{"text": "मैं CBI से बोल रहा हूँ, तुरंत ओटीपी बताइए, किसी को मत बताना।", "language": "hi", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency", "secrecy_demand"]}
+{"text": "Hi, it's the CFO. I'm in a board meeting so I can't take a call back. Transfer 9,80,000 rupees right now.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 7 lakh before the market closes.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "This is the director. I need you to wire 9,80,000 rupees to the new vendor account before the market closes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Calling from the cyber cell police. Your account will be frozen immediately unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Call back mat karo, main meeting mein hoon, 18 lakh abhi ke abhi bhej do.", "language": "hi-Latn", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "I want to update my address; I moved last month. Thank you.", "language": "en", "fraud": false, "labels": []}
+{"text": "Call back mat karo, main meeting mein hoon, 4.5 crore abhi ke abhi bhej do.", "language": "hi-Latn", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Calling from the income tax department. Your account will be frozen right now unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Hi, it's the COO. I'm in a board meeting so I can't take a call back. Transfer 9,80,000 rupees immediately.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "This is the CEO. I need you to wire 25 lakh to the new vendor account within 10 minutes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Call back mat karo, main meeting mein hoon, 7 lakh abhi ke abhi bhej do.", "language": "hi-Latn", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 1.2 crore before the market closes.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "This is the COO. I need you to wire 25 lakh to the new vendor account immediately, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "This is the director. I need you to wire 18 lakh to the new vendor account within 10 minutes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Hi, it's the COO. I'm in a board meeting so I can't take a call back. Transfer 7 lakh right now.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 4.5 crore right now.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "Mera credit card ka bill kitna hai, bata dijiye. Thank you.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "I got an SMS about a transaction I don't recognise, can you block my card? Dhanyavaad.", "language": "en", "fraud": false, "labels": []}
+{"text": "Kal branch aa kar KYC update kar dunga, time bata dijiye. Please help.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 7 lakh within 10 minutes.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "I got an SMS about a transaction I don't recognise, can you block my card? Thank you.", "language": "en", "fraud": false, "labels": []}
+{"text": "Mujhe apne loan ki EMI date change karni hai. Please help.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Hi, I'd like to check my account balance and whether my cheque has cleared.", "language": "en", "fraud": false, "labels": []}
+{"text": "Our CFO asked me to confirm the payment run through the usual approval workflow tomorrow.", "language": "en", "fraud": false, "labels": []}
+{"text": "Calling from the RBI. Your account will be frozen right now unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 18 lakh immediately.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "I'd like to know the interest rate on a fixed deposit for one year. Thanks a lot.", "language": "en", "fraud": false, "labels": []}
+{"text": "income tax department se call hai, aapka account block ho jayega, turant OTP batao.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "I'd like to know the interest rate on a fixed deposit for one year.", "language": "en", "fraud": false, "labels": []}
+{"text": "cyber cell police se call hai, aapka account block ho jayega, turant OTP batao.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Hi, it's the director. I'm in a board meeting so I can't take a call back. Transfer 9,80,000 rupees right now.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "This is the CEO. I need you to wire 25 lakh to the new vendor account immediately, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "The vendor has updated bank details, please pay 18 lakh to this account and keep it confidential.", "language": "en", "fraud": true, "labels": ["payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "The vendor has updated bank details, please pay 7 lakh to this account and keep it confidential.", "language": "en", "fraud": true, "labels": ["payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Hi, it's the COO. I'm in a board meeting so I can't take a call back. Transfer 18 lakh within 10 minutes.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Mujhe apne loan ki EMI date change karni hai.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "I got an SMS about a transaction I don't recognise, can you block my card? Please help.", "language": "en", "fraud": false, "labels": []}
+{"text": "Calling from the CBI. Your account will be frozen within 10 minutes unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Install AnyDesk so I can fix your account, then tell me the OTP.", "language": "en", "fraud": true, "labels": ["credential_request", "unusual_channel"]}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 25 lakh within 10 minutes.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "Hi, it's the director. I'm in a board meeting so I can't take a call back. Transfer 1.2 crore right now.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Hi, it's the director. I'm in a board meeting so I can't take a call back. Transfer 7 lakh before the market closes.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "मैं RBI से बोल रहा हूँ, तुरंत ओटीपी बताइए, किसी को मत बताना।", "language": "hi", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency", "secrecy_demand"]}
+{"text": "Calling from the RBI. Your account will be frozen before the market closes unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "This is the director. I need you to wire 4.5 crore to the new vendor account before the market closes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "This is the CFO. I need you to wire 4.5 crore to the new vendor account immediately, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "CBI se call hai, aapka account block ho jayega, turant OTP batao.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Sir main COO bol raha hoon, 4.5 crore naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "I got an SMS about a transaction I don't recognise, can you block my card?", "language": "en", "fraud": false, "labels": []}
+{"text": "Sir main CFO bol raha hoon, 1.2 crore naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Mera credit card ka bill kitna hai, bata dijiye. Sorry to bother you.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Hi, it's the CEO. I'm in a board meeting so I can't take a call back. Transfer 25 lakh before the market closes.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Hi, it's the CFO. I'm in a board meeting so I can't take a call back. Transfer 9,80,000 rupees immediately.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "I got an SMS about a transaction I don't recognise, can you block my card? Sorry to bother you.", "language": "en", "fraud": false, "labels": []}
+{"text": "Hi, I'd like to check my account balance and whether my cheque has cleared. Thank you.", "language": "en", "fraud": false, "labels": []}
+{"text": "मुझे अपना पता बदलना है।", "language": "hi", "fraud": false, "labels": []}
+{"text": "Calling from the income tax department. Your account will be frozen immediately unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Branch kab khulti hai Sunday ko? Thanks a lot.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Please call me back on my registered number when the loan statement is ready.", "language": "en", "fraud": false, "labels": []}
+{"text": "Sir main COO bol raha hoon, 1.2 crore naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "I got an SMS about a transaction I don't recognise, can you block my card? Thanks a lot.", "language": "en", "fraud": false, "labels": []}
+{"text": "Branch kab khulti hai Sunday ko? Please help.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Mera credit card ka bill kitna hai, bata dijiye. Thanks a lot.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "I'd like to know the interest rate on a fixed deposit for one year. Thank you.", "language": "en", "fraud": false, "labels": []}
+{"text": "Please call me back on my registered number when the loan statement is ready. Sorry to bother you.", "language": "en", "fraud": false, "labels": []}
+{"text": "The vendor has updated bank details, please pay 1.2 crore to this account and keep it confidential.", "language": "en", "fraud": true, "labels": ["payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "I want to update my address; I moved last month.", "language": "en", "fraud": false, "labels": []}
+{"text": "मेरा एटीएम कार्ड काम नहीं कर रहा है। Thank you.", "language": "hi", "fraud": false, "labels": []}
+{"text": "Branch kab khulti hai Sunday ko? Sorry to bother you.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Please call me back on my registered number when the loan statement is ready. Please help.", "language": "en", "fraud": false, "labels": []}
+{"text": "Can you tell me the branch timings on Saturday? Thank you.", "language": "en", "fraud": false, "labels": []}
+{"text": "Hi, I'd like to check my account balance and whether my cheque has cleared. Dhanyavaad.", "language": "en", "fraud": false, "labels": []}
+{"text": "Namaste, mujhe apna balance check karna hai. Please help.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Hi, it's the CEO. I'm in a board meeting so I can't take a call back. Transfer 1.2 crore immediately.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "This is the COO. I need you to wire 1.2 crore to the new vendor account right now, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Namaste, mujhe apna balance check karna hai.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Calling from the income tax department. Your account will be frozen within 10 minutes unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 1.2 crore right now.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "Please call me back on my registered number when the loan statement is ready. Thank you.", "language": "en", "fraud": false, "labels": []}
+{"text": "मुझे अपना पता बदलना है। Thank you.", "language": "hi", "fraud": false, "labels": []}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 18 lakh right now.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "I want to update my address; I moved last month. Please help.", "language": "en", "fraud": false, "labels": []}
+{"text": "This is the managing director. I need you to wire 7 lakh to the new vendor account within 10 minutes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Our CFO asked me to confirm the payment run through the usual approval workflow tomorrow. Please help.", "language": "en", "fraud": false, "labels": []}
+{"text": "Hi, it's the managing director. I'm in a board meeting so I can't take a call back. Transfer 7 lakh right now.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Call back mat karo, main meeting mein hoon, 25 lakh abhi ke abhi bhej do.", "language": "hi-Latn", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 4.5 crore immediately.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "My debit card is not working at the ATM, can you help me?", "language": "en", "fraud": false, "labels": []}
+{"text": "Calling from the CBI. Your account will be frozen before the market closes unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Kal branch aa kar KYC update kar dunga, time bata dijiye.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Kal branch aa kar KYC update kar dunga, time bata dijiye. Dhanyavaad.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "नया खाता है, पैसे भेजो, जल्दी करो।", "language": "hi", "fraud": true, "labels": ["manufactured_urgency", "payment_request", "unusual_beneficiary"]}
+{"text": "Sir main COO bol raha hoon, 7 lakh naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "This is the managing director. I need you to wire 18 lakh to the new vendor account right now, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 18 lakh before the market closes.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "Our CFO asked me to confirm the payment run through the usual approval workflow tomorrow. Dhanyavaad.", "language": "en", "fraud": false, "labels": []}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 25 lakh immediately.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 4.5 crore before the market closes.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "मुझे अपना पता बदलना है। Thanks a lot.", "language": "hi", "fraud": false, "labels": []}
+{"text": "My debit card is not working at the ATM, can you help me? Sorry to bother you.", "language": "en", "fraud": false, "labels": []}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 1.2 crore immediately.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "Calling from the cyber cell police. Your account will be frozen before the market closes unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "I want to update my address; I moved last month. Thanks a lot.", "language": "en", "fraud": false, "labels": []}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 1.2 crore within 10 minutes.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "Sir main chairman bol raha hoon, 7 lakh naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Calling from the RBI. Your account will be frozen within 10 minutes unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Our CFO asked me to confirm the payment run through the usual approval workflow tomorrow. Thank you.", "language": "en", "fraud": false, "labels": []}
+{"text": "Hi, it's the COO. I'm in a board meeting so I can't take a call back. Transfer 25 lakh right now.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "RBI se call hai, aapka account block ho jayega, turant OTP batao.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Hi, it's the managing director. I'm in a board meeting so I can't take a call back. Transfer 18 lakh immediately.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Namaste, mujhe apna balance check karna hai. Thank you.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Sir main chairman bol raha hoon, 1.2 crore naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Kal branch aa kar KYC update kar dunga, time bata dijiye. Thanks a lot.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "This is the CFO. I need you to wire 1.2 crore to the new vendor account before the market closes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "The vendor has updated bank details, please pay 4.5 crore to this account and keep it confidential.", "language": "en", "fraud": true, "labels": ["payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Hi, it's the chairman. I'm in a board meeting so I can't take a call back. Transfer 1.2 crore within 10 minutes.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Sir main chairman bol raha hoon, 9,80,000 rupees naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "My debit card is not working at the ATM, can you help me? Thank you.", "language": "en", "fraud": false, "labels": []}
+{"text": "Message me on my personal WhatsApp, don't call me back on the office line, and send 9,80,000 rupees immediately.", "language": "en", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request", "unusual_channel"]}
+{"text": "My debit card is not working at the ATM, can you help me? Please help.", "language": "en", "fraud": false, "labels": []}
+{"text": "Calling from the cyber cell police. Your account will be frozen within 10 minutes unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Hi, it's the chairman. I'm in a board meeting so I can't take a call back. Transfer 7 lakh right now.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "मैं income tax department से बोल रहा हूँ, तुरंत ओटीपी बताइए, किसी को मत बताना।", "language": "hi", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency", "secrecy_demand"]}
+{"text": "Hi, it's the CFO. I'm in a board meeting so I can't take a call back. Transfer 25 lakh immediately.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "This is the COO. I need you to wire 9,80,000 rupees to the new vendor account within 10 minutes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "मैं cyber cell police से बोल रहा हूँ, तुरंत ओटीपी बताइए, किसी को मत बताना।", "language": "hi", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency", "secrecy_demand"]}
+{"text": "Mera credit card ka bill kitna hai, bata dijiye.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Namaste, mujhe apna balance check karna hai. Dhanyavaad.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Mujhe apne loan ki EMI date change karni hai. Thanks a lot.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "This is the chairman. I need you to wire 1.2 crore to the new vendor account before the market closes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "I'd like to know the interest rate on a fixed deposit for one year. Dhanyavaad.", "language": "en", "fraud": false, "labels": []}
+{"text": "Hi, it's the CFO. I'm in a board meeting so I can't take a call back. Transfer 4.5 crore immediately.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Mera credit card ka bill kitna hai, bata dijiye. Please help.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Please call me back on my registered number when the loan statement is ready. Thanks a lot.", "language": "en", "fraud": false, "labels": []}
+{"text": "Sir main CEO bol raha hoon, 1.2 crore naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Branch kab khulti hai Sunday ko?", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Calling from the cyber cell police. Your account will be frozen right now unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "Kal branch aa kar KYC update kar dunga, time bata dijiye. Sorry to bother you.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "This is the CFO. I need you to wire 7 lakh to the new vendor account before the market closes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Call back mat karo, main meeting mein hoon, 1.2 crore abhi ke abhi bhej do.", "language": "hi-Latn", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Hi, I'd like to check my account balance and whether my cheque has cleared. Thanks a lot.", "language": "en", "fraud": false, "labels": []}
+{"text": "Can you tell me the branch timings on Saturday? Sorry to bother you.", "language": "en", "fraud": false, "labels": []}
+{"text": "Kal branch aa kar KYC update kar dunga, time bata dijiye. Thank you.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "My debit card is not working at the ATM, can you help me? Thanks a lot.", "language": "en", "fraud": false, "labels": []}
+{"text": "Namaste, mujhe apna balance check karna hai. Thanks a lot.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Namaste, mujhe apna balance check karna hai. Sorry to bother you.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Hi, it's the CFO. I'm in a board meeting so I can't take a call back. Transfer 1.2 crore within 10 minutes.", "language": "en", "fraud": true, "labels": ["authority_pressure", "callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "I'd like to know the interest rate on a fixed deposit for one year. Please help.", "language": "en", "fraud": false, "labels": []}
+{"text": "Sir main managing director bol raha hoon, 4.5 crore naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Our CFO asked me to confirm the payment run through the usual approval workflow tomorrow. Thanks a lot.", "language": "en", "fraud": false, "labels": []}
+{"text": "Sir main CEO bol raha hoon, 7 lakh naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Sir main CEO bol raha hoon, 4.5 crore naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Can you tell me the branch timings on Saturday? Thanks a lot.", "language": "en", "fraud": false, "labels": []}
+{"text": "I'd like to know the interest rate on a fixed deposit for one year. Sorry to bother you.", "language": "en", "fraud": false, "labels": []}
+{"text": "Branch kab khulti hai Sunday ko? Thank you.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Mujhe apne loan ki EMI date change karni hai. Thank you.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Our CFO asked me to confirm the payment run through the usual approval workflow tomorrow. Sorry to bother you.", "language": "en", "fraud": false, "labels": []}
+{"text": "Sir main CFO bol raha hoon, 4.5 crore naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Can you tell me the branch timings on Saturday? Please help.", "language": "en", "fraud": false, "labels": []}
+{"text": "Sir main director bol raha hoon, 25 lakh naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Call back mat karo, main meeting mein hoon, 9,80,000 rupees abhi ke abhi bhej do.", "language": "hi-Latn", "fraud": true, "labels": ["callback_resistance", "manufactured_urgency", "payment_request"]}
+{"text": "Branch kab khulti hai Sunday ko? Dhanyavaad.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "Can you tell me the branch timings on Saturday?", "language": "en", "fraud": false, "labels": []}
+{"text": "Calling from the CBI. Your account will be frozen immediately unless you read me the OTP we just sent.", "language": "en", "fraud": true, "labels": ["authority_pressure", "credential_request", "manufactured_urgency"]}
+{"text": "This is the chairman. I need you to wire 4.5 crore to the new vendor account before the market closes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Mujhe apne loan ki EMI date change karni hai. Sorry to bother you.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "I want to update my address; I moved last month. Dhanyavaad.", "language": "en", "fraud": false, "labels": []}
+{"text": "This is the chairman. I need you to wire 4.5 crore to the new vendor account within 10 minutes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Mera credit card ka bill kitna hai, bata dijiye. Dhanyavaad.", "language": "hi-Latn", "fraud": false, "labels": []}
+{"text": "This is the CEO. I need you to wire 4.5 crore to the new vendor account before the market closes, and don't tell the team.", "language": "en", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "Sir main chairman bol raha hoon, 25 lakh naya account mein transfer karo, jaldi, kisi ko mat batana.", "language": "hi-Latn", "fraud": true, "labels": ["authority_pressure", "manufactured_urgency", "payment_request", "secrecy_demand", "unusual_beneficiary"]}
+{"text": "The vendor has updated bank details, please pay 9,80,000 rupees to this account and keep it confidential.", "language": "en", "fraud": true, "labels": ["payment_request", "secrecy_demand", "unusual_beneficiary"]}

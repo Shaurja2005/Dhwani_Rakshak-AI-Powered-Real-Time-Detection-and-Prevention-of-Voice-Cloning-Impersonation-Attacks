@@ -45,7 +45,7 @@
 | B7 | Head D — speaker verification | claude-b7 | WIP | 4/6 |
 | B8 | Heads E/F — liveness & watermark | claude-b8 | WIP | 2/6 |
 | B9 | Fusion & risk engine | claude-b9 | WIP | 4/8 |
-| B10 | Context & intent | — | TODO | 0/7 |
+| B10 | Context & intent | claude-b10 | WIP | 4/7 |
 | B11 | Policy & alerting | — | TODO | 0/8 |
 | B12 | APIs & SDKs | — | TODO | 0/9 |
 | B13 | Agent/analyst UI | — | TODO | 0/7 |
@@ -182,13 +182,13 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B10 — Context & intent
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B10-T01 | Streaming ASR (IndicConformer/Whisper) | — | TODO | B2-T04 | | |
-| B10-T02 | Language ID + code-switch detection | — | TODO | B10-T01 | | |
-| B10-T03 | Social-engineering intent classifier (local LLM) | — | TODO | B10-T01 | | invariant I6 |
-| B10-T04 | Metadata risk scorer | — | TODO | B1-T08 | | |
-| B10-T05 | Transaction context connector (mock core banking) | — | TODO | B0-T03 | | |
-| B10-T06 | ContextSignals assembly | — | TODO | B10-T03, B10-T04 | | |
-| B10-T07 | PII redaction on transcripts | — | TODO | B10-T01 | | |
+| B10-T01 | Streaming ASR (IndicConformer/Whisper) | claude-b10 | REVIEW | B2-T04 | services/context/asr.py | streaming buffer + rolling transcript + word tokens; Whisper / IndicConformer wrappers lazy (not installed); scripted backend tested |
+| B10-T02 | Language ID + code-switch detection | claude-b10 | DONE | B10-T01 | services/context/langid.py | 12 Indic scripts + Hinglish lexicon, matrix-language rule, segment-level hi/mr disambiguation, code-switch flag |
+| B10-T03 | Social-engineering intent classifier (local LLM) | claude-b10 | REVIEW | B10-T01 | services/context/intent.py, services/context/seed.py, services/context/data/intent_seed.jsonl | rules (en/hi/Hinglish) + local-only LLM (I6 enforced, async I10); 196-scenario seed set (self-authored: regression only, not accuracy evidence); LLM not run |
+| B10-T04 | Metadata risk scorer | claude-b10 | DONE | B1-T08 | services/context/metadata_risk.py | first-time, CLI mismatch, intl-spoofed CLI, trunk reputation, off-hours, velocity; history backend is in-memory interface |
+| B10-T05 | Transaction context connector (mock core banking) | claude-b10 | REVIEW | B0-T03 | services/context/transaction.py | mock core banking: unusual amount, new/recent beneficiary, first high-value, privileged request, sensitivity tier; real connector per tenant |
+| B10-T06 | ContextSignals assembly | claude-b10 | DONE | B10-T03, B10-T04 | services/context/engine.py, services/context/main.py | ContextSignals + explanations + final_risk; DoD test: genuine voice LOW + fraud script intent HIGH, both in breakdown |
+| B10-T07 | PII redaction on transcripts | claude-b10 | DONE | B10-T01 | services/context/redact.py | card(Luhn)/OTP/Aadhaar/phone/IFSC/PAN/UPI/email/account + spoken digits (en/hi); applied before storage and before the LLM |
 
 ### B11 — Policy & alerting
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,7 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-17T07:00Z | claude-b10 | B10-T01-07 | TODO -> DONE(T02,T04,T06,T07) / REVIEW(T01,T03,T05) | services/context/, tests/unit/test_b10_context.py | 239 tests pass; ASR models + local LLM deferred to setup |
 | 2026-09-17T06:00Z | claude-b9 | B9-T01-08 | TODO -> DONE(T03,T04,T05,T07) / REVIEW(T01,T02,T06,T08) | services/fusion/, packages/vg_models/calibration.py, tests/unit/test_b9_fusion.py | 220 tests pass; replay.py now uses RiskEngine; fixed flaky sample-store TTL test (Windows clock resolution) |
 | 2026-09-17T05:00Z | claude-b8 | B8-T01-06 | TODO -> DONE(T01,T06) / REVIEW(T02-T05) | packages/vg_models/heads/head_e_liveness/, packages/vg_models/heads/head_f_watermark/, tests/unit/test_b8_liveness_watermark.py | 202 tests pass; ADR 0007; AudioSeal + B10 ASR deferred |
 | 2026-09-17T04:00Z | claude-b7 | B7-T01-06 | TODO -> DONE(T02,T03,T05,T06) / REVIEW(T01,T04) | packages/vg_models/heads/head_d_speaker/, services/enrollment/, tests/unit/test_b7_speaker.py | 188 tests pass; neural embedder + cohort deferred to setup |

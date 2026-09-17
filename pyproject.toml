@@ -81,6 +81,17 @@ select = ["E", "F", "I", "N", "W", "UP", "ANN", "S", "B", "A"]
 ignore = ["ANN101", "ANN102", "ANN204", "S101"]
 exclude = ["packages/vg_core/generated/", "third_party/"]
 
+[tool.ruff.lint.per-file-ignores]
+# Regex pattern tables and multilingual word lists read better unwrapped.
+"services/context/intent.py" = ["E501"]
+"services/context/seed.py" = ["E501"]
+"services/context/langid.py" = ["E501"]
+"services/context/redact.py" = ["E501"]
+"packages/vg_models/heads/head_e_liveness/challenge.py" = ["E501"]
+"packages/vg_models/heads/head_c_prosody/disfluency.py" = ["E501"]
+# Test data literals (multilingual sentences, long fixtures).
+"tests/**" = ["E501"]
+
 [tool.black]
 line-length = 100
 target-version = ["py311"]
