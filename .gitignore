@@ -25,3 +25,6 @@ dist/
 
 # training runs / checkpoints
 /runs/
+
+# local tooling (launch configs for the desktop preview)
+.claude/

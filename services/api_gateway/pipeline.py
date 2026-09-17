@@ -47,9 +47,12 @@ log = get_logger(__name__)
 class Event:
     type: str  # window_score | session_risk | context_signals | policy_decision
     data: Any  # pydantic model
+    extra: dict[str, Any] = field(
+        default_factory=dict
+    )  # UI-facing additions (not part of the proto)
 
     def to_json(self) -> dict[str, Any]:
-        return {"type": self.type, "data": self.data.model_dump(mode="json")}
+        return {"type": self.type, "data": self.data.model_dump(mode="json"), **self.extra}
 
 
 def default_heads() -> list[DetectionHead]:
@@ -58,6 +61,13 @@ def default_heads() -> list[DetectionHead]:
         h.strip().upper() for h in os.getenv("VG_GATEWAY_HEADS", "A,B,C,F").split(",") if h.strip()
     ]
     heads: list[DetectionHead] = []
+    if wanted == [
+        "STUB"
+    ]:  # dev/demo only: deterministic pseudo-random scores, clearly versioned "stub"
+        from packages.vg_core.stub_head import StubHead
+
+        log.warning("gateway_stub_heads", note="scores are pseudo-random; for UI demos only")
+        return [StubHead(h, abstain_fraction=0.05) for h in "ABC"]
     for h in wanted:
         if h == "A":
             from packages.vg_models.heads.head_a_ssl.head import HeadA
@@ -219,4 +229,15 @@ class SessionPipeline:
         )
         self.last_decision_state = self.last_risk.state
         self.decisions.append(res)
-        return [Event("policy_decision", res.decision)]
+        return [
+            Event(
+                "policy_decision",
+                res.decision,
+                {
+                    "agent_prompt": res.agent_prompt,
+                    "band": res.band,
+                    "tier": res.tier,
+                    "risk": res.risk,
+                },
+            )
+        ]

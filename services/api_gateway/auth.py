@@ -148,7 +148,8 @@ class KeyStore:
 ROUTE_SCOPES: list[tuple[str, re.Pattern[str], str]] = [
     ("*", re.compile(r"^/v1/stream$"), "stream"),
     ("*", re.compile(r"^/v1/analyze/"), "analyze"),
-    ("*", re.compile(r"^/v1/sessions$"), "stream"),
+    ("POST", re.compile(r"^/v1/sessions$"), "stream"),
+    ("GET", re.compile(r"^/v1/sessions$"), "evidence:read"),
     ("POST", re.compile(r"^/v1/sessions/[^/]+/audio$"), "stream"),
     ("POST", re.compile(r"^/v1/sessions/[^/]+/close$"), "stream"),
     ("GET", re.compile(r"^/v1/sessions/[^/]+/risk$"), "stream"),
@@ -161,7 +162,7 @@ ROUTE_SCOPES: list[tuple[str, re.Pattern[str], str]] = [
     ("*", re.compile(r"^/v1/tenants/[^/]+/webhooks"), "webhooks:admin"),
     ("*", re.compile(r"^/v1/tenants/[^/]+/(profile|shadow|keys)"), "admin"),
 ]
-PUBLIC = re.compile(r"^/(healthz|docs|redoc|openapi\.json)$")
+PUBLIC = re.compile(r"^/(healthz|docs|redoc|openapi\.json)?$|^/ui(/.*)?$")
 TENANT_PATH = re.compile(r"^/v1/tenants/([^/]+)")
 
 

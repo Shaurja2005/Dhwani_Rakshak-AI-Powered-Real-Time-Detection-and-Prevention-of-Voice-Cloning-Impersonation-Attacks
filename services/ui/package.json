@@ -1,1 +1,10 @@
-{ "name": "voiceguard-ui", "private": true, "version": "0.1.0" }
+{
+  "name": "voiceguard-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "VoiceGuard agent / analyst console. Plain ES modules, no build step; served by the API gateway at /ui.",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}

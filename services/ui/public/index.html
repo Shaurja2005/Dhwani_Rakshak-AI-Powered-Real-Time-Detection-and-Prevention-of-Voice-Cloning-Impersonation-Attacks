@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoiceGuard Console</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar no-print">
+    <div class="brand">VoiceGuard <span class="muted small">caller voice checks</span></div>
+    <nav aria-label="Main">
+      <a href="#/live" data-route="live">Live call</a>
+      <a href="#/forensics" data-route="forensics">Call review</a>
+      <a href="#/demo" data-route="demo">Demo</a>
+      <a href="#/admin" data-route="admin">Admin</a>
+    </nav>
+    <button id="open-settings" class="ghost">Settings</button>
+  </header>
+
+  <p class="disclaimer no-print">These checks are advice to help you decide — they are never proof on their own. When in doubt, verify the caller another way.</p>
+
+  <main id="view" tabindex="-1"></main>
+
+  <footer class="no-print"><span class="small muted">What the colours mean:</span> <span id="legend"></span></footer>
+
+  <dialog id="settings">
+    <form id="settings-form" method="dialog" class="stack">
+      <h2>Connect</h2>
+      <label>API key <input name="apiKey" type="password" autocomplete="off" required></label>
+      <label>Tenant <input name="tenant" required></label>
+      <p class="small muted">Stored only in this browser tab and cleared when it closes.</p>
+      <button class="primary">Save</button>
+    </form>
+  </dialog>
+
+  <div id="toasts" aria-live="polite"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

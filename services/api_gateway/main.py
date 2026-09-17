@@ -34,6 +34,34 @@ def bootstrap(keys: KeyStore) -> str:
     return raw
 
 
+def build_enrollment(data: Path) -> object:
+    """Enrollment service for the admin console. Dev fallbacks are loud, never silent."""
+    import base64
+    import secrets
+
+    from packages.vg_models.heads.head_d_speaker.embedders import build_embedder
+    from packages.vg_models.heads.head_d_speaker.vault import VoiceprintVault
+    from services.enrollment.core import EnrollmentService
+
+    tenant = os.getenv("VG_BOOTSTRAP_TENANT", "demo")
+    var = f"VG_VAULT_KEY_{tenant.upper().replace('-', '_')}"
+    if not os.getenv(var):
+        os.environ[var] = base64.b64encode(secrets.token_bytes(32)).decode()
+        log.warning(
+            "vault_ephemeral_key",
+            tenant=tenant,
+            note=f"{var} not set: voiceprints enrolled now cannot be decrypted after restart (dev only)",
+        )
+    name = os.getenv("VG_HEAD_D_EMBEDDER", "ecapa")
+    try:
+        embedder = build_embedder(name)
+    except Exception as exc:  # noqa: BLE001 - optional model not installed
+        log.warning("enrollment_baseline_embedder", wanted=name, error=str(exc))
+        embedder = build_embedder("mfcc_stats")
+    (data / "vault").mkdir(parents=True, exist_ok=True)
+    return EnrollmentService(VoiceprintVault(data / "vault" / "voiceprints.db"), embedder)
+
+
 def main() -> None:
     import uvicorn
 
@@ -47,16 +75,19 @@ def main() -> None:
     )
     keys = KeyStore()
     raw = bootstrap(keys)
+    enrollment = build_enrollment(data)
+    from packages.vg_models.heads.head_e_liveness.challenge import ChallengeRegistry
+
+    challenges = ChallengeRegistry()
     print(
         f"VoiceGuard gateway bootstrap API key for tenant '{os.getenv('VG_BOOTSTRAP_TENANT', 'demo')}': {raw}"
     )
     grpc_server = serve(services, keys, os.getenv("VG_GRPC_ADDRESS", "[::]:50051"))
     try:
-        uvicorn.run(
-            create_app(services, keys),
-            host="0.0.0.0",
-            port=int(os.getenv("VG_GATEWAY_PORT", "8080")),
-        )  # noqa: S104
+        app = create_app(services, keys, enrollment=enrollment, challenges=challenges)
+        port = int(os.getenv("VG_GATEWAY_PORT", "8080"))
+        print(f"Agent / analyst UI: http://localhost:{port}/ui/")
+        uvicorn.run(app, host="0.0.0.0", port=port)
     finally:
         grpc_server.stop(grace=5)
 

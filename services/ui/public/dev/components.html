@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoiceGuard Components</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <p class="disclaimer">Component preview with sample data (no API calls). For design review and UI development only.</p>
+  <main>
+    <h2>High-risk call (shadow mode)</h2>
+    <div id="high"></div>
+    <h2 style="margin-top:2rem">Not enough audio</h2>
+    <div id="abstain"></div>
+  </main>
+  <script type="module">
+    import { alertBanner, feedbackButtons, gauge, headBars, intentPanel, timeline, legend } from "../lib/components.js";
+    import { createCallModel, reduce } from "../lib/state.js";
+
+    const ps = [0.12, 0.18, 0.15, 0.3, 0.45, 0.62, 0.71, 0.78, 0.83, 0.86];
+    let m = createCallModel("demo-session");
+    ps.forEach((p, i) => {
+      m = reduce(m, { type: "window_score", data: { window_id: i, p_spoof: p, state: p >= 0.7 ? "HIGH" : p >= 0.4 ? "ELEVATED" : "LOW",
+        contributions: { A: 0.55, B: 0.25, C: 0.2 }, heads_abstained: ["D", "E", "F"] } });
+    });
+    m = reduce(m, { type: "session_risk", data: { state: "HIGH", risk_score: 86 } });
+    const segs = [
+      { start_ms: 1200, end_ms: 5000, text: "Hello, this is the CFO, I'm in a board meeting so don't call me back." },
+      { start_ms: 5000, end_ms: 9800, text: "Transfer 18 lakh to the new vendor account right now and keep this confidential." },
+    ];
+    m = { ...m, transcript: segs };
+    m = reduce(m, { type: "context_signals", data: { intent_labels: ["authority_pressure", "callback_resistance", "payment_request", "unusual_beneficiary", "manufactured_urgency", "secrecy_demand"],
+      transcript_snippets: [ { text: "don't call me back", label: "callback_resistance" }, { text: "right now", label: "manufactured_urgency" }, { text: "keep this confidential", label: "secrecy_demand" }, { text: "new vendor account", label: "unusual_beneficiary" } ],
+      language_detected: "en", code_switched: false, intent_risk: 0.97 } });
+    m = reduce(m, { type: "policy_decision", band: "HIGH",
+      agent_prompt: "Strong signs this call may not be who it claims to be. The caller is avoiding a call back. End the call politely and call back on the number registered to the account. Do not use a number the caller gives you.",
+      data: { actions: ["agent_banner", "force_callback", "hold_transaction", "supervisor_escalate"], suppressed: true, evidence_bundle_id: "sha256:3f2a…" } });
+
+    const layout = (model) => `
+      ${alertBanner(model)}
+      <div class="grid">
+        <section class="card">${gauge(model.risk)}</section>
+        <section class="card"><h3>Risk over the call</h3>${timeline(model.timeline)}</section>
+        <section class="card"><h3>What is driving the score</h3>${headBars(model.contributions, model.abstainedHeads)}</section>
+        <section class="card wide"><h3>Conversation</h3>${intentPanel(model.context, model.transcript)}</section>
+      </div>
+      ${feedbackButtons("sha256:3f2a…")}`;
+    document.getElementById("high").innerHTML = layout(m);
+
+    let a = createCallModel("quiet");
+    a = reduce(a, { type: "window_score", data: { window_id: 0, p_spoof: 0, state: "ABSTAIN", contributions: {}, heads_abstained: ["A", "B", "C"] } });
+    a = reduce(a, { type: "session_risk", data: { state: "ABSTAIN", risk_score: 0 } });
+    a = reduce(a, { type: "policy_decision", band: "ABSTAIN", agent_prompt: "", data: { actions: [], suppressed: false, evidence_bundle_id: "" } });
+    document.getElementById("abstain").innerHTML = layout(a) + `<p>${legend()}</p>`;
+  </script>
+</body>
+</html>

@@ -130,3 +130,14 @@ non-commercial → the primary model is **research lineage**.
 - [ ] Deploy telephony bridges next to the PBX / Twilio webhook (`services/api_gateway/connectors.py`);
       Twilio needs a public HTTPS/WSS endpoint (ngrok for local dev).
 - [ ] Edge SDK needs the distilled ONNX model from B14.
+
+## B13 — Agent / analyst UI
+
+- [ ] Run the console: `python scripts/dev_gateway.py` → http://localhost:8765/ui/
+      (dev key `vg_dev_local_console_key_0000`, tenant `demo`, stub heads). Component preview
+      without a key: http://localhost:8765/ui/dev/components.html
+- [ ] **Definition of Done needs people**: sit a non-technical colleague in front of a live cloned
+      call and check they say "don't trust this caller" unprompted. Record the result.
+- [ ] Production auth for the console: SSO in front of `/ui` issuing short-lived, scoped keys
+      (never paste admin keys into a browser).
+- [ ] Demo mode needs trained heads and a *consented* cloned voice (ETHICS.md consent register).

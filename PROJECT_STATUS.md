@@ -48,7 +48,7 @@
 | B10 | Context & intent | claude-b10 | WIP | 4/7 |
 | B11 | Policy & alerting | claude-b11 | WIP | 6/8 |
 | B12 | APIs & SDKs | claude-b12 | WIP | 6/9 |
-| B13 | Agent/analyst UI | — | TODO | 0/7 |
+| B13 | Agent/analyst UI | claude-b13 | REVIEW | 6/7 |
 | B14 | Serving & optimization | — | TODO | 0/6 |
 | B15 | Evaluation harness | — | TODO | 0/10 |
 | B16 | Privacy & compliance | — | TODO | 0/9 |
@@ -218,13 +218,13 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B13 — UI
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B13-T01 | Live call view (gauge, timeline, head bars) | — | TODO | B0-T05 | | build on stub stream |
-| B13-T02 | Live transcript with intent highlights | — | TODO | B10-T06 | | |
-| B13-T03 | Alert banner + one-click step-up | — | TODO | B11-T02 | | |
-| B13-T04 | Post-call forensics view + PDF export | — | TODO | B11-T04 | | |
-| B13-T05 | Admin console (profiles, enrollment, shadow) | — | TODO | B11-T01, B7-T02 | | |
-| B13-T06 | Analyst feedback buttons | — | TODO | B13-T03 | | |
-| B13-T07 | Demo mode (genuine vs cloned side by side) | — | TODO | B13-T01 | | |
+| B13-T01 | Live call view (gauge, timeline, head bars) | claude-b13 | DONE | B0-T05 | services/ui/public/views/live.js, services/ui/public/lib/components.js, services/ui/public/lib/state.js | gauge, timeline sparkline, named head bars, state badge with distinct ABSTAIN; watch live calls or simulate from a file; verified visually (desktop + 375px) |
+| B13-T02 | Live transcript with intent highlights | claude-b13 | DONE | B10-T06 | services/ui/public/lib/components.js | transcript with inline highlighted intent phrases + plain-language chips; numbers pre-redacted by B10 |
+| B13-T03 | Alert banner + one-click step-up | claude-b13 | DONE | B11-T02 | services/ui/public/views/live.js | alert banner with agent prompt, recommended actions, shadow-mode note; call-back + challenge-phrase buttons (challenge via B8 API) |
+| B13-T04 | Post-call forensics view + PDF export | claude-b13 | DONE | B11-T04 | services/ui/public/views/forensics.js | timeline scrub, evidence bundle with integrity check, model versions, full rationale, PDF via print stylesheet |
+| B13-T05 | Admin console (profiles, enrollment, shadow) | claude-b13 | DONE | B11-T01, B7-T02 | services/ui/public/views/admin.js | profile bands table + JSON edit, shadow toggle, voiceprint list/enrol/delete with consent reference |
+| B13-T06 | Analyst feedback buttons | claude-b13 | DONE | B13-T03 | services/ui/public/views/live.js, services/ui/public/views/forensics.js | true/false positive buttons -> /v1/evidence/{id}/feedback |
+| B13-T07 | Demo mode (genuine vs cloned side by side) | claude-b13 | REVIEW | B13-T01 | services/ui/public/views/demo.js | side-by-side genuine vs cloned analysis with playback-synchronised gauges; needs trained heads + consented clone to be meaningful |
 
 ### B14 — Serving & optimization
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,7 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-17T10:00Z | claude-b13 | B13-T01-07 | TODO -> DONE(T01-T06) / REVIEW(T07) | services/ui/, services/api_gateway/app.py (watch WS, session list, /ui static), tests/unit/test_b12_api.py, services/ui/test/ | 267 py + 6 UI + 5 JS tests; no-build ES modules; DoD (non-technical user test) still needs real people |
 | 2026-09-17T09:00Z | claude-b12 | B12-T01-09 | TODO -> DONE(T01-T03,T05,T06,T08) / REVIEW(T04,T09) / BLOCKED(T07) | services/api_gateway/, sdks/, docs/api/, examples/, tests/unit/test_b12_api.py | 266 py + 5 JS tests pass; removed invalid `option python_package` from proto (B0 bug: codegen never worked) |
 | 2026-09-17T08:00Z | claude-b11 | B11-T01-08 | TODO -> DONE(T01-T04,T06,T07) / REVIEW(T05,T08) | services/policy/, tests/unit/test_b11_policy.py, docs/adr/0008-intent-labels-credential-payment.md | 253 tests pass; ADR 0008 fixes B10 label/schema drift caught by bundle validation |
 | 2026-09-17T07:00Z | claude-b10 | B10-T01-07 | TODO -> DONE(T02,T04,T06,T07) / REVIEW(T01,T03,T05) | services/context/, tests/unit/test_b10_context.py | 239 tests pass; ASR models + local LLM deferred to setup |

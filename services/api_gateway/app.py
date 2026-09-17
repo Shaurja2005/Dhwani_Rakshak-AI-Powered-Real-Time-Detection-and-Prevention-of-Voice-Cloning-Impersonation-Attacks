@@ -27,10 +27,15 @@ Post-call and platform:
 
 from __future__ import annotations
 
+import asyncio
 import base64
+import contextlib
 import json
+import queue
 import threading
+from collections import defaultdict
 from dataclasses import asdict
+from pathlib import Path
 from typing import Any, Literal
 
 from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
@@ -39,7 +44,15 @@ from pydantic import BaseModel, Field
 
 from packages.vg_core.logging import get_logger
 from packages.vg_core.models import CallMetadata
-from services.api_gateway.auth import SCOPES, ApiKey, AuthError, KeyStore, authorize, extract_key
+from services.api_gateway.auth import (
+    SCOPES,
+    ApiKey,
+    AuthError,
+    KeyStore,
+    authorize,
+    extract_key,
+    required_scope,
+)
 from services.api_gateway.grpc_server import decode_file, run_file
 from services.api_gateway.pipeline import Event, Services, SessionPipeline
 from services.api_gateway.webhooks import WebhookRegistry
@@ -130,7 +143,7 @@ def create_app(
             raw = extract_key(
                 {k.lower(): v for k, v in request.headers.items()}, dict(request.query_params)
             )
-            if request.url.path in ("/healthz", "/docs", "/redoc", "/openapi.json"):
+            if required_scope(request.method, request.url.path) is None:  # health, docs, static UI
                 return await call_next(request)
             key = keys.authenticate(raw)
             authorize(key, request.method, request.url.path)
@@ -150,11 +163,19 @@ def create_app(
         if tenant != key.tenant_id:
             raise HTTPException(404, "unknown session")  # do not reveal other tenants' sessions
 
+    watchers: dict[str, list[queue.Queue[dict[str, Any]]]] = defaultdict(list)
+
     def emit(tenant_id: str, events: list[Event]) -> list[dict[str, Any]]:
         out = []
         for ev in events:
             j = ev.to_json()
+            j["session_id"] = getattr(ev.data, "session_id", None)
             webhooks.publish(tenant_id, ev.type, j["data"])
+            with lock:
+                targets = list(watchers.get(j["session_id"] or "", []))
+            for q in targets:  # agent UIs watching this call (B13)
+                with contextlib.suppress(queue.Full):
+                    q.put_nowait(j)
             out.append(j)
         return out
 
@@ -177,6 +198,12 @@ def create_app(
         if pipe is None:
             raise HTTPException(409, "session is closed")
         return pipe
+
+    @app.get("/", include_in_schema=False)
+    def root() -> Any:
+        from fastapi.responses import RedirectResponse
+
+        return RedirectResponse("/ui/")
 
     @app.get("/healthz")
     def healthz() -> dict[str, str]:
@@ -418,6 +445,77 @@ def create_app(
     def delete_webhook(tenant_id: str, sub_id: str) -> None:
         if not webhooks.remove(tenant_id, sub_id):
             raise HTTPException(404, "no such webhook")
+
+    # ---------------------------------------------------------------- agent UI support (B13)
+    @app.get("/v1/sessions")
+    def list_sessions(key: ApiKey = Depends(key_of)) -> dict[str, Any]:
+        with lock:
+            active = [p for p in sessions.values() if p.meta.tenant_id == key.tenant_id]
+        return {
+            "sessions": [
+                {
+                    "session_id": p.meta.session_id,
+                    "started_at": p.meta.started_at.isoformat(),
+                    "caller_number": p.meta.caller_number,
+                    "claimed_identity_id": p.meta.claimed_identity_id,
+                    "channel": p.meta.channel.value,
+                    "state": p.last_risk.state.value if p.last_risk else "ABSTAIN",
+                    "risk_score": p.last_risk.risk_score if p.last_risk else 0,
+                }
+                for p in active
+            ]
+        }
+
+    @app.websocket("/v1/sessions/{session_id}/watch")
+    async def watch(ws: WebSocket, session_id: str) -> None:
+        try:
+            key = keys.authenticate(
+                extract_key({k.lower(): v for k, v in ws.headers.items()}, dict(ws.query_params))
+            )
+            authorize(key, "GET", f"/v1/sessions/{session_id}/timeline")
+            keys.charge_request(key)
+            own_session(session_id, key)
+        except (AuthError, HTTPException) as e:
+            await ws.close(
+                code=4003, reason=getattr(e, "message", None) or str(getattr(e, "detail", e))
+            )
+            return
+        await ws.accept()
+        q: queue.Queue[dict[str, Any]] = queue.Queue(maxsize=2000)
+        with lock:
+            watchers[session_id].append(q)
+            pipe = sessions.get(session_id)
+        try:
+            if pipe is not None and pipe.last_risk is not None:  # catch-up snapshot
+                await ws.send_json(
+                    {
+                        "type": "session_risk",
+                        "session_id": session_id,
+                        "data": pipe.last_risk.model_dump(mode="json"),
+                    }
+                )
+            while True:
+                try:
+                    msg = await asyncio.to_thread(q.get, True, 0.5)
+                except queue.Empty:
+                    if session_id not in sessions:
+                        break
+                    continue
+                await ws.send_json(msg)
+        except WebSocketDisconnect:
+            pass
+        finally:
+            with lock:
+                if q in watchers[session_id]:
+                    watchers[session_id].remove(q)
+            with contextlib.suppress(Exception):
+                await ws.close()
+
+    ui_dir = Path(__file__).resolve().parents[1] / "ui" / "public"
+    if ui_dir.exists():
+        from fastapi.staticfiles import StaticFiles
+
+        app.mount("/ui", StaticFiles(directory=str(ui_dir), html=True), name="ui")
 
     # ---------------------------------------------------------------- mounted blocks
     if enrollment is not None:

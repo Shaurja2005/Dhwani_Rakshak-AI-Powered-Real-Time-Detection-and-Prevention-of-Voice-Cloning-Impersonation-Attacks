@@ -446,3 +446,44 @@ def test_session_rest_rejects_foreign_tenant_timeline_before_existing(gw: dict[s
         gw["client"].get(f"/v1/sessions/{uuid.uuid4()}/timeline", headers=hdr(gw["a"])).status_code
         == 404
     )
+
+
+# ---------------------------------------------------------------- B13 gateway support
+def test_ui_static_session_list_watch_and_agent_prompt(gw: dict[str, Any]) -> None:
+    c = gw["client"]
+    assert c.get("/", follow_redirects=False).headers["location"] == "/ui/"
+    page = c.get("/ui/")
+    assert page.status_code == 200 and "VoiceGuard" in page.text  # served without an API key
+    assert c.get("/ui/lib/state.js").status_code == 200
+    meta = call_metadata("bank-a", caller_number="+919800000000")
+    sid = c.post("/v1/sessions", json={"call_metadata": meta}, headers=hdr(gw["a"])).json()[
+        "session_id"
+    ]
+    listed = c.get("/v1/sessions", headers=hdr(gw["a"])).json()["sessions"]
+    assert [s["session_id"] for s in listed] == [sid] and listed[0][
+        "caller_number"
+    ] == "+919800000000"
+    assert c.get("/v1/sessions", headers=hdr(gw["b"])).json()["sessions"] == []  # tenant isolation
+    with pytest.raises(Exception):  # noqa: B017 - other tenant cannot watch
+        with c.websocket_connect(f"/v1/sessions/{sid}/watch?api_key={gw['b']}") as ws:
+            ws.receive_json()
+    with c.websocket_connect(f"/v1/sessions/{sid}/watch?api_key={gw['a']}") as watcher:
+        audio = pcm16(voiced(4.0))
+        for i in range(0, len(audio), 16000):
+            c.post(
+                f"/v1/sessions/{sid}/audio",
+                json={"payload_base64": base64.b64encode(audio[i : i + 16000]).decode()},
+                headers=hdr(gw["a"]),
+            )
+        c.post(f"/v1/sessions/{sid}/close", headers=hdr(gw["a"]))
+        seen = []
+        try:
+            while True:
+                seen.append(watcher.receive_json())
+        except Exception:  # noqa: BLE001 - server closes once the call ends
+            pass
+    types = [m["type"] for m in seen]
+    assert "window_score" in types and types[-1] == "policy_decision"
+    final = seen[-1]
+    assert "agent_prompt" in final and final["band"] in ("LOW", "ELEVATED", "HIGH", "ABSTAIN")
+    assert final["session_id"] == sid
