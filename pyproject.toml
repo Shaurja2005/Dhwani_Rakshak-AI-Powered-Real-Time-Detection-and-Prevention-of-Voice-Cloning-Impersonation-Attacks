@@ -89,6 +89,11 @@ exclude = ["packages/vg_core/generated/", "third_party/"]
 "services/context/redact.py" = ["E501"]
 "packages/vg_models/heads/head_e_liveness/challenge.py" = ["E501"]
 "packages/vg_models/heads/head_c_prosody/disfluency.py" = ["E501"]
+# SQL statements and human-readable rationale / agent copy.
+"services/policy/evidence.py" = ["E501"]
+"services/policy/feedback.py" = ["E501"]
+"services/policy/engine.py" = ["E501"]
+"services/policy/actions.py" = ["E501"]
 # Test data literals (multilingual sentences, long fixtures).
 "tests/**" = ["E501"]
 

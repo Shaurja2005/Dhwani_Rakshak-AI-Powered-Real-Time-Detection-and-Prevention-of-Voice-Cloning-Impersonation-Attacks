@@ -338,3 +338,11 @@ def test_context_service_api() -> None:
     )
     assert "1234" not in json.dumps(body)
     assert c.get("/v1/sessions/nope/context").status_code == 404
+
+
+def test_intent_labels_match_context_signals_schema() -> None:
+    """ADR 0008: the schema enum and the classifier's label set must never drift apart."""
+    from services.context.intent import LABELS
+
+    schema = json.loads(Path("schemas/context_signals.schema.json").read_text(encoding="utf-8"))
+    assert set(schema["properties"]["intent_labels"]["items"]["enum"]) == set(LABELS)

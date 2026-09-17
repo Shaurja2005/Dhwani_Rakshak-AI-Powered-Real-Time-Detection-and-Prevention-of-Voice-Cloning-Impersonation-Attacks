@@ -306,6 +306,7 @@ Any change to §2, §3, §4, or §6 requires a new ADR file in `docs/adr/NNNN-ti
 | 0005 | — | `ABSTAIN` as a first-class pipeline state | Accepted |
 | 0006 | 2026-09-17 | `untrained` abstain reason for heads without weights | Accepted |
 | 0007 | 2026-09-17 | Watermark absence represented as a neutral abstain; fusion filters Head F | Accepted |
+| 0008 | 2026-09-17 | Intent labels `credential_request` and `payment_request` added to ContextSignals | Accepted |
 
 ## 13. Glossary of external references
 

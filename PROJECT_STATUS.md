@@ -46,7 +46,7 @@
 | B8 | Heads E/F — liveness & watermark | claude-b8 | WIP | 2/6 |
 | B9 | Fusion & risk engine | claude-b9 | WIP | 4/8 |
 | B10 | Context & intent | claude-b10 | WIP | 4/7 |
-| B11 | Policy & alerting | — | TODO | 0/8 |
+| B11 | Policy & alerting | claude-b11 | WIP | 6/8 |
 | B12 | APIs & SDKs | — | TODO | 0/9 |
 | B13 | Agent/analyst UI | — | TODO | 0/7 |
 | B14 | Serving & optimization | — | TODO | 0/6 |
@@ -193,14 +193,14 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B11 — Policy & alerting
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B11-T01 | Rules engine + tenant threshold profiles | — | TODO | B9-T05 | | |
-| B11-T02 | Action library | — | TODO | B11-T01 | | |
-| B11-T03 | Transaction-sensitivity tiered thresholds | — | TODO | B11-T01, B10-T05 | | |
-| B11-T04 | Evidence bundle (immutable, hashed) | — | TODO | B9-T08 | | |
-| B11-T05 | Multi-channel notification + SIEM webhook | — | TODO | B11-T02 | | |
-| B11-T06 | Pre-transaction warning prompts | — | TODO | B11-T02 | | |
-| B11-T07 | Shadow mode (default for new tenants) | — | TODO | B11-T01 | | |
-| B11-T08 | Analyst feedback loop → eval + replay buffer | — | TODO | B11-T04, B13-T06 | | |
+| B11-T01 | Rules engine + tenant threshold profiles | claude-b11 | DONE | B9-T05 | services/policy/profiles.py, services/policy/engine.py | profiles are data (JSON) per tenant; 3 built-in profiles; band from final_risk |
+| B11-T02 | Action library | claude-b11 | DONE | B11-T01 | services/policy/actions.py | all 12 contract actions with audience + agent wording; label-triggered minimum actions |
+| B11-T03 | Transaction-sensitivity tiered thresholds | claude-b11 | DONE | B11-T01, B10-T05 | services/policy/profiles.py | per-tier bands (low/medium/high transaction sensitivity), e.g. balance inquiry HIGH at 0.95, wire at 0.60 |
+| B11-T04 | Evidence bundle (immutable, hashed) | claude-b11 | DONE | B9-T08 | services/policy/evidence.py | sha256 content hash, schema-validated, append-only SQLite with trigger + hash chain; no audio |
+| B11-T05 | Multi-channel notification + SIEM webhook | claude-b11 | REVIEW | B11-T02 | services/policy/notify.py | WebSocket pub/sub + HMAC-signed SIEM webhook with backoff tested; SMS/email/push are recording providers (real providers per tenant) |
+| B11-T06 | Pre-transaction warning prompts | claude-b11 | DONE | B11-T02 | services/policy/actions.py | plain, advisory agent prompts; ABSTAIN wording never implies safety |
+| B11-T07 | Shadow mode (default for new tenants) | claude-b11 | DONE | B11-T01 | services/policy/profiles.py, services/policy/notify.py | shadow mode default for new tenants: decisions + bundles recorded, nothing dispatched |
+| B11-T08 | Analyst feedback loop → eval + replay buffer | claude-b11 | REVIEW | B11-T04, B13-T06 | services/policy/feedback.py | analyst labels -> eval rows + replay candidates; UI buttons are B13 |
 
 ### B12 — APIs & SDKs
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,7 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-17T08:00Z | claude-b11 | B11-T01-08 | TODO -> DONE(T01-T04,T06,T07) / REVIEW(T05,T08) | services/policy/, tests/unit/test_b11_policy.py, docs/adr/0008-intent-labels-credential-payment.md | 253 tests pass; ADR 0008 fixes B10 label/schema drift caught by bundle validation |
 | 2026-09-17T07:00Z | claude-b10 | B10-T01-07 | TODO -> DONE(T02,T04,T06,T07) / REVIEW(T01,T03,T05) | services/context/, tests/unit/test_b10_context.py | 239 tests pass; ASR models + local LLM deferred to setup |
 | 2026-09-17T06:00Z | claude-b9 | B9-T01-08 | TODO -> DONE(T03,T04,T05,T07) / REVIEW(T01,T02,T06,T08) | services/fusion/, packages/vg_models/calibration.py, tests/unit/test_b9_fusion.py | 220 tests pass; replay.py now uses RiskEngine; fixed flaky sample-store TTL test (Windows clock resolution) |
 | 2026-09-17T05:00Z | claude-b8 | B8-T01-06 | TODO -> DONE(T01,T06) / REVIEW(T02-T05) | packages/vg_models/heads/head_e_liveness/, packages/vg_models/heads/head_f_watermark/, tests/unit/test_b8_liveness_watermark.py | 202 tests pass; ADR 0007; AudioSeal + B10 ASR deferred |

@@ -12,7 +12,7 @@
     "intent_risk":         { "type": "number", "minimum": 0, "maximum": 1 },
     "intent_labels":       {
       "type": "array",
-      "items": { "type": "string", "enum": ["manufactured_urgency", "secrecy_demand", "authority_pressure", "unusual_channel", "callback_resistance", "unusual_beneficiary"] }
+      "items": { "type": "string", "enum": ["manufactured_urgency", "secrecy_demand", "authority_pressure", "unusual_channel", "callback_resistance", "unusual_beneficiary", "credential_request", "payment_request"] }
     },
     "transcript_snippets": {
       "type": "array",

@@ -109,3 +109,13 @@ non-commercial → the primary model is **research lineage**.
       self-authored and only a regression check) — B15.
 - [ ] Implement the tenant's real `TransactionConnector` (core banking / ERP) and the
       call-history / registered-numbers / trunk-reputation backend for metadata risk.
+
+## B11 — Policy & alerting
+
+- [ ] Agree each tenant's profile (bands per transaction tier, actions) with their risk team;
+      store as `data/policy/profiles/<tenant>.json`. Keep new tenants in shadow mode until
+      B9 thresholds are calibrated on their traffic.
+- [ ] Configure SIEM webhook URL + shared secret per tenant (`WebhookTarget`); give the SOC the
+      signature verification snippet (`notify.verify_signature`).
+- [ ] Replace `RecordingProvider` with real SMS / email / push providers (on-prem or tenant-approved).
+- [ ] Production evidence store: PostgreSQL with append-only role + retention policy (B16), or WORM storage.
