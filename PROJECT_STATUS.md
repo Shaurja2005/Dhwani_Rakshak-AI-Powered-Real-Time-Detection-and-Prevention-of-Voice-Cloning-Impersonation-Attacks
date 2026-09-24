@@ -49,7 +49,7 @@
 | B11 | Policy & alerting | claude-b11 | WIP | 6/8 |
 | B12 | APIs & SDKs | claude-b12 | WIP | 6/9 |
 | B13 | Agent/analyst UI | claude-b13 | REVIEW | 6/7 |
-| B14 | Serving & optimization | — | TODO | 0/6 |
+| B14 | Serving & optimization | claude-b14 | WIP | 1/6 |
 | B15 | Evaluation harness | — | TODO | 0/10 |
 | B16 | Privacy & compliance | — | TODO | 0/9 |
 | B17 | Deployment & ops | — | TODO | 0/8 |
@@ -229,12 +229,12 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B14 — Serving & optimization
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B14-T01 | Distill ensemble → student model | — | TODO | B4-T08 | | |
-| B14-T02 | INT8 quantization + accuracy delta report | — | TODO | B14-T01 | | publish the cost |
-| B14-T03 | ONNX export + parity check | — | TODO | B14-T01 | | |
-| B14-T04 | Triton (server) + TFLite/ORT-Mobile (edge) | — | TODO | B14-T03 | | |
-| B14-T05 | Load test + cost per 1k call-minutes | — | TODO | B14-T04 | | |
-| B14-T06 | Backpressure & graceful degradation | — | TODO | B14-T04 | | invariant I10 |
+| B14-T01 | Distill ensemble → student model | claude-b14 | REVIEW | B4-T08 | ml/export/distill.py, ml/training/configs/distill_head_a.yaml | truncated-SSL student (first k layers) + score/embedding/OC-Softmax distillation from 1..n teachers; CLI tested end to end on synthetic data; student checkpoints reload truncated. Needs trained B4 teacher (SETUP_PENDING B14) |
+| B14-T02 | INT8 quantization + accuracy delta report | claude-b14 | REVIEW | B14-T01 | ml/export/quantize.py, docs/benchmarks/loadtest/ | dynamic INT8 (Linear/GRU/LSTM) + report of score drift, decision flips, EER fp32 vs int8, size, latency. Latency measured on proxy; accuracy delta needs labelled dev set + trained student |
+| B14-T03 | ONNX export + parity check | claude-b14 | REVIEW | B14-T01 | ml/export/to_onnx.py, ml/export/parity_check.py, services/inference/backends.py | calibration baked into graph (spoof_logit, raw_score), dynamic batch/time axes, parity over varied lengths + decision flips. onnx/onnxruntime not installed -> parity test skips; run after `pip install onnx onnxruntime` |
+| B14-T04 | Triton (server) + TFLite/ORT-Mobile (edge) | claude-b14 | REVIEW | B14-T03 | deploy/triton/, services/inference/, ml/export/edge.py | Triton config (ORT backend, dynamic batching, reject-on-timeout) + HTTP client backend; in-process cross-session batcher + BatchedHeadA wired into gateway via VG_INFERENCE_BACKEND; CPU inference service; ORT-mobile + ONNX INT8 wrappers. Not run against a real Triton/GPU; TFLite not wired |
+| B14-T05 | Load test + cost per 1k call-minutes | claude-b14 | REVIEW | B14-T04 | docs/benchmarks/LOADTEST.md, docs/benchmarks/loadtest/, scripts/loadtest.py | full pipeline, real-time paced calls on i7-13620H CPU: 6 calls (FP32) / 8 calls (INT8) within p95 < 700 ms, with XLS-R-shaped 6-layer proxy weights; cost formula given, no price. Needs trained student + GPU (T4/L4) run for the plan target (Q2) |
+| B14-T06 | Backpressure & graceful degradation | claude-b14 | DONE | B14-T04 | services/inference/degrade.py, services/inference/batching.py, services/api_gateway/pipeline.py, tests/unit/test_b14_serving.py | bounded batcher queue (reject, never queue) + deadline drop; LoadController with hysteresis sheds Head A (abstain timeout, evidence.load_shed) and marks cheap heads degraded with reduced confidence; window_score events carry degraded=true; VG_LOAD_SHEDDING=1 |
 
 ### B15 — Evaluation harness
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +295,14 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-23T20:15Z | claude-b14 | B14-T01 | TODO -> REVIEW | ml/export/distill.py | student distillation + CLI; student checkpoints now reload truncated (packages/vg_models/heads/head_a_ssl/model.py, frontend.py) |
+| 2026-09-23T20:15Z | claude-b14 | B14-T02 | TODO -> REVIEW | ml/export/quantize.py | dynamic INT8 + report; accuracy delta pending trained student |
+| 2026-09-23T20:15Z | claude-b14 | B14-T03 | TODO -> REVIEW | ml/export/to_onnx.py, ml/export/parity_check.py | export + parity; skipped until onnx/onnxruntime installed |
+| 2026-09-23T20:15Z | claude-b14 | B14-T04 | TODO -> REVIEW | deploy/triton/, services/inference/ | Triton config + client, cross-call batcher, BatchedHeadA, CPU inference service, edge wrappers |
+| 2026-09-23T20:15Z | claude-b14 | B14-T05 | TODO -> REVIEW | docs/benchmarks/LOADTEST.md | CPU i7-13620H: 6 calls FP32 / 8 INT8 at p95 < 700 ms (proxy weights) |
+| 2026-09-23T20:15Z | claude-b14 | B14-T06 | TODO -> DONE | services/inference/degrade.py, tests/unit/test_b14_serving.py | load shedding: Head A shed, cheap heads degraded; bounded queue, no audio queued |
+| 2026-09-23T20:15Z | claude-b14 | B2 (Q8) | fix | packages/vg_audio/quality.py | tone/DTMF energy fraction mis-scaled by ~N (flagged most audio) + vectorised Goertzel 1087 -> 19 ms; needs human acceptance (Q8) |
+| 2026-09-23T20:15Z | claude-b14 | B6 | fix | packages/vg_models/heads/head_c_prosody/head.py | Head C warmup no longer caps process-wide torch threads at 2 (throttled Head A) |
 | 2026-09-17T10:00Z | claude-b13 | B13-T01-07 | TODO -> DONE(T01-T06) / REVIEW(T07) | services/ui/, services/api_gateway/app.py (watch WS, session list, /ui static), tests/unit/test_b12_api.py, services/ui/test/ | 267 py + 6 UI + 5 JS tests; no-build ES modules; DoD (non-technical user test) still needs real people |
 | 2026-09-17T09:00Z | claude-b12 | B12-T01-09 | TODO -> DONE(T01-T03,T05,T06,T08) / REVIEW(T04,T09) / BLOCKED(T07) | services/api_gateway/, sdks/, docs/api/, examples/, tests/unit/test_b12_api.py | 266 py + 5 JS tests pass; removed invalid `option python_package` from proto (B0 bug: codegen never worked) |
 | 2026-09-17T08:00Z | claude-b11 | B11-T01-08 | TODO -> DONE(T01-T04,T06,T07) / REVIEW(T05,T08) | services/policy/, tests/unit/test_b11_policy.py, docs/adr/0008-intent-labels-credential-payment.md | 253 tests pass; ADR 0008 fixes B10 label/schema drift caught by bundle validation |
@@ -320,12 +328,13 @@ Anything that needs a human decision. Agents append here rather than guessing.
 | # | Question | Raised by | Blocks | Answer |
 |---|---|---|---|---|
 | Q1 | Which datasets have we actually been granted access to? | — | B3, B4 | 2026-09-17 (user): ASVspoof 5 available locally (132 GB). IndicSynth planned, not yet obtained. Nothing else requested. |
-| Q2 | Target deployment hardware for the latency claim (T4? L4? CPU-only?) | — | B14 | |
+| Q2 | Target deployment hardware for the latency claim (T4? L4? CPU-only?) | — | B14 | 2026-09-24 (claude-b14): CPU numbers measured on the dev laptop (docs/benchmarks/LOADTEST.md); GPU tier still needs a decision + hardware. |
 | Q3 | Commercial or research lineage for the primary demo model? | — | B3-T09 | Implied research: ASVspoof 5 EULA + IndicSynth (CC BY-NC 4.0) are both non-commercial. Needs explicit human confirmation. |
 | Q4 | Which telephony stack does the pilot tenant actually run? | — | B1 | |
 | Q5 | Which Indic languages are in scope for v1 (all 12, or 3–4 done well)? | — | B3, B15 | 2026-09-17 (user): all 12, subject to IndicSynth coverage. |
 | Q6 | Add `untrained` to AbstainReason? Untrained Head A currently abstains with reason null. Contract change, needs ADR. | claude-b4 | B0, B9 | 2026-09-17 (user): implement if useful beyond setup. Done: ADR 0006, `untrained` added to schema/proto/models; used by heads A, B, C. |
 | Q7 | Accept cross-block edits from B4: `packages/vg_core/sample_store.py` (B0; resolves samples_ref) and `scripts/replay.py` (--real-heads, real model versions)? | claude-b4 | B0, B2 | 2026-09-17 (user): accepted. |
+| Q8 | Accept B14's fix to the B2 quality gate (`packages/vg_audio/quality.py`)? The tone/DTMF checks compared raw Goertzel power with sum(x^2), off by a factor of ~N (48000), so white noise and much ordinary speech were flagged `hold_music_or_tone` and every head abstained. Fix normalises to a true bin energy fraction (thresholds 0.5 / 0.02 unchanged) and vectorises Goertzel (1087 -> 19 ms per window, it was also holding the GIL). | claude-b14 | B2, B14 | Recommended: accept. Tradeoff: gate now passes far more real audio to the heads, which is its intended behaviour; re-check false-accept of tones on recorded IVR/hold audio once B3 telephony data exists. |
 
 ## 7. Blocked items
 

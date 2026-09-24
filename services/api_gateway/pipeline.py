@@ -11,6 +11,7 @@ Emits ordered events: ``window_score``, ``session_risk``, ``context_signals``,
 from __future__ import annotations
 
 import os
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
@@ -24,6 +25,7 @@ from packages.vg_audio.windowing import Windower
 from packages.vg_core.head_api import DetectionHead
 from packages.vg_core.logging import get_logger
 from packages.vg_core.models import (
+    AbstainReason,
     AnalysisWindow,
     CallMetadata,
     RiskState,
@@ -35,6 +37,7 @@ from services.context.asr import Segment
 from services.context.engine import ContextEngine
 from services.fusion.engine import RiskEngine
 from services.fusion.persistence import TimelineStore
+from services.inference.degrade import LoadController, load_controller_from_env
 from services.policy.engine import decide
 from services.policy.evidence import EvidenceStore
 from services.policy.notify import Notifier
@@ -69,7 +72,11 @@ def default_heads() -> list[DetectionHead]:
         log.warning("gateway_stub_heads", note="scores are pseudo-random; for UI demos only")
         return [StubHead(h, abstain_fraction=0.05) for h in "ABC"]
     for h in wanted:
-        if h == "A":
+        if h == "A" and os.getenv("VG_INFERENCE_BACKEND"):  # B14: shared batched server
+            from services.inference.served_head import shared_head_a
+
+            heads.append(shared_head_a())
+        elif h == "A":
             from packages.vg_models.heads.head_a_ssl.head import HeadA
 
             heads.append(HeadA())
@@ -97,6 +104,7 @@ class Services:
     notifier: Notifier = field(default_factory=Notifier)
     timeline: TimelineStore | None = None
     heads_factory: Callable[[], list[DetectionHead]] = default_heads
+    load: LoadController | None = field(default_factory=load_controller_from_env)  # B14-T06
 
 
 class SessionPipeline:
@@ -190,25 +198,48 @@ class SessionPipeline:
                 quality_flags=q.quality_flags,
                 original_sample_rate=w.original_sample_rate,
             )
-            scores = [
-                (
-                    h.score_with_budget(window, self.ctx)
-                    if hasattr(h, "score_with_budget")
-                    else h.score(window, self.ctx)
-                )
-                for h in self.heads
-            ]
+            t_window = time.perf_counter()
+            scores, degraded = self._score_heads(window)
+            if self.services.load is not None:
+                self.services.load.observe((time.perf_counter() - t_window) * 1000)
             self.head_scores.extend(scores)
             fused, risk = self.engine.update(w.window_id, scores)
             self.window_scores.append(fused)
             self.last_risk = risk
-            events += [Event("window_score", fused), Event("session_risk", risk)]
+            extra = {"degraded": True} if degraded else {}
+            events += [Event("window_score", fused, extra), Event("session_risk", risk)]
             if risk.state != self.last_decision_state and risk.state in (
                 RiskState.ELEVATED,
                 RiskState.HIGH,
             ):
                 events += self._decide()
         return events
+
+    def _score_heads(self, window: AnalysisWindow) -> tuple[list[Any], bool]:
+        """Run every head; under overload shed the expensive ones (B14-T06, I10)."""
+        ctl = self.services.load
+        degraded = ctl is not None and ctl.degraded
+        scores = []
+        for h in self.heads:
+            if ctl is not None and degraded and ctl.sheds(h.head_id):
+                scores.append(ctl.shed_score(window, h.head_id, h.model_version))
+                continue
+            s = (
+                h.score_with_budget(window, self.ctx)
+                if hasattr(h, "score_with_budget")
+                else h.score(window, self.ctx)
+            )
+            if ctl is not None:
+                if (
+                    s.abstain
+                    and s.abstain_reason == AbstainReason.TIMEOUT
+                    and h.head_id in ctl.cfg.expensive_heads
+                ):
+                    ctl.note_overload()  # over budget or rejected by the batcher
+                if degraded:
+                    s = ctl.mark(s)
+            scores.append(s)
+        return scores, degraded
 
     def _decide(self, force: bool = False) -> list[Event]:
         if self.last_risk is None:

@@ -82,7 +82,6 @@ class HeadC(BaseDetectionHead):
         return self._budget
 
     def warmup(self) -> None:
-        torch.set_num_threads(max(1, min(2, torch.get_num_threads())))
         if self._path:
             self._loaded = load(self._path)
             meta = self._loaded[3]

@@ -141,3 +141,25 @@ non-commercial → the primary model is **research lineage**.
 - [ ] Production auth for the console: SSO in front of `/ui` issuing short-lived, scoped keys
       (never paste admin keys into a browser).
 - [ ] Demo mode needs trained heads and a *consented* cloned voice (ETHICS.md consent register).
+
+## B14 — Serving, optimization, latency
+
+- [ ] `pip install onnx onnxruntime` — then `pytest tests/unit/test_b14_serving.py` also runs the
+      ONNX export + parity test (skipped today because neither package is installed).
+- [ ] Distil the trained Head A teacher(s) into a 6–9 layer student:
+      `python -m ml.export.distill --config ml/training/configs/distill_head_a.yaml`
+      (needs a trained B4 checkpoint; config lists `teachers`, `keep_layers`, data splits).
+- [ ] INT8: run `ml.export.quantize.compare` on the **held-out dev set with labels** and publish
+      the EER delta next to the load-test report (today's INT8 figure is latency only; a random
+      model has no accuracy to lose).
+- [ ] Export + verify: `python -m ml.export.to_onnx ...` then `python -m ml.export.parity_check ...`
+      (must print `"passed": true`), place the file at `deploy/triton/models/head_a/1/model.onnx`.
+- [ ] GPU tier: CUDA torch + Docker + NVIDIA Container Toolkit on a T4/L4, start Triton
+      (`deploy/triton/README.md`), `pip install tritonclient[http]`, set
+      `VG_INFERENCE_BACKEND=triton`, and rerun `scripts/loadtest.py --backend env` to publish
+      GPU numbers (the plan's target is p95 < 300 ms per window on T4/L4). Answer Q2 first.
+- [ ] Edge: `ml.export.edge.quantize_onnx_int8` + `to_ort_mobile` for onnxruntime-mobile;
+      TFLite via ai-edge-torch is not wired (separate toolchain).
+- [ ] Re-run `scripts/loadtest.py --backend env` with the **trained distilled student** — current
+      reports use a random-weight XLS-R-shaped proxy (same tensor shapes, so the same compute).
+- [ ] Turn load shedding on in deployed configs: `VG_LOAD_SHEDDING=1` (B17).

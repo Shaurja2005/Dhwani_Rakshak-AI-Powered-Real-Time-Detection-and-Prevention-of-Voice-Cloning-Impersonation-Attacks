@@ -1,0 +1,30 @@
+# B14-T01: distil trained Head A teacher(s) into a real-time student.
+# The teacher(s) stay server-side for post-call forensics / borderline adjudication.
+run_name: distill_head_a
+lineage: research
+allow_noncommercial: true   # teachers were trained on ASVspoof 5 + IndicSynth (non-commercial)
+seed: 1337
+
+teachers:
+  - runs/head_a_stage2/best.pt
+keep_layers: 6              # first 6 of 24 XLS-R layers (try 9 if accuracy drops too far)
+backend: nes2net
+emb_dim: 160
+out: runs/distilled/head_a_student.pt
+
+distill:
+  epochs: 5
+  lr: 1.0e-3
+  alpha: 1.0                # score regression to the teacher
+  beta: 0.5                 # embedding alignment
+  gamma: 0.2                # keep the task (OC-Softmax) signal
+  freeze_frontend: true
+
+data:
+  manifests: data/manifests/*.jsonl
+  splits: splits/pooled_v1.json
+  data_root: data
+  languages: [hi, bn, ta, te, mr, gu, kn, ml, pa, or, as, ur, en]
+
+batch_size: 8
+seconds: 4.0

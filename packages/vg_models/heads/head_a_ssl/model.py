@@ -15,6 +15,7 @@ from packages.vg_models.heads.head_a_ssl.frontend import (
     LayerWeightedSum,
     SSLFrontend,
     build_frontend,
+    truncate_frontend,
 )
 
 
@@ -92,7 +93,14 @@ def load_checkpoint(
     blob = torch.load(
         str(path), map_location="cpu", weights_only=False
     )  # noqa: S614 - own artifacts only
-    model = HeadAModel(HeadAConfig.from_dict(blob["config"]), frontend=frontend)
+    cfg = HeadAConfig.from_dict(blob["config"])
+    keep = blob.get("meta", {}).get("keep_layers")
+    if frontend is None and keep is not None:  # distilled student (B14): truncated front-end
+        kwargs: dict[str, object] = {}
+        if cfg.frontend != "tiny":
+            kwargs = {"revision": cfg.frontend_revision, "freeze": cfg.freeze_frontend}
+        frontend = truncate_frontend(build_frontend(cfg.frontend, **kwargs), int(keep))
+    model = HeadAModel(cfg, frontend=frontend)
     missing, unexpected = model.load_state_dict(blob["state"], strict=False)
     if unexpected or any(not k.startswith("frontend.") for k in missing):
         raise RuntimeError(f"checkpoint mismatch: missing={missing} unexpected={unexpected}")

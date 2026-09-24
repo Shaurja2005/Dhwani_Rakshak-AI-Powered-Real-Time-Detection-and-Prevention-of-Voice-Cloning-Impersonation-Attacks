@@ -51,18 +51,29 @@ _MUSIC_HIGH_FREQ_RATIO_THRESHOLD = 0.35
 
 
 def _goertzel(samples: np.ndarray, freq: float, sample_rate: int) -> float:
-    """Goertzel algorithm: energy at a single frequency. O(N), no FFT."""
+    """Goertzel energy at a single frequency: |X[k]|^2 for the nearest DFT bin k. O(N).
+
+    Evaluated as one vectorised DFT bin (identical value to the recursive Goertzel
+    filter, whose final power term equals |X[k]|^2 for integer k) — the per-sample
+    Python loop cost ~300 ms per 3 s window and held the GIL (found in B14 load test).
+    """
     n = len(samples)
     k = int(0.5 + n * freq / sample_rate)
-    omega = 2 * np.pi * k / n
-    coeff = 2 * np.cos(omega)
-    s0, s1, s2 = 0.0, 0.0, 0.0
-    for x in samples:
-        s0 = float(x) + coeff * s1 - s2
-        s2 = s1
-        s1 = s0
-    power = s1 ** 2 + s2 ** 2 - coeff * s1 * s2
-    return power
+    if n == 0 or k > n // 2:
+        return 0.0
+    xk = np.fft.rfft(np.asarray(samples, dtype=np.float64))[k]
+    return float(xk.real * xk.real + xk.imag * xk.imag)
+
+
+def _bin_fraction(samples: np.ndarray, freq: float, sample_rate: int, total: float) -> float:
+    """Fraction of the window's energy in the DFT bin nearest ``freq`` (pure tone -> ~1).
+
+    Parseval: sum|X[k]|^2 over all N bins = N * sum x^2; a real tone splits between
+    bins k and N-k, hence 2|X[k]|^2 / (N * sum x^2). Comparing the raw Goertzel power
+    with sum x^2 (as before B14) scaled every bin by ~N, so broadband noise and ordinary
+    speech were flagged as "hold_music_or_tone" and every head abstained.
+    """
+    return 2.0 * _goertzel(samples, freq, sample_rate) / (len(samples) * total)
 
 
 def detect_dtmf(pcm: np.ndarray, sample_rate: int = TARGET_SR, threshold_ratio: float = 5.0) -> bool:
@@ -73,11 +84,11 @@ def detect_dtmf(pcm: np.ndarray, sample_rate: int = TARGET_SR, threshold_ratio: 
     total_energy = float(np.sum(pcm ** 2)) + 1e-12
     for row_f in _DTMF_ROW_FREQS:
         row_e = _goertzel(pcm, row_f, sample_rate)
-        if row_e / total_energy < 0.02:
+        if _bin_fraction(pcm, row_f, sample_rate, total_energy) < 0.02:
             continue
         for col_f in _DTMF_COL_FREQS:
             col_e = _goertzel(pcm, col_f, sample_rate)
-            if col_e / total_energy < 0.02:
+            if _bin_fraction(pcm, col_f, sample_rate, total_energy) < 0.02:
                 continue
             # Check ratio against average of other tone energies
             others = [
@@ -100,8 +111,8 @@ def detect_hold_music_or_tone(pcm: np.ndarray, sample_rate: int = TARGET_SR) -> 
     """
     # Heuristic 1: tone-band dominance
     total = float(np.sum(pcm ** 2)) + 1e-12
-    tone_energy = sum(_goertzel(pcm, f, sample_rate) for f in _TONE_FREQS)
-    if tone_energy / total > 0.5:
+    tone_fraction = sum(_bin_fraction(pcm, f, sample_rate, total) for f in _TONE_FREQS)
+    if tone_fraction > 0.5:
         return True
 
     # Heuristic 2: high-frequency energy ratio (music detection)

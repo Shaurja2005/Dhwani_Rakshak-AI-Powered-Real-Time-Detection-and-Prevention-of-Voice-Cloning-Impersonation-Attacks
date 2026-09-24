@@ -125,3 +125,21 @@ def build_frontend(name: str, **kwargs: object) -> SSLFrontend:
     if name == "tiny":
         return TinySSLFrontend(**kwargs)  # type: ignore[arg-type]
     return HFSSLFrontend(name, **kwargs)  # type: ignore[arg-type]
+
+
+def truncate_frontend(frontend: SSLFrontend, keep_layers: int) -> SSLFrontend:
+    """Copy of the front-end keeping its first ``keep_layers`` transformer layers (B14 student)."""
+    import copy
+
+    fe = copy.deepcopy(frontend)
+    if isinstance(fe, TinySSLFrontend):
+        fe.layers = nn.ModuleList(list(fe.layers)[:keep_layers])
+    elif isinstance(fe, HFSSLFrontend):
+        enc = fe.model.encoder
+        enc.layers = nn.ModuleList(list(enc.layers)[:keep_layers])
+        fe.model.config.num_hidden_layers = keep_layers
+    else:
+        raise TypeError(f"cannot truncate {type(fe).__name__}")
+    fe.num_hidden_states = keep_layers + 1
+    fe.name = f"{fe.name}L{keep_layers}"
+    return fe
