@@ -107,10 +107,12 @@ class TinySSLFrontend(SSLFrontend):
             )
             for _ in range(num_layers)
         )
-        with torch.no_grad():
-            for p in self.parameters():
+        with torch.no_grad():  # fully determined by ``seed``, independent of the global RNG
+            for name, p in self.named_parameters():
                 if p.dim() > 1:
                     p.copy_(torch.randn(p.shape, generator=g) * (1.0 / p.shape[1]) ** 0.5)
+                elif name.endswith("bias"):
+                    p.zero_()
 
     def forward(self, wav: torch.Tensor) -> tuple[torch.Tensor, ...]:
         x = self.encoder(wav.unsqueeze(1)).transpose(1, 2)  # B,F,D

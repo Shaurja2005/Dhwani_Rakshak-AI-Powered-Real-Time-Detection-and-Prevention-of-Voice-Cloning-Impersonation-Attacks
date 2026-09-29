@@ -106,7 +106,7 @@ exclude = ["packages/vg_core/generated/", "third_party/"]
 "sdks/python/**" = ["ANN401", "E501"]
 "examples/**" = ["E501"]
 # Test data literals (multilingual sentences, long fixtures) and fixture plumbing.
-"tests/**" = ["E501", "ANN401", "S110", "N812", "S603", "S108"]
+"tests/**" = ["E501", "ANN401", "S110", "N812", "S603", "S108", "S324"]
 # B15: markdown table templates; M/F/P are the conventional short aliases for the eval modules.
 "packages/vg_eval/**" = ["E501", "N812"]
 "ml/eval/**" = ["E501", "N812"]
@@ -114,6 +114,9 @@ exclude = ["packages/vg_core/generated/", "third_party/"]
 "services/privacy/**" = ["E501", "B008", "ANN401"]
 # B17: generated config templates (Dockerfiles, dashboards) and duck-typed pipeline hooks.
 "deploy/**" = ["E501"]
+# Operator scripts (fixed argv subprocesses) and dataset importers (protocol formats).
+"scripts/**" = ["E501", "S603"]
+"ml/data/importers/**" = ["E501"]
 "services/observability/**" = ["ANN401"]
 
 [tool.black]

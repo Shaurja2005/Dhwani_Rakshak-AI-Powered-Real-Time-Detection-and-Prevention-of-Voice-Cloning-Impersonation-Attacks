@@ -132,7 +132,8 @@ def test_no_raw_pcm_reaches_disk_on_default_path(tmp_path: Path) -> None:
     # stores really were written (the test would be vacuous otherwise)
     assert (data / "evidence.db").stat().st_size > 0 and (data / "timeline.db").stat().st_size > 0
     new_tmp = (files_under(tmp_root) - before_tmp) if tmp_root.exists() else set()
-    candidates = files_under(data) | new_tmp | {p for p in spy.paths if p.exists()}
+    strict = files_under(data) | {p for p in spy.paths if p.exists()}
+    candidates = strict | new_tmp
     probes = needles(pcm, wav)
     leaks = []
     for f in candidates:
@@ -140,7 +141,11 @@ def test_no_raw_pcm_reaches_disk_on_default_path(tmp_path: Path) -> None:
             blob = f.read_bytes()
         except OSError:
             continue
-        if blob[:4] in (b"RIFF", b"OggS", b"fLaC") or any(n in blob for n in probes):
+        # Any audio container written by the gateway (data dir / its own open() calls) is a leak.
+        # The shared system temp dir only counts if it holds *this* test's audio: other
+        # processes (a parallel test run, other apps) may legitimately write audio files there.
+        header = blob[:4] in (b"RIFF", b"OggS", b"fLaC") and f in strict
+        if header or any(n in blob for n in probes):
             leaks.append(str(f))
     assert not leaks, f"raw audio found at rest: {leaks}"
     assert get_samples(f"shm://{sid}/0") is None  # the session's windows left memory too

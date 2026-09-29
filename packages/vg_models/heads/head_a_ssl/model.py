@@ -106,3 +106,21 @@ def load_checkpoint(
         raise RuntimeError(f"checkpoint mismatch: missing={missing} unexpected={unexpected}")
     model.eval()
     return model, blob.get("meta", {})
+
+
+def truncate_to_used_layers(model: HeadAModel) -> HeadAModel:
+    """Drop transformer layers after the deepest one the head reads (B14/base training).
+
+    Keeps ``max(frontend_layers) + 1`` layers: wav2vec2 / XLS-R record each hidden state
+    *before* its layer and apply the final layer norm only to the extra last state, so the
+    states the head reads are bit-for-bit those of the full model, at a fraction of the
+    compute (layers 5-9 of XLS-R 300M: 10 of 24 transformer layers).
+    """
+    need = max(model.cfg.frontend_layers) + 1
+    fe = model.frontend
+    if fe.num_hidden_states - 1 <= need:
+        return model
+    name = fe.name
+    model.frontend = truncate_frontend(fe, need)
+    model.frontend.name = name  # same weights for the layers used -> same model version
+    return model

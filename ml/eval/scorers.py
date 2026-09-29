@@ -82,19 +82,30 @@ class HeadAScorer:
             self.meta = meta
         else:
             self.meta = {}
-        self.model = model.eval()
-        self.cal = cal
+        from packages.vg_models.heads.head_a_ssl.model import truncate_to_used_layers
+
         self.model_version = str(getattr(model, "model_version", "A@unknown"))
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        # identical outputs for the layers the head reads, much less compute (see model.py)
+        self.model = truncate_to_used_layers(model).eval().to(self.device)
+        self.cal = cal
 
     @torch.no_grad()
     def raw_windows(self, wav: np.ndarray) -> np.ndarray:
         ws = windows(wav)
-        if len({len(w) for w in ws}) == 1:
-            _, s = self.model(torch.from_numpy(np.stack(ws).astype(np.float32)))
-            return s.numpy()
-        return np.array(
-            [float(self.model(torch.from_numpy(w[None].astype(np.float32)))[1]) for w in ws]
-        )
+        amp = torch.autocast("cuda", dtype=torch.float16, enabled=self.device == "cuda")
+        with amp:
+            if len({len(w) for w in ws}) == 1:
+                x = torch.from_numpy(np.stack(ws).astype(np.float32)).to(self.device)
+                return self.model(x)[1].float().cpu().numpy()
+            return np.array(
+                [
+                    float(
+                        self.model(torch.from_numpy(w[None].astype(np.float32)).to(self.device))[1]
+                    )
+                    for w in ws
+                ]
+            )
 
     def score(self, wav: np.ndarray) -> ScoreOut:
         raw = self.raw_windows(wav)

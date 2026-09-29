@@ -66,10 +66,12 @@ def load_eval_data(
                 ]
             )
             set_rows = [r for r in set_rows if r.utt_id in ids]
-        if limit:
-            set_rows = set_rows[:limit]
+        n_max = limit or es.get("sample")
+        if n_max and len(set_rows) > n_max:
+            set_rows = stratified(set_rows, int(n_max), int(cfg.get("sample_seed", 0)))
         for f in files:
             sha.update(Path(f).read_bytes())
+        sha.update(f"{es['name']}:{len(set_rows)}".encode())  # sampled sets hash differently
         rows += set_rows
         sets.append(es["name"])
     enforce(rows, policy, purpose="eval")
@@ -98,6 +100,24 @@ def load_eval_data(
         "synthetic": False,
     }
     return df, lambda u: load_row(by_id[u]), info
+
+
+def stratified(rows: list[Any], n: int, seed: int) -> list[Any]:
+    """Seeded sample keeping every (label, attack, codec) group, proportionally sized.
+
+    Taking the first N rows of a protocol would silently drop whole attacks or codecs.
+    """
+    rng = np.random.default_rng(seed)
+    groups: dict[tuple[str, str, str], list[Any]] = {}
+    for r in rows:
+        codec = next((c for c in r.codec_chain if c.startswith("codec:")), "none")
+        groups.setdefault((r.label, r.generator_family or "-", codec), []).append(r)
+    out = []
+    for key in sorted(groups):
+        g = groups[key]
+        k = max(1, round(n * len(g) / len(rows)))
+        out += [g[i] for i in sorted(rng.choice(len(g), size=min(k, len(g)), replace=False))]
+    return out
 
 
 def synthetic_eval(n: int = 240, seed: int = 0) -> tuple[pd.DataFrame, LoadFn, dict[str, Any]]:
@@ -297,7 +317,7 @@ def white_box(
         return x[:48000] if len(x) >= 48000 else np.pad(x, (0, 48000 - len(x)))
 
     def score_fn(x: torch.Tensor) -> torch.Tensor:
-        return scorer.model(x)[1]
+        return scorer.model(x.to(scorer.device))[1].cpu()
 
     spoof_ids = sub.loc[sub["label"] == "spoof", "utt_id"].tolist()
     if not spoof_ids:

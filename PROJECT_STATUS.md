@@ -38,8 +38,8 @@
 | B0 | Repo, contracts, CI | agent-antigravity | DONE | 9/9 |
 | B1 | Capture adapters | agent-antigravity | DONE | 9/9 |
 | B2 | Stream conditioning | agent-antigravity | DONE | 8/8 |
-| B3 | Data & corpus engineering | claude-b3 | WIP | 7/11 |
-| B4 | Head A — SSL anti-spoof | claude-b4 | WIP | 3/10 |
+| B3 | Data & corpus engineering | claude-b3 | WIP | 7/12 |
+| B4 | Head A — SSL anti-spoof | claude-b4 | WIP | 3/11 |
 | B5 | Head B — DSP & scene | claude-b5 | WIP | 4/6 |
 | B6 | Head C — prosody | claude-b6 | WIP | 3/6 |
 | B7 | Head D — speaker verification | claude-b7 | WIP | 4/6 |
@@ -112,6 +112,7 @@ Artifact = the path, PR, or report that proves the task is done.
 | B3-T09 | License gate in data loader | claude-b3 | DONE | B3-T01 | ml/data/license_gate.py | also blocks eval-only corpora from training |
 | B3-T10 | Speaker/generator-disjoint splits | claude-b3 | DONE | B3-T04 | ml/data/splits.py | speaker-disjoint + leave-generator-out |
 | B3-T11 | Consent + ethics register | claude-b3 | DONE | — | ml/data/consent_register.yaml, ml/data/consent.py, docs/ETHICS.md | register empty: clone_job refuses everything until a human adds entries |
+| B3-T12 | ASVspoof 5 + ASVspoof 2019 LA importers (protocols -> manifests + official splits) | claude-b3 | REVIEW | B3-T01 | ml/data/importers/, scripts/setup/extract_asvspoof5.py | md5-verified resumable extraction; attack label = generator family, codec conditions kept; tested on a miniature layout; waits for the real extraction run. ASVspoof 5 LICENSE.txt says ODC-By 1.0 (+CC BY 4.0 bona fide) while the registry says non-commercial EULA: needs human sign-off (Q12) |
 
 ### B4 — Head A (SSL anti-spoof)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -126,6 +127,7 @@ Artifact = the path, PR, or report that proves the task is done.
 | B4-T08 | Stage 3 robustness techniques | claude-b4 | WIP | B4-T07 | ml/training/robust.py, ml/training/configs/head_a_stage3.yaml | SAM, mixup, consistency, GRL, LoRA done; 2-front-end ensemble deferred to B9 |
 | B4-T09 | Real-time inference wrapper | claude-b4 | REVIEW | B4-T06 | packages/vg_models/heads/head_a_ssl/head.py, packages/vg_core/sample_store.py | budget/timeout/never-raise tested; untrained mode abstains; p95 on target hw pending |
 | B4-T10 | Continual-learning update procedure | claude-b4 | REVIEW | B4-T08 | ml/training/continual.py | EWC + replay buffer + procedure; not exercised on a real new family |
+| B4-T11 | Base-model training path for an 8 GB GPU (frozen XLS-R feature cache + cached back-end trainer) | claude-b4 | REVIEW | B4-T06, B3-T12 | ml/training/feature_cache.py, ml/training/train_head_a_cached.py, ml/training/configs/head_a_base.yaml, scripts/train_base_model.py, docs/TRAINING_GUIDE.md | fp16 extraction of only the layers used (truncate_to_used_layers: identical states, 10/24 layers), resumable memmap cache, AMP + balanced sampling + early stop + resume; standard checkpoint (cached-vs-audio scores equal in tests); eval scorer on GPU; waits for the user's GPU run |
 
 ### B5 — Head B (DSP & scene)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -295,6 +297,8 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-30T19:40Z | claude-b4 | B4-T11 | new -> REVIEW | ml/training/feature_cache.py, ml/training/train_head_a_cached.py, docs/TRAINING_GUIDE.md | base-model path for the RTX 4060 laptop; tiny front-end made seed-deterministic (packages/vg_models/heads/head_a_ssl/frontend.py) |
+| 2026-09-30T19:40Z | claude-b3 | B3-T12 | new -> REVIEW | ml/data/importers/ | ASVspoof 5 / 2019 LA importers + md5-verified extraction; licence discrepancy raised as Q12 |
 | 2026-09-24T01:27Z | claude-b18 | B18-T01-06 | TODO -> DONE(T06) / REVIEW(T01-T05) | docs/demo/, scripts/demo_scenarios.py, scripts/offline_demo.py, scripts/make_headline_chart.py, docs/ARCHITECTURE.md, README.md | 13 tests; demo needs trained heads, consented volunteer, rehearsal, video recording |
 | 2026-09-24T01:27Z | claude-b17 | B17-T01-08 | TODO -> DONE(T04,T06,T07,T08) / REVIEW(T01,T02,T03,T05) | deploy/, services/observability/, packages/vg_models/registry.py, scripts/model_rollout.py, docs/runbooks/ONCALL.md | compose + kustomize validated offline; metrics verified with replayed calls; images not built (Docker daemon off) |
 | 2026-09-24T01:27Z | claude-b16 | B16-T01-09 | TODO -> DONE(T01-T07) / REVIEW(T08,T09) | services/privacy/, config/privacy/, docs/compliance/, tests/compliance/ | compliance suite passes; DPIA needs DPO sign-off; retention values Q10 |
@@ -343,6 +347,7 @@ Anything that needs a human decision. Agents append here rather than guessing.
 | Q9 | Maximum per-group false-positive-rate gap for the fairness release gate (B15-T05)? The gate reports `not_configured` until set. | claude-b15 | B15, B17-T07 | Recommended: decide with risk/compliance per attribute (gender, language, accent), e.g. as an absolute FPR gap at the shipped operating point. Not guessed in code (AGENTS §8). |
 | Q10 | Confirm retention periods in config/privacy/tenants/default.yaml (evidence 365 d, timeline 90 d, feedback 365 d, raw audio 0 h, voiceprints 730 d inactive). | claude-b16 | B16-T06 | Engineering placeholders; the DPO must set them per tenant and lawful basis. |
 | Q11 | Operational alert levels (PSI 0.1/0.25 drift, abstain rate 2x yesterday, alert rate 3x, p95 700 ms) in deploy/observability/alerts.yml and services/observability/drift.py. | claude-b17 | B17-T04, B17-T06 | Start with these conventional values, re-baseline after 2 weeks of shadow mode. They are not detection thresholds. |
+| Q12 | ASVspoof 5 licence: the dataset's own LICENSE.txt / README.txt state ODC-By 1.0 (database) and CC BY 4.0 (bona fide speech), both allowing commercial use; ml/data/registry.yaml records 'ASVspoof 5 EULA, commercial_use: false'. Update the registry? | claude-b3 | B3, B4, I7 lineage | Recommended: a human confirms from the shipped licence files and sets license + license_checked_by; lineage of models trained with IndicSynth stays research either way (CC BY-NC). |
 
 ## 7. Blocked items
 

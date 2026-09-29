@@ -1,0 +1,40 @@
+# Evaluation of the base model (B15 protocols) on in-domain ASVspoof 5 eval and, once the
+# Kaggle copy is imported, ASVspoof 2019 LA eval as the independent cross-dataset check.
+#   python ml/eval/run_eval.py --model head_a:runs/head_a_base/best.pt --config ml/eval/configs/base_asvspoof5.yaml
+lineage: research
+allow_noncommercial: true
+data_root: data
+sample_seed: 0
+
+eval_sets:
+  - name: asvspoof5_eval
+    manifests: data/manifests/asvspoof5_eval.jsonl
+    split: {file: splits/asvspoof5.json, name: eval}
+    sample: 40000            # stratified by label x attack x codec (680k in full: ~6 h on the laptop)
+  # Uncomment after: python -m ml.data.importers.asvspoof2019 --root <your LA folder>
+  # - name: asvspoof2019_la_eval
+  #   manifests: data/manifests/asvspoof2019_la_eval.jsonl
+  #   split: {file: splits/asvspoof2019_la.json, name: eval}
+  #   sample: 20000
+
+train_datasets: [asvspoof5]   # checkpoint metadata overrides these
+seen_families: []
+
+operating_point: {mode: eer}
+fairness:
+  attributes: [gender]        # ASVspoof 5 is English only; language/accent come with IndicSynth
+  max_gap: null               # PROJECT_STATUS Q9
+  min_group_n: 30
+sweeps:
+  max_utts: 400
+  codecs: [g711u, g711a, amr_nb, gsm, opus, g722]
+  snr_db: [20, 10, 5, 0]
+adversarial:
+  max_utts: 200
+  laundering: true
+  codecs: [g711u, amr_nb, opus]
+  white_box: true
+  pgd_eps: 0.002
+  pgd_steps: 10
+  filter_steps: 60
+bootstrap: 200
