@@ -42,6 +42,7 @@ from services.policy.engine import decide
 from services.policy.evidence import EvidenceStore
 from services.policy.notify import Notifier
 from services.policy.profiles import ProfileStore
+from services.privacy.policy import ConsentMatrix
 
 log = get_logger(__name__)
 
@@ -105,6 +106,8 @@ class Services:
     timeline: TimelineStore | None = None
     heads_factory: Callable[[], list[DetectionHead]] = default_heads
     load: LoadController | None = field(default_factory=load_controller_from_env)  # B14-T06
+    consent: ConsentMatrix = field(default_factory=ConsentMatrix.load)  # B16-T04
+    observer: Any = None  # services.observability.Observability (B17-T04/T06)
 
 
 class SessionPipeline:
@@ -118,6 +121,12 @@ class SessionPipeline:
     ) -> None:
         self.meta = meta
         self.services = services
+        # B16-T04 purpose limitation: no lawful basis for fraud detection -> no processing at all;
+        # transcript analysis only if the matrix allows it for this call's basis.
+        services.consent.require("fraud_detection", meta.consent_basis)
+        with_context = (
+            with_context and services.consent.check("transcript_analysis", meta.consent_basis)[0]
+        )
         self.heads = heads if heads is not None else services.heads_factory()
         for h in self.heads:
             h.warmup()
@@ -140,6 +149,8 @@ class SessionPipeline:
         self.decisions: list[Any] = []
         self._on_audio = on_audio_seconds
         self.closed = False
+        if services.observer is not None:
+            services.observer.on_session(+1)
 
     # ------------------------------------------------------------------ input
     def push_chunk(self, payload: bytes, encoding: str, sample_rate: int) -> list[Event]:
@@ -173,7 +184,11 @@ class SessionPipeline:
             self.last_risk = self.engine.session_risk()
             events.append(Event("session_risk", self.last_risk))
         events += self._decide(force=True)
-        drop_session(self.meta.session_id)
+        drop_session(self.meta.session_id)  # wipes this call's windows (B16-T01)
+        self.windower.wipe()
+        if self.services.observer is not None:
+            self.services.observer.on_session(-1)
+            self.services.observer.on_close(self.head_scores, self.last_risk.state.value)
         return events
 
     # ------------------------------------------------------------------ core
@@ -204,6 +219,10 @@ class SessionPipeline:
                 self.services.load.observe((time.perf_counter() - t_window) * 1000)
             self.head_scores.extend(scores)
             fused, risk = self.engine.update(w.window_id, scores)
+            if self.services.observer is not None:
+                self.services.observer.on_window(
+                    scores, fused, time.perf_counter() - t_window, degraded
+                )
             self.window_scores.append(fused)
             self.last_risk = risk
             extra = {"degraded": True} if degraded else {}
@@ -260,6 +279,8 @@ class SessionPipeline:
         )
         self.last_decision_state = self.last_risk.state
         self.decisions.append(res)
+        if self.services.observer is not None:
+            self.services.observer.on_decision(res.band, res.tier, res.decision.shadow_mode)
         return [
             Event(
                 "policy_decision",

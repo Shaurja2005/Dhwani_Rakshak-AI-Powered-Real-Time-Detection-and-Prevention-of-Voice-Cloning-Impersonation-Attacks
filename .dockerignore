@@ -1,0 +1,18 @@
+# Keep images small and free of data, weights and secrets (B17-T01, I5).
+.git
+**/__pycache__
+**/*.pyc
+data/
+runs/
+var/
+mlruns/
+models/*.pt
+**/*.pt
+**/*.onnx
+**/*.db
+.env
+deploy/.env
+node_modules/
+sdks/js/node_modules/
+docs/
+tests/

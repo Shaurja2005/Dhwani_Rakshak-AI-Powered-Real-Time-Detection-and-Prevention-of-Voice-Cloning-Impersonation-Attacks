@@ -1,0 +1,87 @@
+# Privacy admin API (internal only) + daily retention CronJob (B16).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vg-privacy
+  labels: {app: vg-privacy}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: vg-privacy}}
+  template:
+    metadata:
+      labels: {app: vg-privacy}
+    spec:
+      securityContext: {runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001, fsGroup: 10001, seccompProfile: {type: RuntimeDefault}}
+      automountServiceAccountToken: false
+      affinity:   # shares the RWO data volume with the gateway
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector: {matchLabels: {app: vg-gateway}}
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: privacy
+          image: voiceguard/privacy:latest
+          ports: [{name: http, containerPort: 8095}]
+          env:
+            - {name: VG_DATA_DIR, value: /data}
+            - {name: VG_PRIVACY_HOST, value: 0.0.0.0}
+            - {name: VG_PRIVACY_PORT, value: "8095"}
+            - {name: VG_PRIVACY_CONFIG, value: /config/privacy}
+          envFrom: [{secretRef: {name: vg-secrets}}]
+          readinessProbe: {httpGet: {path: /healthz, port: http}, periodSeconds: 10}
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+            - {name: privacy-config, mountPath: /config/privacy/consent_matrix.yaml, subPath: consent_matrix.yaml, readOnly: true}
+            - {name: privacy-config, mountPath: /config/privacy/tenants/default.yaml, subPath: default.yaml, readOnly: true}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - {name: data, persistentVolumeClaim: {claimName: vg-data}}
+        - {name: privacy-config, configMap: {name: vg-privacy-config}}
+        - {name: tmp, emptyDir: {medium: Memory, sizeLimit: 128Mi}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: vg-privacy}
+spec:
+  selector: {app: vg-privacy}
+  ports: [{name: http, port: 8095, targetPort: http}]
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata: {name: vg-retention}
+spec:
+  schedule: "30 2 * * *"         # daily, off-peak
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels: {app: vg-retention}
+        spec:
+          restartPolicy: OnFailure
+          securityContext: {runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001, fsGroup: 10001, seccompProfile: {type: RuntimeDefault}}
+          automountServiceAccountToken: false
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector: {matchLabels: {app: vg-gateway}}
+                  topologyKey: kubernetes.io/hostname
+          containers:
+            - name: retention
+              image: voiceguard/privacy:latest
+              args: ["retention", "--tenants", "$(VG_RETENTION_TENANTS)"]
+              env:
+                - {name: VG_DATA_DIR, value: /data}
+                - {name: VG_PRIVACY_CONFIG, value: /config/privacy}
+                - {name: VG_RETENTION_TENANTS, value: demo}
+              envFrom: [{secretRef: {name: vg-secrets}}]
+              securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+              volumeMounts:
+                - {name: data, mountPath: /data}
+                - {name: privacy-config, mountPath: /config/privacy/consent_matrix.yaml, subPath: consent_matrix.yaml, readOnly: true}
+                - {name: privacy-config, mountPath: /config/privacy/tenants/default.yaml, subPath: default.yaml, readOnly: true}
+          volumes:
+            - {name: data, persistentVolumeClaim: {claimName: vg-data}}
+            - {name: privacy-config, configMap: {name: vg-privacy-config}}

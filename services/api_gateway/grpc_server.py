@@ -23,6 +23,7 @@ from packages.vg_core.models import CallMetadata
 from services.api_gateway.auth import ApiKey, AuthError, KeyStore
 from services.api_gateway.pipeline import Event, Services, SessionPipeline
 from services.api_gateway.proto_codec import load, to_proto
+from services.privacy.policy import ConsentError
 
 pb2, pb2_grpc = load()
 
@@ -116,9 +117,15 @@ class VoiceIntegrityServicer(pb2_grpc.VoiceIntegrityServicer):  # type: ignore[m
                 if pipe is not None:
                     context.abort(grpc.StatusCode.INVALID_ARGUMENT, "call_metadata sent twice")
                 meta = self._meta(req.call_metadata, key, context)
-                pipe = SessionPipeline(
-                    meta, self.services, on_audio_seconds=lambda s: self.keys.charge_audio(key, s)
-                )
+                try:
+                    pipe = SessionPipeline(
+                        meta,
+                        self.services,
+                        on_audio_seconds=lambda s: self.keys.charge_audio(key, s),
+                    )
+                except ConsentError as e:
+                    context.abort(grpc.StatusCode.PERMISSION_DENIED, f"consent: {e}")
+                    return
                 yield pb2.RiskEvent(call_metadata=to_proto(meta, pb2.CallMetadata))
             elif which == "audio_chunk":
                 if pipe is None:
@@ -147,7 +154,10 @@ class VoiceIntegrityServicer(pb2_grpc.VoiceIntegrityServicer):  # type: ignore[m
         meta = self._meta(request.metadata, key, context)
         pcm, sr = decode_file(request.audio)
         self.keys.charge_audio(key, len(pcm) / sr)
-        pipe = SessionPipeline(meta, self.services)
+        try:
+            pipe = SessionPipeline(meta, self.services)
+        except ConsentError as e:
+            context.abort(grpc.StatusCode.PERMISSION_DENIED, f"consent: {e}")
         events = run_file(pipe, pcm, sr)
         risk = pipe.last_risk
         resp = pb2.AnalyzeFileResponse(

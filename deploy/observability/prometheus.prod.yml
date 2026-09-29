@@ -1,0 +1,13 @@
+# Production scrape config (B17-T04), used by deploy/docker-compose.prod.yml and mirrored in k8s.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files: ["/etc/prometheus/alerts.yml"]
+
+scrape_configs:
+  - job_name: vg-gateway
+    metrics_path: /metrics
+    static_configs: [{targets: ["gateway:8080"]}]
+  - job_name: prometheus
+    static_configs: [{targets: ["localhost:9090"]}]

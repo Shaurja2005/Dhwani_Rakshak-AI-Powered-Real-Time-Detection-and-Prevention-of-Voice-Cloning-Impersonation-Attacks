@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://voiceguard.local/schemas/audit_event.schema.json",
+  "title": "AuditEvent",
+  "description": "B16-T08 privacy audit log entry. Identifiers only — never the personal data itself.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "at", "action", "actor", "tenant_id", "purpose", "outcome", "details"],
+  "properties": {
+    "schema_version": {"const": "audit_event/1.0"},
+    "at": {"type": "string", "format": "date-time"},
+    "action": {
+      "enum": [
+        "retention_run", "evidence_erased", "dsar_export", "dsar_erasure", "voiceprint_deleted",
+        "key_created", "key_rotated", "key_shredded", "consent_refused", "raw_audio_retained",
+        "raw_audio_purged", "egress_denied", "model_promoted", "model_rolled_back"
+      ]
+    },
+    "actor": {"type": "string", "minLength": 1, "description": "service name, analyst id or 'system'"},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "purpose": {"type": "string", "description": "processing purpose from config/privacy/consent_matrix.yaml"},
+    "lawful_basis": {"type": ["string", "null"], "enum": ["legitimate_use", "explicit_consent", "legal_obligation", "none", null]},
+    "subject_ref": {"type": ["string", "null"], "description": "hashed subject identifier (h:...) or an internal id"},
+    "outcome": {"enum": ["ok", "denied", "partial", "error", "dry_run"]},
+    "details": {"type": "object"}
+  }
+}

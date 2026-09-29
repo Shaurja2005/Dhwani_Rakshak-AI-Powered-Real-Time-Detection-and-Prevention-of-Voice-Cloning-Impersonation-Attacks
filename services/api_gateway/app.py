@@ -39,7 +39,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 
 from packages.vg_core.logging import get_logger
@@ -60,6 +60,7 @@ from services.context.asr import Segment
 from services.policy.evidence import verify_bundle
 from services.policy.feedback import FeedbackStore
 from services.policy.profiles import TenantProfile
+from services.privacy.policy import ConsentError
 
 log = get_logger(__name__)
 
@@ -185,9 +186,12 @@ def create_app(
         with lock:
             if meta.session_id in owners:
                 raise HTTPException(409, "session already exists")
-            pipe = SessionPipeline(
-                meta, services, on_audio_seconds=lambda s: keys.charge_audio(key, s)
-            )
+            try:
+                pipe = SessionPipeline(
+                    meta, services, on_audio_seconds=lambda s: keys.charge_audio(key, s)
+                )
+            except ConsentError as e:  # B16: no lawful basis for this processing purpose
+                raise HTTPException(403, f"consent: {e}") from e
             sessions[meta.session_id] = pipe
             owners[meta.session_id] = meta.tenant_id
         return pipe
@@ -208,6 +212,12 @@ def create_app(
     @app.get("/healthz")
     def healthz() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.get("/metrics", include_in_schema=False)
+    def metrics() -> Response:  # B17-T04: Prometheus scrape endpoint (no auth; internal network)
+        if services.observer is None:
+            raise HTTPException(404, "metrics disabled")
+        return Response(services.observer.exposition(), media_type="text/plain; version=0.0.4")
 
     # ---------------------------------------------------------------- sessions
     @app.post("/v1/sessions", status_code=201)

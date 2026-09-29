@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: voiceguard
+  labels:
+    pod-security.kubernetes.io/enforce: restricted   # non-root, no privilege escalation

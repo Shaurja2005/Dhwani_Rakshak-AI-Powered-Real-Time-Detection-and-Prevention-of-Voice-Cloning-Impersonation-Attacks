@@ -69,6 +69,12 @@ class Windower:
         self._window_id = 0
         self._samples_consumed = 0  # total samples pushed so far
 
+    def wipe(self) -> None:
+        """Overwrite and drop buffered PCM (B16-T01: nothing raw survives the session)."""
+        if self._buffer.size and self._buffer.flags.writeable:
+            self._buffer.fill(0.0)
+        self._buffer = np.array([], dtype=np.float32)
+
     def push(self, pcm: np.ndarray) -> list[WindowSlice]:
         """Append PCM data and return all complete windows ready for scoring."""
         self._buffer = np.concatenate([self._buffer, pcm])

@@ -68,10 +68,25 @@ def main() -> None:
     data = Path(os.getenv("VG_DATA_DIR", "data"))
     (data / "policy" / "profiles").mkdir(parents=True, exist_ok=True)
     (data / "timeline").mkdir(parents=True, exist_ok=True)
+    from services.observability import Observability
+    from services.privacy import feature_log
+
+    feature_log.install()  # B16-T02: nothing audio-shaped reaches the logs
+    observer = Observability()  # B17: /metrics + score drift
+    ref = data / "drift_reference.json"
+    if ref.exists():
+        observer.drift.load(ref)
+    queue = None
+    if os.getenv("VG_INFERENCE_BACKEND"):
+        from services.inference.served_head import shared_server
+
+        queue = lambda: shared_server().queue_depth  # noqa: E731
+    observer.start_sampler(queue_depth=queue)
     services = Services(
         profiles=ProfileStore(data / "policy" / "profiles"),
         evidence=EvidenceStore(data / "policy" / "evidence.db"),
         timeline=SQLiteTimelineStore(data / "timeline" / "timeline.db"),
+        observer=observer,
     )
     keys = KeyStore()
     raw = bootstrap(keys)

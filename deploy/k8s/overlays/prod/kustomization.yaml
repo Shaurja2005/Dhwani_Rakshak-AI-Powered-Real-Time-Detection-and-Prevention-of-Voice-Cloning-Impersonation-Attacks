@@ -1,0 +1,19 @@
+# Production overlay: pin image tags, choose the live inference colour, set tenants.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources: [../../base]
+images:
+  - {name: voiceguard/api_gateway, newTag: "0.1.0"}
+  - {name: voiceguard/inference, newTag: "0.1.0"}
+  - {name: voiceguard/privacy, newTag: "0.1.0"}
+patches:
+  - target: {kind: Service, name: vg-inference}
+    patch: |-
+      - op: replace
+        path: /spec/selector/color
+        value: blue          # blue/green: flip to green once the green pods are Ready
+  - target: {kind: CronJob, name: vg-retention}
+    patch: |-
+      - op: replace
+        path: /spec/jobTemplate/spec/template/spec/containers/0/env/2/value
+        value: bank-a

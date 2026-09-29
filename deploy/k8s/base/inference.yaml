@@ -1,0 +1,85 @@
+# Blue/green inference (B14 batching server, or a Triton front). The Service selects one
+# colour; flip it in the prod overlay (or kubectl patch). Model versions inside a colour
+# follow the registry, so a rollback needs no pod restart.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vg-inference-blue
+  labels: {app: vg-inference, color: blue}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: vg-inference, color: blue}}
+  template:
+    metadata:
+      labels: {app: vg-inference, color: blue}
+    spec:
+      securityContext: {runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001, seccompProfile: {type: RuntimeDefault}}
+      automountServiceAccountToken: false
+      containers:
+        - name: inference
+          image: voiceguard/inference:latest
+          ports: [{name: http, containerPort: 50052}]
+          env:
+            - {name: VG_INFERENCE_HOST, value: 0.0.0.0}
+            - {name: VG_INFERENCE_PORT, value: "50052"}
+            - {name: VG_INFERENCE_BACKEND, value: registry}
+            - {name: VG_MODEL_REGISTRY, value: /models/released.yaml}
+          readinessProbe: {httpGet: {path: /healthz, port: http}, periodSeconds: 5}
+          resources: {requests: {cpu: "4", memory: 4Gi}, limits: {memory: 8Gi}}
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          volumeMounts: [{name: models, mountPath: /models, readOnly: true}, {name: tmp, mountPath: /tmp}]
+      volumes:
+        - {name: models, persistentVolumeClaim: {claimName: vg-models}}
+        - {name: tmp, emptyDir: {medium: Memory, sizeLimit: 256Mi}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vg-inference-green
+  labels: {app: vg-inference, color: green}
+spec:
+  replicas: 0            # scaled up for a rollout; the Service flips once it is Ready
+  selector: {matchLabels: {app: vg-inference, color: green}}
+  template:
+    metadata:
+      labels: {app: vg-inference, color: green}
+    spec:
+      securityContext: {runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001, seccompProfile: {type: RuntimeDefault}}
+      automountServiceAccountToken: false
+      containers:
+        - name: inference
+          image: voiceguard/inference:latest
+          ports: [{name: http, containerPort: 50052}]
+          env:
+            - {name: VG_INFERENCE_HOST, value: 0.0.0.0}
+            - {name: VG_INFERENCE_PORT, value: "50052"}
+            - {name: VG_INFERENCE_BACKEND, value: registry}
+            - {name: VG_MODEL_REGISTRY, value: /models/released.yaml}
+          readinessProbe: {httpGet: {path: /healthz, port: http}, periodSeconds: 5}
+          resources: {requests: {cpu: "4", memory: 4Gi}, limits: {memory: 8Gi}}
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          volumeMounts: [{name: models, mountPath: /models, readOnly: true}, {name: tmp, mountPath: /tmp}]
+      volumes:
+        - {name: models, persistentVolumeClaim: {claimName: vg-models}}
+        - {name: tmp, emptyDir: {medium: Memory, sizeLimit: 256Mi}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: vg-inference}
+spec:
+  selector: {app: vg-inference, color: blue}
+  ports: [{name: http, port: 50052, targetPort: http}]
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: {name: vg-inference-blue}
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: vg-inference-blue}
+  minReplicas: 2
+  maxReplicas: 8
+  metrics: [{type: Resource, resource: {name: cpu, target: {type: Utilization, averageUtilization: 60}}}]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: vg-inference}
+spec: {minAvailable: 1, selector: {matchLabels: {app: vg-inference}}}

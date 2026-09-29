@@ -1,0 +1,21 @@
+# B17-T03 scaled deployment (kustomize). Render / validate offline:
+#   kubectl kustomize deploy/k8s/overlays/prod
+# The privacy config files under ./config are copies of config/privacy (kept in sync by
+# tests/unit/test_b17_ops.py), because kustomize cannot read outside its directory.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: voiceguard
+labels:
+  - pairs: {app.kubernetes.io/part-of: voiceguard}
+    includeSelectors: false
+resources:
+  - namespace.yaml
+  - gateway.yaml
+  - inference.yaml
+  - privacy.yaml
+  - networkpolicy.yaml
+configMapGenerator:
+  - name: vg-privacy-config
+    files:
+      - consent_matrix.yaml=config/consent_matrix.yaml
+      - default.yaml=config/tenants/default.yaml

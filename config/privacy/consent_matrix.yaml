@@ -1,0 +1,50 @@
+# B16-T04 — consent matrix: which lawful basis permits which processing purpose.
+# Legal review required before production; this encodes the IMPLEMENTATION_PLAN reading
+# of DPDP Act 2023 (India), GDPR and CCPA. Voiceprints are biometric personal data.
+#
+# basis values match CallMetadata.consent_basis: legitimate_use | explicit_consent | none
+version: 1
+purposes:
+  fraud_detection:            # score the call for synthetic voice / impersonation (heads, fusion, policy)
+    allowed_bases: [legitimate_use, explicit_consent]
+    in_call_consent_prompt: false        # no interruptive prompt; MUST appear in the privacy notice
+    privacy_notice_required: true
+    bundling_allowed: true
+    description: Security / fraud prevention on the call being handled.
+  transcript_analysis:        # ASR + intent (B10) for fraud detection only, redacted before storage
+    allowed_bases: [legitimate_use, explicit_consent]
+    in_call_consent_prompt: false
+    privacy_notice_required: true
+    bundling_allowed: true
+    description: Detect social-engineering intent (urgency, secrecy, OTP requests).
+  speaker_enrollment:         # create / update a voiceprint (biometric)
+    allowed_bases: [explicit_consent]
+    in_call_consent_prompt: true
+    privacy_notice_required: true
+    bundling_allowed: false             # never bundled with other consents
+    requires_consent_record: true       # verifiable reference (consent_ref) stored with the voiceprint
+    description: Voiceprint enrolment for speaker verification.
+  speaker_verification:       # compare a call against an existing voiceprint
+    allowed_bases: [legitimate_use, explicit_consent]
+    requires_enrolled_consent: true     # only if the voiceprint itself was enrolled with consent
+    privacy_notice_required: true
+    bundling_allowed: true
+    description: Verify the claimed customer against their enrolled voiceprint.
+  raw_audio_retention:        # keep raw audio of a FLAGGED call for investigation (off by default)
+    allowed_bases: [legitimate_use, explicit_consent]
+    requires_tenant_policy: true        # tenant retention policy must enable it with a max window
+    flagged_calls_only: true
+    privacy_notice_required: true
+    bundling_allowed: true
+    description: Short-window retention of flagged calls under a documented lawful basis.
+  model_improvement:          # use scores / labels (never audio by default) to retrain models
+    allowed_bases: [explicit_consent]
+    privacy_notice_required: true
+    bundling_allowed: false
+    description: Using customer calls to improve models.
+  marketing_analytics:
+    allowed_bases: [explicit_consent]
+    privacy_notice_required: true
+    bundling_allowed: false             # cannot be bundled with the security purpose
+    description: Any marketing or analytics use — never enabled by this product.
+    disabled: true

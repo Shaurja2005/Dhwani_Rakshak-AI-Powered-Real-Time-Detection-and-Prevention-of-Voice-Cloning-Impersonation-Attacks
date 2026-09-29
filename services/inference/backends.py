@@ -152,7 +152,7 @@ def xlsr_shaped_proxy(num_layers: int = 6, seed: int = 0) -> HeadAModel:
 
 
 def backend_from_env() -> InferenceBackend:
-    """``VG_INFERENCE_BACKEND`` = torch | torch-int8 | onnx | triton | proxy."""
+    """``VG_INFERENCE_BACKEND`` = torch | torch-int8 | onnx | triton | proxy | registry."""
     kind = os.getenv("VG_INFERENCE_BACKEND", "torch").lower()
     ckpt = os.getenv("VG_HEAD_A_CHECKPOINT")
     if kind == "onnx":
@@ -160,6 +160,9 @@ def backend_from_env() -> InferenceBackend:
         return OrtBackend(os.environ["VG_HEAD_A_ONNX"], trained=trained)
     if kind == "triton":
         return TritonBackend(os.getenv("VG_TRITON_URL", "localhost:8000"))
+    if kind == "registry":  # B17-T07: served_head swaps in the registry's active model
+        torch.manual_seed(0)
+        return TorchBackend(HeadAModel(HeadAConfig(frontend="tiny", version="0.0.0")), False)
     if kind == "proxy":
         return TorchBackend(
             xlsr_shaped_proxy(int(os.getenv("VG_PROXY_LAYERS", "6"))), trained=False

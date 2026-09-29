@@ -163,3 +163,47 @@ non-commercial → the primary model is **research lineage**.
 - [ ] Re-run `scripts/loadtest.py --backend env` with the **trained distilled student** — current
       reports use a random-weight XLS-R-shaped proxy (same tensor shapes, so the same compute).
 - [ ] Turn load shedding on in deployed configs: `VG_LOAD_SHEDDING=1` (B17).
+
+## B15 — Evaluation harness
+
+- [ ] Build the eval manifests with B3 (`data/manifests/asvspoof5*.jsonl`, `in_the_wild*.jsonl`,
+      `indicsynth*.jsonl`, `vg_indic_telephony*.jsonl`) and `splits/pooled_v1.json`; adjust
+      `ml/eval/configs/default.yaml` to what you actually have.
+- [ ] `make eval MODEL=head_a:runs/head_a_stage2/best.pt` (and the untuned baseline) to populate
+      `docs/benchmarks/REPORT.md`. Smoke-test the harness any time with `make eval-smoke`.
+- [ ] Decide the fairness gate maximum gap (PROJECT_STATUS Q9) and set `fairness.max_gap`.
+- [ ] Re-check the a-DCF cost constants against the ASVspoof 5 evaluation plan you compare with.
+- [ ] Provision the self-hosted `voiceguard-eval` CI runner (holds data; no egress) for
+      `.github/workflows/eval.yml` full-eval.
+
+## B16 — Privacy & compliance
+
+- [ ] DPO / legal review and sign-off of `docs/compliance/DPIA.md` (section 9).
+- [ ] Confirm retention periods per tenant (Q10) in `config/privacy/tenants/<tenant>.yaml`.
+- [ ] Production key custody: supply the KEK from the bank's KMS/HSM (`kek_provider` in
+      `services/privacy/keys.py`) instead of `VG_KEK_B64`; schedule key rotation.
+- [ ] Generate a model card for every released model: `python -m services.privacy.model_card --version ...`.
+
+## B17 — Deployment & ops
+
+- [ ] Start Docker, then `cp deploy/.env.example deploy/.env`, fill secrets, `make prod-up`
+      (pulls python:3.11-slim, prom/prometheus, grafana images) and `make prod-replay`; check the
+      Grafana dashboards show live traffic (B17 Definition of Done) on a clean VM.
+- [ ] Kubernetes: create the `vg-secrets` Secret, set tenant LAN / webhook CIDRs in the overlay,
+      `kubectl apply -k deploy/k8s/overlays/prod`.
+- [ ] Move evidence / timeline stores from SQLite to PostgreSQL + TimescaleDB before running more
+      than one gateway replica.
+- [ ] After two weeks of shadow mode, freeze a drift reference (`drift_reference.json`) and
+      re-baseline alert levels (Q11).
+
+## B18 — Demo & submission
+
+- [ ] Consent: add the demo volunteer(s) to `ml/data/consent_register.yaml` + `docs/ETHICS.md`
+      with signed forms stored outside git.
+- [ ] Record `demo_assets/genuine_customer.wav`, `human_fraud_script.wav`, and a backup
+      `cloned_volunteer.wav` (consented); rehearse with `make demo-rehearse` until all checks are ok.
+- [ ] `make demo-pack` after the final rehearsal (offline fallback); `make demo-offline` to test it.
+- [ ] Headline chart once two real eval runs exist:
+      `make headline-chart BEFORE=docs/benchmarks/runs/<before>.json AFTER=docs/benchmarks/runs/<after>.json`.
+- [ ] Record the 3-minute video from `docs/demo/VIDEO_SCRIPT.md`.
+

@@ -56,6 +56,22 @@ class FeedbackStore:
             self._db.commit()
         return row
 
+    # B16 retention / erasure
+    def delete_sessions(self, session_ids: list[str]) -> int:
+        with self._lock:
+            n = sum(
+                self._db.execute("DELETE FROM feedback WHERE session_id=?", (s,)).rowcount
+                for s in session_ids
+            )
+            self._db.commit()
+        return n
+
+    def delete_before(self, iso: str) -> int:
+        with self._lock:
+            n = self._db.execute("DELETE FROM feedback WHERE created_at < ?", (iso,)).rowcount
+            self._db.commit()
+        return n
+
     def latest(self) -> dict[str, dict[str, Any]]:
         with self._lock:
             rows = self._db.execute(

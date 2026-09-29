@@ -28,3 +28,7 @@ dist/
 
 # local tooling (launch configs for the desktop preview)
 .claude/
+
+# B18: demo audio (consented voices) never goes into git
+demo_assets/
+deploy/replay/

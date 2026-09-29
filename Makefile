@@ -1,4 +1,4 @@
-.PHONY: dev-up dev-down test lint lint-fix proto fetch-models replay eval corpus-report prod-up install install-dev help
+.PHONY: dev-up dev-down test lint lint-fix proto fetch-models replay eval corpus-report prod-up install install-dev help eval-smoke report prod-down prod-replay prod-config k8s-render deploy-check demo-rehearse demo-pack demo-offline headline-chart
 
 # ---------------------------------------------------------------------------
 # Help
@@ -96,11 +96,50 @@ ifndef MODEL
 endif
 	python ml/eval/run_eval.py --model $(MODEL) --out docs/benchmarks/REPORT.md
 
+eval-smoke:  ## Run the whole eval harness on synthetic data (no datasets needed; numbers meaningless)
+	python ml/eval/run_eval.py --model baseline:flatness --synthetic --config ml/eval/configs/smoke.yaml
+
+report:  ## Rebuild docs/benchmarks/REPORT.md from docs/benchmarks/runs/*.json
+	python -c "from packages.vg_eval.report import rebuild; rebuild('docs/benchmarks/runs', 'docs/benchmarks/REPORT.md')"
+
 corpus-report:  ## Print a summary of the training corpus by language × generator × codec
 	python ml/data/manifest.py --report
 
 # ---------------------------------------------------------------------------
 # Production
 # ---------------------------------------------------------------------------
-prod-up:  ## Start the single-node production stack
-	docker compose -f deploy/docker-compose.prod.yml up -d
+prod-up:  ## Build + start the single-node production stack (needs deploy/.env, see deploy/.env.example)
+	@test -f deploy/.env || (echo "deploy/.env missing: cp deploy/.env.example deploy/.env and fill it in" && exit 1)
+	docker compose -f deploy/docker-compose.prod.yml up -d --build
+	@echo "Gateway: http://localhost:8080/ui/   Grafana: http://localhost:3001 (admin / GRAFANA_ADMIN_PASSWORD)"
+
+prod-down:  ## Stop the production stack (volumes are kept)
+	docker compose -f deploy/docker-compose.prod.yml down
+
+prod-replay:  ## Stream a replayed call set through the gateway (dashboards show live traffic)
+	docker compose -f deploy/docker-compose.prod.yml --profile replay run --rm replayer
+
+prod-config:  ## Validate the production compose file
+	docker compose -f deploy/docker-compose.prod.yml config --quiet
+
+k8s-render:  ## Render the production k8s manifests (kustomize, offline)
+	kubectl kustomize deploy/k8s/overlays/prod
+
+deploy-check:  ## Regenerate-and-compare Dockerfiles and dashboards (CI)
+	python deploy/docker/render_dockerfiles.py --check
+	python deploy/observability/grafana/build_dashboards.py
+
+# ---------------------------------------------------------------------------
+# Demo (B18)
+# ---------------------------------------------------------------------------
+demo-rehearse:  ## Run the demo scenarios layer by layer and check expectations
+	python scripts/demo_scenarios.py
+
+demo-pack:  ## Record the offline fallback pack (scores + events only, no audio)
+	python scripts/demo_scenarios.py --pack docs/demo/pack
+
+demo-offline:  ## Play the recorded pack: no network, no models
+	python scripts/offline_demo.py
+
+headline-chart:  ## Before/after Indic EER chart: make headline-chart BEFORE=runs/x.json AFTER=runs/y.json
+	python scripts/make_headline_chart.py --before $(BEFORE) --after $(AFTER)

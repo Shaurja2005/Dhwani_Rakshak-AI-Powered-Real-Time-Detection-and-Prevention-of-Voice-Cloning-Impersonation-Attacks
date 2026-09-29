@@ -1,0 +1,389 @@
+{
+  "uid": "vg-ops",
+  "title": "VoiceGuard — Operations",
+  "tags": [
+    "voiceguard"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Active calls",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(vg_active_sessions)",
+          "legendFormat": "calls",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Windows / s",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(vg_windows_total[1m]))",
+          "legendFormat": "windows/s",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Per-window latency p95",
+      "description": "Target: < 0.7 s CPU-only, < 0.3 s on T4/L4 (IMPLEMENTATION_PLAN B14).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(vg_window_latency_seconds_bucket[5m])))",
+          "legendFormat": "p95",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Load shedding (windows/s)",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(vg_degraded_windows_total[5m]))",
+          "legendFormat": "degraded",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Per-window latency",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(vg_window_latency_seconds_bucket[5m])))",
+          "legendFormat": "p50",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(vg_window_latency_seconds_bucket[5m])))",
+          "legendFormat": "p95",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Per-head latency p95",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le, head) (rate(vg_head_latency_seconds_bucket[5m])))",
+          "legendFormat": "{{head}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Abstain ratio by head",
+      "description": "A spike means audio quality changed, a head broke, or the model is untrained.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 6,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (head) (rate(vg_head_abstain_total[5m])) / (sum by (head) (rate(vg_head_abstain_total[5m])) + sum by (head) (rate(vg_head_scores_total[5m])))",
+          "legendFormat": "{{head}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Abstentions / s by reason",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 12,
+        "w": 6,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (head, reason) (rate(vg_head_abstain_total[5m]))",
+          "legendFormat": "{{head}} {{reason}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Inference queue depth",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 6,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max(vg_inference_queue_depth)",
+          "legendFormat": "queue",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "GPU utilisation",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 12,
+        "w": 6,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "avg by (gpu) (vg_gpu_utilization_ratio)",
+          "legendFormat": "gpu {{gpu}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "Model versions in use",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (head, version) (vg_model_info) == 1",
+          "legendFormat": "{{head}} {{version}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    }
+  ],
+  "editable": false
+}

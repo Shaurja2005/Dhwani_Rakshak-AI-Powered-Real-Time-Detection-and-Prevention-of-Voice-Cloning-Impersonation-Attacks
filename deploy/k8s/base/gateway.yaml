@@ -1,0 +1,69 @@
+# Gateway: REST/WS/gRPC + UI + in-process pipeline (heads, fusion, context, policy).
+# Stores are SQLite on one RWO volume today, hence a single replica (Recreate). Scale-out
+# needs the PostgreSQL/Timescale stores (SETUP_PENDING B17); inference scales separately.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vg-gateway
+  labels: {app: vg-gateway}
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector: {matchLabels: {app: vg-gateway}}
+  template:
+    metadata:
+      labels: {app: vg-gateway}
+      annotations: {prometheus.io/scrape: "true", prometheus.io/port: "8080", prometheus.io/path: /metrics}
+    spec:
+      securityContext: {runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001, fsGroup: 10001, seccompProfile: {type: RuntimeDefault}}
+      automountServiceAccountToken: false
+      containers:
+        - name: gateway
+          image: voiceguard/api_gateway:latest
+          ports: [{name: http, containerPort: 8080}, {name: grpc, containerPort: 50050}]
+          env:
+            - {name: VG_GATEWAY_PORT, value: "8080"}
+            - {name: VG_GRPC_ADDRESS, value: "[::]:50050"}
+            - {name: VG_DATA_DIR, value: /data}
+            - {name: VG_INFERENCE_BACKEND, value: registry}
+            - {name: VG_MODEL_REGISTRY, value: /models/released.yaml}
+            - {name: VG_LOAD_SHEDDING, value: "1"}
+            - {name: VG_PRIVACY_CONFIG, value: /config/privacy}
+            - {name: XDG_CACHE_HOME, value: /tmp/cache}
+            - {name: HF_HOME, value: /models/hf}
+            - {name: HF_HUB_OFFLINE, value: "1"}
+          envFrom: [{secretRef: {name: vg-secrets}}]   # VG_KEK_B64, VG_BOOTSTRAP_*, VG_VAULT_KEY_<TENANT>
+          readinessProbe: {httpGet: {path: /healthz, port: http}, periodSeconds: 5}
+          livenessProbe: {httpGet: {path: /healthz, port: http}, initialDelaySeconds: 60, periodSeconds: 15}
+          resources:
+            requests: {cpu: "4", memory: 6Gi}
+            limits: {memory: 12Gi}
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+            - {name: models, mountPath: /models, readOnly: true}
+            - {name: privacy-config, mountPath: /config/privacy/consent_matrix.yaml, subPath: consent_matrix.yaml, readOnly: true}
+            - {name: privacy-config, mountPath: /config/privacy/tenants/default.yaml, subPath: default.yaml, readOnly: true}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - {name: data, persistentVolumeClaim: {claimName: vg-data}}
+        - {name: models, persistentVolumeClaim: {claimName: vg-models}}
+        - {name: privacy-config, configMap: {name: vg-privacy-config}}
+        - {name: tmp, emptyDir: {medium: Memory, sizeLimit: 512Mi}}   # RAM only: nothing raw on disk (I5)
+---
+apiVersion: v1
+kind: Service
+metadata: {name: vg-gateway}
+spec:
+  selector: {app: vg-gateway}
+  ports: [{name: http, port: 8080, targetPort: http}, {name: grpc, port: 50050, targetPort: grpc}]
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: {name: vg-data}
+spec: {accessModes: [ReadWriteOnce], resources: {requests: {storage: 50Gi}}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: {name: vg-models}
+spec: {accessModes: [ReadOnlyMany], resources: {requests: {storage: 20Gi}}}

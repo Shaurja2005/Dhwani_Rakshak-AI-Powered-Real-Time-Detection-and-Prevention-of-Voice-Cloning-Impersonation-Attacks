@@ -1,2 +1,146 @@
-# Single-node on-prem deployment. TODO(B17-T02).
-services: {}
+# VoiceGuard single-node on-prem deployment (B17-T02) — the realistic BFSI starting point.
+#
+#   cp deploy/.env.example deploy/.env      # fill in secrets (never commit deploy/.env)
+#   make prod-up                            # build + start
+#   make prod-replay                        # optional: stream a replayed call set for dashboards
+#
+# Topology: docs/compliance/DATA_RESIDENCY.md. Backend containers sit on an `internal`
+# network with no route to the internet (I6); only the gateway joins the edge network
+# (published ports + tenant webhooks through the egress guard). Containers run as uid
+# 10001 with read-only root filesystems; /tmp is tmpfs (RAM), so no audio can land on disk.
+
+name: voiceguard
+
+x-hardening: &hardening
+  read_only: true
+  tmpfs: ["/tmp:size=256m,mode=1777"]
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: ["ALL"]
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: {max-size: "20m", max-file: "5"}
+
+networks:
+  vg-internal:
+    internal: true          # no egress: audio, transcripts and embeddings cannot leave
+  vg-edge: {}
+
+volumes:
+  vg_data: {}               # evidence, timeline, feedback, vault, audit (no raw audio)
+  prometheus_data: {}
+  grafana_data: {}
+
+services:
+  gateway:
+    <<: *hardening
+    build: {context: .., dockerfile: services/api_gateway/Dockerfile}
+    image: voiceguard/api_gateway:${VG_VERSION:-local}
+    environment:
+      VG_GATEWAY_PORT: "8080"
+      VG_GRPC_ADDRESS: "[::]:50050"
+      VG_DATA_DIR: /data
+      VG_BOOTSTRAP_TENANT: ${VG_BOOTSTRAP_TENANT:?set in deploy/.env}
+      VG_BOOTSTRAP_KEY: ${VG_BOOTSTRAP_KEY:?set in deploy/.env}
+      VG_KEK_B64: ${VG_KEK_B64:?set in deploy/.env}
+      VG_GATEWAY_HEADS: ${VG_GATEWAY_HEADS:-A,B,C,F}
+      VG_INFERENCE_BACKEND: ${VG_INFERENCE_BACKEND:-registry}   # follows models/released.yaml
+      VG_MODEL_REGISTRY: /models/released.yaml
+      VG_LOAD_SHEDDING: "1"                                     # B14-T06
+      VG_EGRESS_ALLOWLIST: ${VG_EGRESS_ALLOWLIST:-}
+      XDG_CACHE_HOME: /tmp/cache           # read-only root: caches go to tmpfs
+      HF_HOME: /models/hf                  # SSL front-ends pre-fetched at setup (fetch_models.py)
+      HF_HUB_OFFLINE: "1"                  # air-gapped at run time
+    env_file: [.env]          # per-tenant VG_VAULT_KEY_<TENANT> entries
+    volumes:
+      - vg_data:/data
+      - ../models:/models:ro
+      - ../config/privacy:/app/config/privacy:ro
+    ports:
+      - "${VG_GATEWAY_BIND:-127.0.0.1}:8080:8080"
+      - "${VG_GATEWAY_BIND:-127.0.0.1}:50050:50050"
+    networks: [vg-internal, vg-edge]
+
+  privacy:
+    <<: *hardening
+    build: {context: .., dockerfile: services/privacy/Dockerfile}
+    image: voiceguard/privacy:${VG_VERSION:-local}
+    environment:
+      VG_DATA_DIR: /data
+      VG_PRIVACY_HOST: 0.0.0.0
+      VG_PRIVACY_PORT: "8095"
+      VG_KEK_B64: ${VG_KEK_B64:?set in deploy/.env}
+    volumes: ["vg_data:/data", "../config/privacy:/app/config/privacy:ro"]
+    networks: [vg-internal]  # DPO access via an internal admin network only
+
+  privacy-retention:
+    <<: *hardening
+    image: voiceguard/privacy:${VG_VERSION:-local}
+    depends_on: [privacy]
+    command: ["retention-loop", "--tenants", "${VG_RETENTION_TENANTS:-demo}", "--every-hours", "24"]
+    environment:
+      VG_DATA_DIR: /data
+      VG_KEK_B64: ${VG_KEK_B64:?set in deploy/.env}
+    volumes: ["vg_data:/data", "../config/privacy:/app/config/privacy:ro"]
+    networks: [vg-internal]
+
+  prometheus:
+    <<: *hardening
+    image: prom/prometheus:v2.54.1
+    user: "65534:65534"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+    volumes:
+      - ./observability/prometheus.prod.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    networks: [vg-internal]
+
+  grafana:
+    <<: *hardening
+    image: grafana/grafana-oss:11.2.0
+    user: "472:0"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set in deploy/.env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"     # no phone-home from an on-prem bank node
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana/provisioning.prod:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["127.0.0.1:3001:3000"]
+    networks: [vg-internal, vg-edge]
+
+  # Optional: batching inference server for GPU / split deployments (B14).
+  inference:
+    <<: *hardening
+    profiles: ["split"]
+    build: {context: .., dockerfile: services/inference/Dockerfile}
+    image: voiceguard/inference:${VG_VERSION:-local}
+    environment:
+      VG_INFERENCE_HOST: 0.0.0.0
+      VG_INFERENCE_PORT: "50052"
+      VG_INFERENCE_BACKEND: ${VG_INFERENCE_BACKEND:-registry}
+      VG_MODEL_REGISTRY: /models/released.yaml
+    volumes: ["../models:/models:ro"]
+    networks: [vg-internal]
+
+  # Optional: replay a call set through the gateway so dashboards show live traffic (DoD).
+  replayer:
+    profiles: ["replay"]
+    image: voiceguard/api_gateway:${VG_VERSION:-local}
+    depends_on: [gateway]
+    read_only: true
+    tmpfs: ["/tmp"]
+    entrypoint: ["python", "/app/scripts/replay_calls.py"]
+    command: ["--gateway", "http://gateway:8080", "--tenant", "${VG_BOOTSTRAP_TENANT}",
+              "--calls", "40", "--concurrency", "4", "--dir", "/replay"]
+    environment:
+      VG_API_KEY: ${VG_BOOTSTRAP_KEY}
+    volumes:
+      - ../scripts:/app/scripts:ro
+      - ${VG_REPLAY_DIR:-./replay}:/replay:ro
+    networks: [vg-internal]

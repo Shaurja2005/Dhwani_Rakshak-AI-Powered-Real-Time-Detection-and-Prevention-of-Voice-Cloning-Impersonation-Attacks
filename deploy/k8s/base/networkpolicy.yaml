@@ -1,0 +1,42 @@
+# I6 at the network layer: nothing in the namespace may reach the internet.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: default-deny}
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+# In-namespace traffic + cluster DNS only.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: allow-internal-and-dns}
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+  ingress: [{from: [{podSelector: {}}]}]
+  egress:
+    - to: [{podSelector: {}}]
+    - to: [{namespaceSelector: {}, podSelector: {matchLabels: {k8s-app: kube-dns}}}]
+      ports: [{protocol: UDP, port: 53}, {protocol: TCP, port: 53}]
+---
+# Agents, telephony bridges and monitoring reach the gateway from inside the bank network.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: gateway-ingress}
+spec:
+  podSelector: {matchLabels: {app: vg-gateway}}
+  policyTypes: [Ingress]
+  ingress:
+    - from: [{ipBlock: {cidr: 10.0.0.0/8}}]      # overlays set the tenant LAN ranges
+      ports: [{port: 8080}, {port: 50050}]
+---
+# Gateway webhooks: only to the tenant's own receivers (the egress guard checks payloads too).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: gateway-webhook-egress}
+spec:
+  podSelector: {matchLabels: {app: vg-gateway}}
+  policyTypes: [Egress]
+  egress:
+    - to: [{ipBlock: {cidr: 10.0.0.0/8}}]        # overlays set the webhook receiver ranges
+      ports: [{port: 443}]

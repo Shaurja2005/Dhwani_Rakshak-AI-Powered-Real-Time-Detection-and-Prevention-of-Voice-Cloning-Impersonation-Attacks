@@ -50,10 +50,10 @@
 | B12 | APIs & SDKs | claude-b12 | WIP | 6/9 |
 | B13 | Agent/analyst UI | claude-b13 | REVIEW | 6/7 |
 | B14 | Serving & optimization | claude-b14 | WIP | 1/6 |
-| B15 | Evaluation harness | — | TODO | 0/10 |
-| B16 | Privacy & compliance | — | TODO | 0/9 |
-| B17 | Deployment & ops | — | TODO | 0/8 |
-| B18 | Demo & submission | — | TODO | 0/6 |
+| B15 | Evaluation harness | claude-b15 | WIP | 1/10 |
+| B16 | Privacy & compliance | claude-b16 | WIP | 7/9 |
+| B17 | Deployment & ops | claude-b17 | WIP | 4/8 |
+| B18 | Demo & submission | claude-b18 | WIP | 1/6 |
 
 ## 4. Task board
 
@@ -239,51 +239,51 @@ Artifact = the path, PR, or report that proves the task is done.
 ### B15 — Evaluation harness
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B15-T01 | Harness skeleton (adopt AUDDT/DeepFense) | — | TODO | B3-T04 | | week 1 |
-| B15-T02 | Leave-one-generator-out protocol | — | TODO | B15-T01 | | |
-| B15-T03 | Cross-dataset protocol | — | TODO | B15-T01 | | report degradation honestly |
-| B15-T04 | Per-language / per-accent breakdown | — | TODO | B15-T01, B3-T03 | | key chart |
-| B15-T05 | Fairness: per-gender/per-language FPR gaps | — | TODO | B15-T04 | | release gate |
-| B15-T06 | Per-codec / per-SNR curves | — | TODO | B15-T01, B3-T07 | | |
-| B15-T07 | Operational metrics | — | TODO | B14-T05 | | |
-| B15-T08 | Adversarial / laundering robustness | — | TODO | B15-T01 | | |
-| B15-T09 | Metrics: EER, t-DCF, a-DCF, pAUC, ECE | — | TODO | B15-T01 | | |
-| B15-T10 | Auto-generated benchmark report in CI | — | TODO | B15-T09 | | every claim traces here |
+| B15-T01 | Harness skeleton (adopt AUDDT/DeepFense) | claude-b15 | REVIEW | B3-T04 | ml/eval/run_eval.py, ml/eval/scorers.py, ml/eval/configs/ | own harness: any scorer spec (head_a ckpt, deployed heads, full pipeline, baseline, registry version) -> all protocols -> run record -> REPORT.md; runs end to end on synthetic data (`make eval-smoke`); real run needs B3 manifests + trained model |
+| B15-T02 | Leave-one-generator-out protocol | claude-b15 | REVIEW | B15-T01 | packages/vg_eval/protocols.py | per-family EER vs full bona fide pool, seen/unseen from checkpoint meta, pooled ALL_UNSEEN row, fold specs for true LOGO retraining; needs data |
+| B15-T03 | Cross-dataset protocol | claude-b15 | REVIEW | B15-T01 | packages/vg_eval/protocols.py, ml/eval/configs/default.yaml | per-dataset EER + eer_minus_in_domain; In-the-Wild eval-only via license gate purpose=eval; needs data |
+| B15-T04 | Per-language / per-accent breakdown | claude-b15 | REVIEW | B15-T01, B3-T03 | packages/vg_eval/protocols.py, packages/vg_eval/report.py (plot_before_after) | per language/accent rows + before/after chart generator; needs Indic data + two model versions |
+| B15-T05 | Fairness: per-gender/per-language FPR gaps | claude-b15 | REVIEW | B15-T04 | packages/vg_eval/fairness.py | FPR per group at one global threshold with Wilson CIs, gap + ratio; release gate reports not_configured until the max gap is decided (Q9); registry refuses promotion on fail |
+| B15-T06 | Per-codec / per-SNR curves | claude-b15 | REVIEW | B15-T01, B3-T07 | ml/eval/run_eval.py, ml/eval/adversarial.py | manifest codec/SNR slices + codec sweep (g711u/a, amr_nb, gsm, opus, g722 re-encode) + SNR sweep on the same audio; G.729/EVS need encoders ffmpeg lacks |
+| B15-T07 | Operational metrics | claude-b15 | REVIEW | B14-T05 | packages/vg_eval/protocols.py (operational), packages/vg_eval/report.py (render_serving) | time-to-first-alert, score stability (std, flips/min) at a data-derived window threshold; B14 load-test rows imported into REPORT.md as citable lt-* rows; throughput per GPU pending GPU run |
+| B15-T08 | Adversarial / laundering robustness | claude-b15 | REVIEW | B15-T01 | ml/eval/adversarial.py | laundering on spoofs only (codec re-encode, speed, pitch, noise) + white-box PGD (L-inf) and a Malacopula-style universal FIR filter learnt on half the spoofs; needs trained model |
+| B15-T09 | Metrics: EER, t-DCF, a-DCF, pAUC, ECE | claude-b15 | DONE | B15-T01 | packages/vg_eval/metrics.py, tests/unit/test_b15_eval.py | EER (checked vs analytic Phi(-1)), ASVspoof5 minDCF, 2019 t-DCF, a-DCF, AUC, McClish pAUC, ECE, bootstrap CI; abstentions excluded + coverage reported. a-DCF constants to be re-checked against the eval plan in use |
+| B15-T10 | Auto-generated benchmark report in CI | claude-b15 | REVIEW | B15-T09 | packages/vg_eval/report.py, .github/workflows/eval.yml, docs/benchmarks/REPORT.md | REPORT.md rebuilt from run records with stable row ids; synthetic runs refused; CI smoke job + full-eval on a self-hosted data runner (runner not provisioned) |
 
 ### B16 — Privacy & compliance
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B16-T01 | Ephemeral processing + no-raw-audio-at-rest test | — | TODO | B2-T04 | | invariant I5 |
-| B16-T02 | Feature-only logging | — | TODO | B16-T01 | | |
-| B16-T03 | On-prem/edge default topology | — | TODO | B17-T02 | | invariant I6 |
-| B16-T04 | Consent matrix as configuration | — | TODO | B1-T08 | | |
-| B16-T05 | Data residency documentation & enforcement | — | TODO | B10-T03 | | RBI |
-| B16-T06 | Retention/erasure automation + DSAR | — | TODO | B16-T02 | | |
-| B16-T07 | Per-tenant keys + encrypted vault | — | TODO | B0-T04 | | |
-| B16-T08 | DPIA template + completed example | — | TODO | B16-T04 | | |
-| B16-T09 | Model cards + data statements | — | TODO | B15-T10 | | |
+| B16-T01 | Ephemeral processing + no-raw-audio-at-rest test | claude-b16 | DONE | B2-T04 | packages/vg_core/sample_store.py, packages/vg_audio/windowing.py, tests/compliance/test_no_raw_audio_at_rest.py | store owns + zero-overwrites buffers on drop/evict/TTL; windower wiped on close; end-to-end test scans every file written (data dir, temp dir, open() spy) for the input audio in 3 encodings |
+| B16-T02 | Feature-only logging | claude-b16 | DONE | B16-T01 | services/privacy/feature_log.py, services/privacy/raw_retention.py | structlog processor strips audio-shaped values (installed by the gateway); flagged-call raw audio vault is off by default, consent-checked, AES-GCM, expiring, audited |
+| B16-T03 | On-prem/edge default topology | claude-b16 | DONE | B17-T02 | docs/compliance/DATA_RESIDENCY.md, services/privacy/egress.py, deploy/docker-compose.prod.yml | on-prem default; internal no-egress network (compose) + default-deny NetworkPolicy (k8s); egress guard: host allowlist, offshore refused without opt-in, audio payloads blocked (wired into webhooks) |
+| B16-T04 | Consent matrix as configuration | claude-b16 | DONE | B1-T08 | config/privacy/consent_matrix.yaml, services/privacy/policy.py | purposes x lawful bases, bundling rules, purpose limitation; enforced in SessionPipeline (REST 403 / gRPC PERMISSION_DENIED without a basis for fraud_detection; transcript analysis gated separately) |
+| B16-T05 | Data residency documentation & enforcement | claude-b16 | DONE | B10-T03 | docs/compliance/DATA_RESIDENCY.md, services/privacy/egress.py | region IN per tenant, central processing opt-in only, enforcement table with tests |
+| B16-T06 | Retention/erasure automation + DSAR | claude-b16 | DONE | B16-T02 | services/privacy/retention.py, services/policy/evidence.py, services/privacy/main.py | per-tenant retention over evidence/timeline/feedback/voiceprints/flagged audio with legal holds + dry run; DSAR export/erasure by customer id, caller number or speaker id; evidence bodies erasable while the hash chain still verifies (v1 DBs migrated in place). Retention periods need DPO sign-off (Q10) |
+| B16-T07 | Per-tenant keys + encrypted vault | claude-b16 | DONE | B0-T04 | services/privacy/keys.py | envelope encryption (DEKs wrapped by a KEK), versioned rotation that re-encrypts the voiceprint + flagged-audio vaults and shreds the old key, tenant crypto-shredding; production KEK comes from the bank KMS/HSM (kek_provider) |
+| B16-T08 | DPIA template + completed example | claude-b16 | REVIEW | B16-T04 | docs/compliance/DPIA.md, services/privacy/audit.py, services/privacy/audit_event.schema.json | completed example + audit-log schema (hash-chained, append-only, hashed subject refs); needs DPO / legal sign-off |
+| B16-T09 | Model cards + data statements | claude-b16 | REVIEW | B15-T10 | docs/model_cards/TEMPLATE.md, services/privacy/model_card.py | generated from registry + eval run + data registry, numbers carry REPORT.md row ids; no released model yet |
 
 ### B17 — Deployment & ops
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B17-T01 | Dockerfiles per service | — | TODO | B0-T06 | | |
-| B17-T02 | Single-node on-prem compose | — | TODO | B17-T01 | | realistic BFSI start |
-| B17-T03 | Helm / k8s manifests | — | TODO | B17-T01 | | |
-| B17-T04 | Prometheus metrics | — | TODO | B17-T01 | | |
-| B17-T05 | Grafana dashboards (ops + fraud) | — | TODO | B17-T04 | | |
-| B17-T06 | Score-distribution drift monitoring | — | TODO | B17-T04, B9-T08 | | new-generator early warning |
-| B17-T07 | Model registry + blue/green rollout | — | TODO | B14-T04 | | |
-| B17-T08 | On-call runbook | — | TODO | B17-T05 | | |
+| B17-T01 | Dockerfiles per service | claude-b17 | REVIEW | B0-T06 | deploy/docker/render_dockerfiles.py, services/*/Dockerfile, .dockerignore | 9 generated multi-stage slim non-root images with healthchecks, drift-checked in CI/tests; not built here (Docker daemon off; base images need a pull) |
+| B17-T02 | Single-node on-prem compose | claude-b17 | REVIEW | B17-T01 | deploy/docker-compose.prod.yml, deploy/.env.example, Makefile (prod-*) | gateway, privacy API + retention sidecar, prometheus, grafana, optional inference (split) and replayer; internal no-egress network, read-only roots, tmpfs /tmp; validated with `docker compose config`; `make prod-up` on a clean VM not yet run (DoD) |
+| B17-T03 | Helm / k8s manifests | claude-b17 | REVIEW | B17-T01 | deploy/k8s/ | kustomize base + prod overlay (Helm not installed): hardened pods, PVCs, blue/green inference + HPA + PDB, retention CronJob, default-deny NetworkPolicies; renders offline with `kubectl kustomize`; not applied to a cluster |
+| B17-T04 | Prometheus metrics | claude-b17 | DONE | B17-T01 | services/observability/metrics.py, services/api_gateway/app.py (/metrics), deploy/observability/prometheus.prod.yml, deploy/observability/alerts.yml | per-head latency, abstain by reason, alert rate, windows by state, sessions, queue depth, degraded windows, model version, drift PSI, GPU; verified end to end (dev gateway + replayed calls) |
+| B17-T05 | Grafana dashboards (ops + fraud) | claude-b17 | REVIEW | B17-T04 | deploy/observability/grafana/ | ops + fraud-analytics dashboards generated from one builder; every query checked against exported metric names; provisioning for compose; not yet viewed in a running Grafana |
+| B17-T06 | Score-distribution drift monitoring | claude-b17 | DONE | B17-T04, B9-T08 | services/observability/drift.py | PSI + KS on the bona fide proxy (sessions that stayed LOW / confirmed genuine) vs a frozen reference, exported + alerted; alert levels are operational defaults to tune in shadow mode (Q11) |
+| B17-T07 | Model registry + blue/green rollout | claude-b17 | DONE | B14-T04 | packages/vg_models/registry.py, scripts/model_rollout.py, services/inference/served_head.py | immutable versions + sha256, promotion requires a real eval run and a non-failing fairness gate (I7 check for commercial), instant rollback; VG_INFERENCE_BACKEND=registry hot-swaps the served model on the next batch |
+| B17-T08 | On-call runbook | claude-b17 | DONE | B17-T05 | docs/runbooks/ONCALL.md | abstain spike, latency, alert-rate x3, drift, rollout, gateway down, privacy incidents; every alert links to its section (tested) |
 
 ### B18 — Demo & submission
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
 |---|---|---|---|---|---|---|
-| B18-T01 | Live clone-the-judge demo script | — | TODO | M1 | | consent required |
-| B18-T02 | Human-reading-fraud-script demo | — | TODO | B10-T03 | | layered-defense proof |
-| B18-T03 | Before/after Indic EER chart | — | TODO | B15-T04 | | headline chart |
-| B18-T04 | Architecture diagram, README, video | — | TODO | — | | |
-| B18-T05 | Offline demo fallback | — | TODO | B18-T01 | | assume wifi fails |
-| B18-T06 | Framing statements in the writeup | — | TODO | — | | advisory-not-authoritative |
+| B18-T01 | Live clone-the-judge demo script | claude-b18 | REVIEW | M1 | docs/demo/DEMO_SCRIPT.md, docs/demo/scenarios.yaml, scripts/demo_scenarios.py | timed script with consent protocol and failure-mode recoveries; rehearsal runner checks each layer; needs trained heads, a consented volunteer and a rehearsal |
+| B18-T02 | Human-reading-fraud-script demo | claude-b18 | REVIEW | B10-T03 | docs/demo/scenarios.yaml, scripts/demo_scenarios.py | intent layer verified (credential_request, urgency, secrecy -> ELEVATED + verify prompt); acoustic-LOW half needs trained heads and a recorded human |
+| B18-T03 | Before/after Indic EER chart | claude-b18 | REVIEW | B15-T04 | scripts/make_headline_chart.py | chart from two run records (refuses synthetic or mismatched eval data); needs the two real evaluation runs |
+| B18-T04 | Architecture diagram, README, video | claude-b18 | REVIEW | — | docs/ARCHITECTURE.md, README.md, docs/demo/VIDEO_SCRIPT.md | mermaid architecture, rewritten README, 3-minute shot list; the video itself must be recorded by people |
+| B18-T05 | Offline demo fallback | claude-b18 | REVIEW | B18-T01 | scripts/offline_demo.py, Makefile (demo-*) | three fallback tiers; tier 3 plays a recorded pack of scores/events with no network or models; pack to be recorded after the final rehearsal (`make demo-pack`) |
+| B18-T06 | Framing statements in the writeup | claude-b18 | DONE | — | docs/demo/WRITEUP.md, README.md, docs/demo/DEMO_SCRIPT.md, tests/unit/test_b18_demo.py | both statements in README, write-up and demo script (tested); pitch docs may not contain an uncited percentage (tested) |
 
 ## 5. Changelog
 
@@ -295,6 +295,11 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-09-24T01:27Z | claude-b18 | B18-T01-06 | TODO -> DONE(T06) / REVIEW(T01-T05) | docs/demo/, scripts/demo_scenarios.py, scripts/offline_demo.py, scripts/make_headline_chart.py, docs/ARCHITECTURE.md, README.md | 13 tests; demo needs trained heads, consented volunteer, rehearsal, video recording |
+| 2026-09-24T01:27Z | claude-b17 | B17-T01-08 | TODO -> DONE(T04,T06,T07,T08) / REVIEW(T01,T02,T03,T05) | deploy/, services/observability/, packages/vg_models/registry.py, scripts/model_rollout.py, docs/runbooks/ONCALL.md | compose + kustomize validated offline; metrics verified with replayed calls; images not built (Docker daemon off) |
+| 2026-09-24T01:27Z | claude-b16 | B16-T01-09 | TODO -> DONE(T01-T07) / REVIEW(T08,T09) | services/privacy/, config/privacy/, docs/compliance/, tests/compliance/ | compliance suite passes; DPIA needs DPO sign-off; retention values Q10 |
+| 2026-09-24T01:27Z | claude-b15 | B15-T01-10 | TODO -> DONE(T09) / REVIEW(T01-T08,T10) | packages/vg_eval/, ml/eval/, .github/workflows/eval.yml | harness runs end to end on synthetic data; real runs need data + trained model; fairness gate threshold Q9 |
+| 2026-09-24T01:27Z | claude-b16 | B11/B12 cross-block | edit | services/policy/evidence.py, services/api_gateway/{pipeline,app,grpc_server,webhooks,auth}.py | evidence bodies erasable (chain over body hashes, v1 migration); consent enforced at session start; egress guard on webhooks; /metrics public route |
 | 2026-09-23T20:15Z | claude-b14 | B14-T01 | TODO -> REVIEW | ml/export/distill.py | student distillation + CLI; student checkpoints now reload truncated (packages/vg_models/heads/head_a_ssl/model.py, frontend.py) |
 | 2026-09-23T20:15Z | claude-b14 | B14-T02 | TODO -> REVIEW | ml/export/quantize.py | dynamic INT8 + report; accuracy delta pending trained student |
 | 2026-09-23T20:15Z | claude-b14 | B14-T03 | TODO -> REVIEW | ml/export/to_onnx.py, ml/export/parity_check.py | export + parity; skipped until onnx/onnxruntime installed |
@@ -335,6 +340,9 @@ Anything that needs a human decision. Agents append here rather than guessing.
 | Q6 | Add `untrained` to AbstainReason? Untrained Head A currently abstains with reason null. Contract change, needs ADR. | claude-b4 | B0, B9 | 2026-09-17 (user): implement if useful beyond setup. Done: ADR 0006, `untrained` added to schema/proto/models; used by heads A, B, C. |
 | Q7 | Accept cross-block edits from B4: `packages/vg_core/sample_store.py` (B0; resolves samples_ref) and `scripts/replay.py` (--real-heads, real model versions)? | claude-b4 | B0, B2 | 2026-09-17 (user): accepted. |
 | Q8 | Accept B14's fix to the B2 quality gate (`packages/vg_audio/quality.py`)? The tone/DTMF checks compared raw Goertzel power with sum(x^2), off by a factor of ~N (48000), so white noise and much ordinary speech were flagged `hold_music_or_tone` and every head abstained. Fix normalises to a true bin energy fraction (thresholds 0.5 / 0.02 unchanged) and vectorises Goertzel (1087 -> 19 ms per window, it was also holding the GIL). | claude-b14 | B2, B14 | Recommended: accept. Tradeoff: gate now passes far more real audio to the heads, which is its intended behaviour; re-check false-accept of tones on recorded IVR/hold audio once B3 telephony data exists. |
+| Q9 | Maximum per-group false-positive-rate gap for the fairness release gate (B15-T05)? The gate reports `not_configured` until set. | claude-b15 | B15, B17-T07 | Recommended: decide with risk/compliance per attribute (gender, language, accent), e.g. as an absolute FPR gap at the shipped operating point. Not guessed in code (AGENTS §8). |
+| Q10 | Confirm retention periods in config/privacy/tenants/default.yaml (evidence 365 d, timeline 90 d, feedback 365 d, raw audio 0 h, voiceprints 730 d inactive). | claude-b16 | B16-T06 | Engineering placeholders; the DPO must set them per tenant and lawful basis. |
+| Q11 | Operational alert levels (PSI 0.1/0.25 drift, abstain rate 2x yesterday, alert rate 3x, p95 700 ms) in deploy/observability/alerts.yml and services/observability/drift.py. | claude-b17 | B17-T04, B17-T06 | Start with these conventional values, re-baseline after 2 weeks of shadow mode. They are not detection thresholds. |
 
 ## 7. Blocked items
 

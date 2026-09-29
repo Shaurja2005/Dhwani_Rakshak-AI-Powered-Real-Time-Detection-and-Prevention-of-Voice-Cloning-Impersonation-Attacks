@@ -43,6 +43,12 @@ dependencies = [
     "soundfile>=0.12",
     "numpy>=1.26,<2",
     "scipy>=1.13",
+
+    # Contracts, crypto, observability (imported at runtime by every service)
+    "jsonschema>=4.22",
+    "referencing>=0.35",
+    "cryptography>=42",
+    "prometheus-client>=0.20",
 ]
 
 [project.optional-dependencies]
@@ -100,7 +106,15 @@ exclude = ["packages/vg_core/generated/", "third_party/"]
 "sdks/python/**" = ["ANN401", "E501"]
 "examples/**" = ["E501"]
 # Test data literals (multilingual sentences, long fixtures) and fixture plumbing.
-"tests/**" = ["E501", "ANN401", "S110"]
+"tests/**" = ["E501", "ANN401", "S110", "N812", "S603", "S108"]
+# B15: markdown table templates; M/F/P are the conventional short aliases for the eval modules.
+"packages/vg_eval/**" = ["E501", "N812"]
+"ml/eval/**" = ["E501", "N812"]
+# B16: SQL statements.
+"services/privacy/**" = ["E501", "B008", "ANN401"]
+# B17: generated config templates (Dockerfiles, dashboards) and duck-typed pipeline hooks.
+"deploy/**" = ["E501"]
+"services/observability/**" = ["ANN401"]
 
 [tool.black]
 line-length = 100
@@ -118,3 +132,8 @@ testpaths = ["tests", "ml/data/channel"]
 asyncio_mode = "auto"
 addopts = "--cov=packages --cov-report=term-missing --cov-fail-under=60"
 filterwarnings = ["ignore::DeprecationWarning"]
+markers = [
+    "compliance: B16 compliance suite (no raw audio at rest, retention, consent, DSAR)",
+    "integration: crosses a service boundary",
+    "slow: long-running",
+]

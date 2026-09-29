@@ -1,0 +1,42 @@
+# B18 demo scenarios — run and rehearse with:
+#   python scripts/demo_scenarios.py                       # table of layered results + checks
+#   python scripts/demo_scenarios.py --pack docs/demo/pack  # record the offline fallback pack
+#
+# Audio lives OUTSIDE git in demo_assets/ (see docs/demo/DEMO_SCRIPT.md). Cloned audio may
+# only be made from a voice listed in ml/data/consent_register.yaml (invariant I9).
+# If a file is missing, a synthetic placeholder is used and every output says so.
+# `transcript` stands in for local ASR output in demo mode (B10 ASR needs its model).
+# `expect` is what the scenario is meant to show; the runner reports mismatches, never hides them.
+
+scenarios:
+  - id: genuine_customer
+    title: "Genuine customer checks a balance"
+    audio: demo_assets/genuine_customer.wav
+    transcript:
+      - {start_ms: 1000, end_ms: 4000, text: "Hi, I would like to check my account balance please."}
+    expect:
+      acoustic: LOW            # no synthetic-voice evidence
+      intent_labels: []        # nothing suspicious said
+      band: LOW
+
+  - id: cloned_executive_transfer
+    title: "Consented clone of a volunteer requests an urgent transfer (demo 1)"
+    audio: demo_assets/cloned_volunteer.wav        # made on stage from demo_volunteer_01 (consented)
+    transcript:
+      - {start_ms: 1000, end_ms: 5000, text: "This is the CFO, I am in a board meeting so do not call me back."}
+      - {start_ms: 5000, end_ms: 9000, text: "Transfer 18 lakh to the new vendor account right now and keep it confidential."}
+    expect:
+      acoustic: HIGH           # the synthetic-voice heads fire
+      intent_labels: [manufactured_urgency, secrecy_demand, callback_resistance, payment_request]
+      band: HIGH
+
+  - id: human_reads_fraud_script
+    title: "A real human reads a fraud script (demo 2: layered defence)"
+    audio: demo_assets/human_fraud_script.wav      # a consenting team member, genuine voice
+    transcript:
+      - {start_ms: 1000, end_ms: 5000, text: "This is your bank's fraud team, your account is blocked."}
+      - {start_ms: 5000, end_ms: 9000, text: "Tell me the OTP right now and do not tell anyone."}
+    expect:
+      acoustic: LOW            # the voice is real ...
+      intent_labels: [credential_request, manufactured_urgency, secrecy_demand]
+      band: ELEVATED           # ... but the conversation is not: intent raises the risk

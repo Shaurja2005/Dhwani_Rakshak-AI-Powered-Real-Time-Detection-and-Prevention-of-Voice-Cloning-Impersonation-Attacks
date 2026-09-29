@@ -5,6 +5,10 @@ Signing and retry logic live in ``services.policy.notify`` (HMAC-SHA256,
 4xx except 429). This module adds per-tenant subscriptions (URL, secret, event
 types) and a background delivery pool so a slow receiver never blocks the call
 path (I10). Only HTTPS URLs are accepted.
+
+B16 egress control: when a tenant's privacy policy declares an
+``egress_allowlist``, only those hosts can be subscribed; and every payload is
+checked for audio / biometric content before it leaves (never sent, I6).
 """
 
 from __future__ import annotations
@@ -18,6 +22,8 @@ from urllib.parse import urlparse
 
 from packages.vg_core.logging import get_logger
 from services.policy.notify import WebhookResult, deliver_webhook
+from services.privacy.egress import EgressDenied, EgressGuard, audio_findings
+from services.privacy.policy import TenantPrivacy
 
 log = get_logger(__name__)
 EVENT_TYPES = {"policy_decision", "session_risk", "context_signals", "window_score"}
@@ -44,6 +50,12 @@ class WebhookRegistry:
         parsed = urlparse(url)
         if parsed.scheme != "https" or not parsed.hostname:
             raise ValueError("webhook URL must be https")
+        allow = TenantPrivacy.load(tenant_id).egress_allowlist
+        if allow:  # strict tenants: subscriptions limited to their declared egress allowlist
+            try:
+                EgressGuard(allow).check(url, {}, None)
+            except EgressDenied as exc:
+                raise ValueError(str(exc)) from exc
         ev = events or {"policy_decision"}
         if ev - EVENT_TYPES:
             raise ValueError(f"unknown event types {ev - EVENT_TYPES}")
@@ -73,6 +85,11 @@ class WebhookRegistry:
         for s in self.list(tenant_id):
             if event_type in s.events:
                 body = {"type": event_type, "tenant_id": tenant_id, "data": payload}
+                if audio_findings(body):  # I6: audio/biometrics never leave, even to the tenant
+                    log.error(
+                        "webhook_blocked_audio_payload", tenant_id=tenant_id, event=event_type
+                    )
+                    continue
                 futures.append(
                     self._pool.submit(deliver_webhook, s.url, body, s.secret, **self._delivery_kw)
                 )

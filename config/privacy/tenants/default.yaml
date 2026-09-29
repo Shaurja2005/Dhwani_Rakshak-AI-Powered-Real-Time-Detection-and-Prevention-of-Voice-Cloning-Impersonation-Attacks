@@ -1,0 +1,13 @@
+# B16 — per-tenant privacy policy (copy to <tenant_id>.yaml to override).
+# Values are data-protection policy, not detection thresholds; set with the DPO.
+tenant_id: default
+region: IN                     # RBI: banking voice data stays in India
+central_processing: false      # on-prem / edge by default; true only on explicit tenant opt-in (I6)
+egress_allowlist: []           # hosts outbound calls may reach (webhook endpoints etc.); audio never leaves
+retention:
+  evidence_days: 365           # decision evidence bundles (no audio)
+  timeline_days: 90            # per-window score timeline
+  feedback_days: 365
+  raw_audio_hours: 0           # 0 = never keep raw audio (default path, I5)
+  voiceprint_inactive_days: 730
+legal_holds: []                # session ids exempt from retention deletion (investigations)

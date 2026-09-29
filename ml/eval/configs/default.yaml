@@ -1,0 +1,47 @@
+# B15 evaluation protocol — the one config behind `make eval MODEL=...`.
+# Eval sets are read from B3 manifests; In-the-Wild is eval-only forever (registry role).
+lineage: research
+allow_noncommercial: true      # ASVspoof 5 / IndicSynth are non-commercial -> research lineage
+data_root: data
+
+eval_sets:
+  - name: asvspoof5_eval
+    manifests: data/manifests/asvspoof5*.jsonl
+    split: {file: splits/pooled_v1.json, name: eval}
+  - name: in_the_wild
+    manifests: data/manifests/in_the_wild*.jsonl
+  - name: indicsynth_eval
+    manifests: data/manifests/indicsynth*.jsonl
+    split: {file: splits/pooled_v1.json, name: eval}
+  - name: vg_indic_telephony_eval
+    manifests: data/manifests/vg_indic_telephony*.jsonl
+    split: {file: splits/pooled_v1.json, name: eval}
+
+# In-domain reference for the cross-dataset degradation column. A checkpoint's own
+# meta (train_datasets / train_families) overrides these.
+train_datasets: [asvspoof5]
+seen_families: []
+
+operating_point:
+  mode: eer                    # or: fpr + target_fpr (must come from the B9/B11 cost model)
+
+fairness:
+  attributes: [gender, language, accent]
+  max_gap: null                # release-gate policy value — PROJECT_STATUS Q9; null = not configured
+  min_group_n: 30
+
+sweeps:
+  max_utts: 400
+  codecs: [g711u, g711a, amr_nb, gsm, opus, g722]   # G.729 / EVS need encoders ffmpeg lacks here
+  snr_db: [20, 10, 5, 0]
+
+adversarial:
+  max_utts: 200
+  laundering: true
+  codecs: [g711u, amr_nb, opus]
+  white_box: true              # head_a only: PGD (L-inf) + universal FIR filter (Malacopula-style)
+  pgd_eps: 0.002
+  pgd_steps: 10
+  filter_steps: 60
+
+bootstrap: 200

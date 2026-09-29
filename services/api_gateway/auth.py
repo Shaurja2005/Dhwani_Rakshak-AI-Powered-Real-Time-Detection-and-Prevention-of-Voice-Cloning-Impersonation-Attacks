@@ -162,7 +162,8 @@ ROUTE_SCOPES: list[tuple[str, re.Pattern[str], str]] = [
     ("*", re.compile(r"^/v1/tenants/[^/]+/webhooks"), "webhooks:admin"),
     ("*", re.compile(r"^/v1/tenants/[^/]+/(profile|shadow|keys)"), "admin"),
 ]
-PUBLIC = re.compile(r"^/(healthz|docs|redoc|openapi\.json)?$|^/ui(/.*)?$")
+# /metrics: Prometheus scrape (aggregate counters only; restricted by NetworkPolicy, B17)
+PUBLIC = re.compile(r"^/(healthz|metrics|docs|redoc|openapi\.json)?$|^/ui(/.*)?$")
 TENANT_PATH = re.compile(r"^/v1/tenants/([^/]+)")
 
 

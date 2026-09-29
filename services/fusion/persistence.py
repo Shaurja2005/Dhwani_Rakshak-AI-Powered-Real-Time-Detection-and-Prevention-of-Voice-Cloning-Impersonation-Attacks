@@ -91,6 +91,24 @@ class SQLiteTimelineStore:
             self._db.execute(sql, vals)
             self._db.commit()
 
+    # B16 retention / erasure: the timeline holds scores only (no audio), but it is
+    # still personal data about a call and must honour retention and DSAR erasure.
+    def delete_sessions(self, session_ids: list[str]) -> int:
+        with self._lock:
+            n = 0
+            for sid in session_ids:
+                n += self._db.execute(
+                    "DELETE FROM score_timeline WHERE session_id=?", (sid,)
+                ).rowcount
+            self._db.commit()
+        return n
+
+    def delete_before(self, ts_iso: str) -> int:
+        with self._lock:
+            n = self._db.execute("DELETE FROM score_timeline WHERE ts < ?", (ts_iso,)).rowcount
+            self._db.commit()
+        return n
+
     def session(self, session_id: str) -> list[TimelineRow]:
         with self._lock:
             cur = self._db.execute(

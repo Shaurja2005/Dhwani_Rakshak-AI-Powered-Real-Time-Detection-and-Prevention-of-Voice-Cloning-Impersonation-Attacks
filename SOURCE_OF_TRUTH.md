@@ -185,8 +185,8 @@ One directory, one owning block. Cross-directory edits require a note in `PROJEC
 | `services/ui/` | B13 |
 | `ml/export/`, `deploy/triton/` | B14 |
 | `ml/eval/`, `packages/vg_eval/` | B15 |
-| `services/privacy/`, `docs/compliance/` | B16 |
-| `deploy/` | B17 |
+| `services/privacy/`, `docs/compliance/`, `config/privacy/` | B16 |
+| `deploy/`, `services/observability/` | B17 |
 | `docs/demo/` | B18 |
 
 ## 6. Detection head registry

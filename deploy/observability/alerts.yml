@@ -1,0 +1,68 @@
+# VoiceGuard alert rules (B17-T04/T06). Each alert names its runbook section in
+# docs/runbooks/ONCALL.md. Thresholds are OPERATIONAL knobs (not detection thresholds):
+# start here, then tune from shadow-mode baselines (PROJECT_STATUS Q11).
+groups:
+  - name: voiceguard
+    rules:
+      - alert: VGAbstainRateSpike
+        expr: |
+          sum by (head) (rate(vg_head_abstain_total[10m]))
+            / clamp_min(sum by (head) (rate(vg_head_abstain_total[10m])) + sum by (head) (rate(vg_head_scores_total[10m])), 1e-9)
+          > 2 * (
+          sum by (head) (rate(vg_head_abstain_total[1d] offset 1d))
+            / clamp_min(sum by (head) (rate(vg_head_abstain_total[1d] offset 1d)) + sum by (head) (rate(vg_head_scores_total[1d] offset 1d)), 1e-9)
+          )
+        for: 15m
+        labels: {severity: page}
+        annotations:
+          summary: "Head {{ $labels.head }} abstains twice as often as yesterday"
+          runbook: "docs/runbooks/ONCALL.md#abstain-rate-spike"
+
+      - alert: VGWindowLatencyHigh
+        expr: histogram_quantile(0.95, sum by (le) (rate(vg_window_latency_seconds_bucket[5m]))) > 0.7
+        for: 10m
+        labels: {severity: page}
+        annotations:
+          summary: "p95 per-window latency above the 700 ms CPU target"
+          runbook: "docs/runbooks/ONCALL.md#latency-degraded"
+
+      - alert: VGLoadShedding
+        expr: rate(vg_degraded_windows_total[5m]) > 0
+        for: 10m
+        labels: {severity: ticket}
+        annotations:
+          summary: "Load shedding active: Head A skipped, verdicts rest on fewer signals"
+          runbook: "docs/runbooks/ONCALL.md#latency-degraded"
+
+      - alert: VGAlertRateTripled
+        expr: |
+          sum(rate(vg_alerts_total[30m])) > 3 * sum(rate(vg_alerts_total[1d] offset 1d))
+          and sum(increase(vg_alerts_total[30m])) > 10
+        for: 15m
+        labels: {severity: page}
+        annotations:
+          summary: "ELEVATED/HIGH alert rate is 3x yesterday's"
+          runbook: "docs/runbooks/ONCALL.md#alert-rate-tripled"
+
+      - alert: VGScoreDrift
+        expr: max by (head) (vg_score_drift_psi) > 0.25
+        for: 1h
+        labels: {severity: ticket}
+        annotations:
+          summary: "Bona fide-proxy score distribution of head {{ $labels.head }} has shifted (PSI > 0.25)"
+          runbook: "docs/runbooks/ONCALL.md#score-drift"
+
+      - alert: VGModelVersionChanged
+        expr: changes(sum by (head, version) (vg_model_info)[10m:1m]) > 0
+        labels: {severity: info}
+        annotations:
+          summary: "Model version in use changed for head {{ $labels.head }}"
+          runbook: "docs/runbooks/ONCALL.md#model-rollout"
+
+      - alert: VGGatewayDown
+        expr: up{job="vg-gateway"} == 0
+        for: 2m
+        labels: {severity: page}
+        annotations:
+          summary: "Gateway not scraped for 2 minutes"
+          runbook: "docs/runbooks/ONCALL.md#gateway-down"

@@ -1,0 +1,178 @@
+{
+  "uid": "vg-fraud",
+  "title": "VoiceGuard — Fraud analytics",
+  "tags": [
+    "voiceguard"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "barchart",
+      "title": "Alerts / hour by band",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (band) (increase(vg_alerts_total[1h]))",
+          "legendFormat": "{{band}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Alerts by tier (shadow vs live)",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (tier, shadow) (increase(vg_alerts_total[1h]))",
+          "legendFormat": "{{tier}} shadow={{shadow}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Window states",
+      "description": "ABSTAIN is not LOW: it means the system could not judge the audio.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (state) (rate(vg_windows_total[5m]))",
+          "legendFormat": "{{state}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Score drift (PSI vs reference, bona fide proxy)",
+      "description": "> 0.25 sustained: a new generator family may be in the wild (runbook).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (head) (vg_score_drift_psi)",
+          "legendFormat": "{{head}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 5,
+      "type": "heatmap",
+      "title": "p_spoof distribution by head",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "vg-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (le, head) (rate(vg_head_p_spoof_bucket[15m]))",
+          "legendFormat": "{{head}} ≤{{le}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "vg-prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {}
+    }
+  ],
+  "editable": false
+}
