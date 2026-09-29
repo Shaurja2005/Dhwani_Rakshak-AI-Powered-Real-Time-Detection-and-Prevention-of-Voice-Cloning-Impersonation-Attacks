@@ -3,6 +3,10 @@
 This trains **Head A**, the synthetic-voice detector, on **ASVspoof 5**. Follow the steps in order.
 Every step can be stopped with **Ctrl+C** and resumed by running the same command again.
 
+**What is trained:** frozen `facebook/wav2vec2-xls-r-300m` (layers 5–9) plus a Nes2Net detector
+that learns on top of it. XLS-R itself is not fine-tuned in this first run. The reasons and the
+optional stage-2 fine-tune are in [`TRAINING_QUICKSTART.md`](../TRAINING_QUICKSTART.md).
+
 **What you will end up with:** `runs/head_a_base/best.pt` (the trained model) and new rows in
 `docs/benchmarks/REPORT.md` that say how good it is.
 

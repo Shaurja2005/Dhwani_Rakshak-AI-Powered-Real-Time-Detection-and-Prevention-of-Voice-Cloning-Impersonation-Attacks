@@ -34,7 +34,8 @@ python scripts/demo_scenarios.py           # the demo scenarios, layer by layer
 ```
 
 With untrained heads the acoustic layer **abstains** (it says it cannot judge). It never
-invents a score. Model training and data setup are listed in
+invents a score. To train the base model, start with
+[`TRAINING_QUICKSTART.md`](TRAINING_QUICKSTART.md). Remaining data setup is listed in
 [`docs/SETUP_PENDING.md`](docs/SETUP_PENDING.md).
 
 ## Deploy
