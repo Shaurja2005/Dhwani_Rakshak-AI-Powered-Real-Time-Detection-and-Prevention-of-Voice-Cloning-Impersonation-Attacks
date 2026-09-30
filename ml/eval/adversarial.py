@@ -163,24 +163,26 @@ def learn_universal_filter(
     steps: int = 60,
     lr: float = 5e-3,
     max_gain_db: float = 6.0,
+    batch: int = 8,
 ) -> torch.Tensor:
     """Malacopula-style universal FIR filter that makes spoofs score as bona fide.
 
     Starts at identity; the frequency response is kept within ±``max_gain_db`` of
-    unity so the output still sounds like speech.
+    unity so the output still sounds like speech. Gradients are accumulated over
+    ``batch``-sized chunks (same result as one big batch, but fits a laptop GPU).
     """
     h = torch.zeros(taps)
     h[0] = 1.0
     h.requires_grad_(True)
     opt = torch.optim.Adam([h], lr=lr)
     limit = 10 ** (max_gain_db / 20)
+    n = len(spoofs)
     for _ in range(steps):
-        y = apply_filter(spoofs, h)
-        loss = -score_fn(y).mean()
-        mag = torch.abs(torch.fft.rfft(h, 512))
-        loss = loss + 10 * torch.relu(mag - limit).mean() + 10 * torch.relu(1 / limit - mag).mean()
         opt.zero_grad()
-        loss.backward()
+        for i in range(0, n, batch):
+            (-score_fn(apply_filter(spoofs[i : i + batch], h)).sum() / n).backward()
+        mag = torch.abs(torch.fft.rfft(h, 512))
+        (10 * torch.relu(mag - limit).mean() + 10 * torch.relu(1 / limit - mag).mean()).backward()
         opt.step()
     return h.detach()
 

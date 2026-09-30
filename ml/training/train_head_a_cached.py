@@ -221,6 +221,9 @@ def train(cfg: dict[str, Any], resume: bool = True) -> dict[str, Any]:
             f"resumed from epoch {st['epoch']} (best dev EER {best['eer']:.4f} @ {best['epoch']})"
         )
     patience = int(t.get("patience", 6))
+    if bad >= patience:  # the resumed run had already early-stopped: nothing left to train
+        print(f"already finished (early stop at epoch {start - 1})")
+        start = epochs
 
     with (out / "metrics.jsonl").open("a", encoding="utf-8") as mf:
         for epoch in range(start, epochs):

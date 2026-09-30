@@ -209,6 +209,32 @@ def test_white_box_attacks_raise_bona_fide_score() -> None:
     assert score_fn(adv.apply_filter(x, h)).mean() > score_fn(x).mean()
 
 
+def test_frozen_hf_frontend_passes_input_gradients() -> None:
+    """Regression: a frozen XLS-R used to cut the graph, so PGD failed in the real eval."""
+    transformers = pytest.importorskip("transformers")
+    from packages.vg_models.heads.head_a_ssl.frontend import HFSSLFrontend
+
+    cfg = transformers.Wav2Vec2Config(
+        hidden_size=32,
+        num_hidden_layers=2,
+        num_attention_heads=2,
+        intermediate_size=64,
+        conv_dim=(16,) * 7,
+        num_conv_pos_embeddings=16,
+        num_conv_pos_embedding_groups=2,
+        do_stable_layer_norm=True,
+        feat_extract_norm="layer",
+    )
+    fe = HFSSLFrontend.__new__(HFSSLFrontend)  # the real forward, without a download
+    torch.nn.Module.__init__(fe)
+    fe.model, fe.freeze = transformers.Wav2Vec2Model(cfg).requires_grad_(False).eval(), True
+
+    x = 0.1 * torch.randn(2, 16000, generator=torch.Generator().manual_seed(0))
+    assert not fe(x)[-1].requires_grad  # plain scoring: no graph kept
+    x_adv = adv.pgd(lambda w: fe(w)[-1].mean((1, 2)), x, eps=0.002, steps=1)
+    assert (x_adv - x).abs().max() > 0 and all(p.grad is None for p in fe.parameters())
+
+
 # ---------------------------------------------------------------- T01 harness end to end
 def test_harness_cli_synthetic(tmp_path: Path) -> None:
     from ml.eval import run_eval

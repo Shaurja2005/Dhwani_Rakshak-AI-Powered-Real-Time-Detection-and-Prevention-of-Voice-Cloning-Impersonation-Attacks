@@ -98,11 +98,22 @@ The PyTorch installed before this guide was the **CPU-only** build, so the GPU w
 - halve the batch size automatically if the GPU runs out of memory;
 - stop Windows from throttling or sleeping the job **while it runs** (nothing changes permanently).
 
-**To see it working:** Task Manager → Performance → GPU (NVIDIA) → switch one small graph to **"Cuda"**.
-It should sit at 70–100% during step 4. Or run `nvidia-smi -l 5` in a second window. Every 30 s the
-script also prints a line with clips/s, the ETA and GPU memory.
+**To see it working:** the reliable check is `nvidia-smi`. In a second Anaconda Prompt, while
+step 4 or 5 runs:
 
-If the Cuda graph stays under ~50% while the CPU is at 100%, raise `cache: workers` from 6 to 8 in
+```bat
+nvidia-smi --query-gpu=utilization.gpu,memory.used,temperature.gpu,power.draw --format=csv -l 5
+```
+
+`utilization.gpu` should be mostly 70–100% and `memory.used` a few GB. Press Ctrl+C to stop it. Every
+30 s the training script also prints a line with clips/s, the ETA and GPU memory.
+
+Task Manager usually has **no "Cuda" graph** on Windows 11 ("Hardware-accelerated GPU scheduling" hides
+it). That's normal, and there's nothing to change. Instead, watch the **3D** graph and **Dedicated
+GPU memory** under Performance → GPU (NVIDIA). Or, in the **Details** tab, add the **GPU** and
+**GPU engine** columns (right-click a column header → Select columns) and look at `python.exe`.
+
+If GPU utilization stays under ~50% while the CPU is at 100%, raise `cache: workers` from 6 to 8 in
 the config.
 
 ## Why not WSL?

@@ -9,7 +9,190 @@ trials the system did not abstain on. **low n** marks slices with fewer than 30
 trials per class. Cross-dataset and unseen-family numbers are expected to be much
 worse than in-domain numbers — that gap is the honest measure of field performance.
 
-_(no detection evaluation on real data has been run yet)_
+| Model version | Run id | Generated | Eval sets | Fairness gate |
+|---|---|---|---|---|
+| A@xlsr300m-nes2net-v0.1.0 | [`r2b2ae19f`](#r2b2ae19f) | 2026-09-30T12:31:23+00:00 | asvspoof5_eval | not_configured |
+
+## A@xlsr300m-nes2net-v0.1.0  <a id="r2b2ae19f"></a>
+
+- Run id: `r2b2ae19f` · scorer: `head_a` · generated 2026-09-30T12:31:23+00:00
+- Eval data: asvspoof5_eval (lineage: research, manifest sha256: `49ebbc487200`)
+- Seen attack families in training: A01, A02, A03, A04, A05, A06, A07, A08
+- Training datasets (in-domain): asvspoof5
+- Note: pgd_linf: eps=0.002, mean perturbation SNR 39.1 dB on 100 spoofs
+- Note: universal_filter: 64-tap FIR learnt on 50 spoofs, applied to 100; gain range -15.9..6.1 dB (linear filtering: SNR not meaningful)
+
+### Overall
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r2b2ae19f.overall.all"></a>`r2b2ae19f.overall.all` | all | 8149 | 31840 | 100.0% | 8.31% | 7.90–8.65% | 0.238 | 0.968 | 0.599 | 0.079 |  |
+
+### Leave-one-generator-out (per attack family)
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r2b2ae19f.logo.A17"></a>`r2b2ae19f.logo.A17` | A17 | 8149 | 2021 | 100.0% | 4.81% | 4.34–5.19% | 0.136 | 0.979 | 0.566 | 0.121 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A18"></a>`r2b2ae19f.logo.A18` | A18 | 8149 | 2019 | 100.0% | 10.44% | 9.71–11.00% | 0.295 | 0.944 | 0.509 | 0.108 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A19"></a>`r2b2ae19f.logo.A19` | A19 | 8149 | 1815 | 100.0% | 7.48% | 6.94–7.98% | 0.216 | 0.965 | 0.529 | 0.109 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A20"></a>`r2b2ae19f.logo.A20` | A20 | 8149 | 1846 | 100.0% | 4.51% | 4.11–4.93% | 0.127 | 0.983 | 0.583 | 0.125 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A21"></a>`r2b2ae19f.logo.A21` | A21 | 8149 | 2016 | 100.0% | 1.79% | 1.55–2.08% | 0.048 | 0.998 | 0.904 | 0.128 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A22"></a>`r2b2ae19f.logo.A22` | A22 | 8149 | 2020 | 100.0% | 4.15% | 3.76–4.55% | 0.114 | 0.987 | 0.695 | 0.124 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A23"></a>`r2b2ae19f.logo.A23` | A23 | 8149 | 2019 | 100.0% | 4.10% | 3.71–4.42% | 0.110 | 0.983 | 0.580 | 0.125 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A24"></a>`r2b2ae19f.logo.A24` | A24 | 8149 | 2016 | 100.0% | 9.97% | 9.42–10.55% | 0.284 | 0.947 | 0.507 | 0.107 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A25"></a>`r2b2ae19f.logo.A25` | A25 | 8149 | 2021 | 100.0% | 4.10% | 3.75–4.45% | 0.111 | 0.988 | 0.689 | 0.125 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A26"></a>`r2b2ae19f.logo.A26` | A26 | 8149 | 2018 | 100.0% | 4.16% | 3.77–4.56% | 0.117 | 0.990 | 0.764 | 0.124 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A27"></a>`r2b2ae19f.logo.A27` | A27 | 8149 | 2011 | 100.0% | 6.11% | 5.53–6.47% | 0.168 | 0.971 | 0.516 | 0.115 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A28"></a>`r2b2ae19f.logo.A28` | A28 | 8149 | 2021 | 100.0% | 14.06% | 13.36–14.70% | 0.395 | 0.918 | 0.502 | 0.106 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A29"></a>`r2b2ae19f.logo.A29` | A29 | 8149 | 2024 | 100.0% | 3.69% | 3.35–3.97% | 0.099 | 0.989 | 0.694 | 0.126 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A30"></a>`r2b2ae19f.logo.A30` | A30 | 8149 | 2002 | 100.0% | 13.58% | 12.90–14.28% | 0.382 | 0.924 | 0.501 | 0.108 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A31"></a>`r2b2ae19f.logo.A31` | A31 | 8149 | 1993 | 100.0% | 10.88% | 10.35–11.58% | 0.315 | 0.942 | 0.500 | 0.105 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.A32"></a>`r2b2ae19f.logo.A32` | A32 | 8149 | 1978 | 100.0% | 5.11% | 4.70–5.52% | 0.143 | 0.977 | 0.531 | 0.120 | seen_in_training=False |
+| <a id="r2b2ae19f.logo.ALL_UNSEEN"></a>`r2b2ae19f.logo.ALL_UNSEEN` | ALL_UNSEEN | 8149 | 31840 | 100.0% | 8.31% | 7.90–8.65% | 0.238 | 0.968 | 0.599 | 0.079 |  |
+
+### Cross-dataset
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r2b2ae19f.cross_dataset.asvspoof5"></a>`r2b2ae19f.cross_dataset.asvspoof5` | asvspoof5 | 8149 | 31840 | 100.0% | 8.31% | 7.90–8.65% | 0.238 | 0.968 | 0.599 | 0.079 | in_domain=True, eer_minus_in_domain=0.0 |
+
+### Per language
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r2b2ae19f.language.en"></a>`r2b2ae19f.language.en` | en | 8149 | 31840 | 100.0% | 8.31% | 7.90–8.65% | 0.238 | 0.968 | 0.599 | 0.079 |  |
+
+### Per accent
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r2b2ae19f.accent.unknown"></a>`r2b2ae19f.accent.unknown` | unknown | 8149 | 31840 | 100.0% | 8.31% | 7.90–8.65% | 0.238 | 0.968 | 0.599 | 0.079 |  |
+
+### Per codec (as recorded in the manifest)
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r2b2ae19f.codec.codec_C01q1"></a>`r2b2ae19f.codec.codec_C01q1` | codec:C01q1 | 112 | 443 | 100.0% | 8.19% | 5.39–10.89% | 0.195 | 0.974 | 0.846 | 0.121 |  |
+| <a id="r2b2ae19f.codec.codec_C01q2"></a>`r2b2ae19f.codec.codec_C01q2` | codec:C01q2 | 109 | 438 | 100.0% | 1.03% | 0.11–1.94% | 0.016 | 1.000 | 0.992 | 0.073 |  |
+| <a id="r2b2ae19f.codec.codec_C01q3"></a>`r2b2ae19f.codec.codec_C01q3` | codec:C01q3 | 114 | 443 | 100.0% | 1.78% | 0.00–3.34% | 0.025 | 1.000 | 0.988 | 0.090 |  |
+| <a id="r2b2ae19f.codec.codec_C01q4"></a>`r2b2ae19f.codec.codec_C01q4` | codec:C01q4 | 113 | 449 | 100.0% | 0.00% | 0.00–0.00% | 0.000 | 1.000 | 1.000 | 0.101 |  |
+| <a id="r2b2ae19f.codec.codec_C01q5"></a>`r2b2ae19f.codec.codec_C01q5` | codec:C01q5 | 112 | 442 | 100.0% | 0.79% | 0.00–1.68% | 0.007 | 1.000 | 0.997 | 0.109 |  |
+| <a id="r2b2ae19f.codec.codec_C02q1"></a>`r2b2ae19f.codec.codec_C02q1` | codec:C02q1 | 114 | 446 | 100.0% | 6.21% | 4.43–8.76% | 0.163 | 0.983 | 0.892 | 0.046 |  |
+| <a id="r2b2ae19f.codec.codec_C02q2"></a>`r2b2ae19f.codec.codec_C02q2` | codec:C02q2 | 112 | 448 | 100.0% | 2.68% | 0.89–4.46% | 0.061 | 0.997 | 0.968 | 0.084 |  |
+| <a id="r2b2ae19f.codec.codec_C02q3"></a>`r2b2ae19f.codec.codec_C02q3` | codec:C02q3 | 115 | 440 | 100.0% | 0.89% | 0.00–1.67% | 0.009 | 1.000 | 0.996 | 0.086 |  |
+| <a id="r2b2ae19f.codec.codec_C02q4"></a>`r2b2ae19f.codec.codec_C02q4` | codec:C02q4 | 113 | 446 | 100.0% | 1.00% | 0.00–2.67% | 0.028 | 1.000 | 0.981 | 0.079 |  |
+| <a id="r2b2ae19f.codec.codec_C02q5"></a>`r2b2ae19f.codec.codec_C02q5` | codec:C02q5 | 113 | 438 | 100.0% | 0.90% | 0.00–1.57% | 0.009 | 1.000 | 0.996 | 0.089 |  |
+| <a id="r2b2ae19f.codec.codec_C03q1"></a>`r2b2ae19f.codec.codec_C03q1` | codec:C03q1 | 110 | 448 | 100.0% | 11.82% | 8.22–15.43% | 0.245 | 0.959 | 0.777 | 0.106 |  |
+| <a id="r2b2ae19f.codec.codec_C03q2"></a>`r2b2ae19f.codec.codec_C03q2` | codec:C03q2 | 111 | 453 | 100.0% | 7.03% | 4.34–9.05% | 0.132 | 0.986 | 0.934 | 0.072 |  |
+| <a id="r2b2ae19f.codec.codec_C03q3"></a>`r2b2ae19f.codec.codec_C03q3` | codec:C03q3 | 119 | 445 | 100.0% | 1.63% | 0.11–2.50% | 0.018 | 0.999 | 0.991 | 0.075 |  |
+| <a id="r2b2ae19f.codec.codec_C03q4"></a>`r2b2ae19f.codec.codec_C03q4` | codec:C03q4 | 113 | 452 | 100.0% | 0.88% | 0.00–1.89% | 0.021 | 1.000 | 0.990 | 0.093 |  |
+| <a id="r2b2ae19f.codec.codec_C03q5"></a>`r2b2ae19f.codec.codec_C03q5` | codec:C03q5 | 117 | 448 | 100.0% | 1.52% | 0.65–2.51% | 0.022 | 0.999 | 0.989 | 0.083 |  |
+| <a id="r2b2ae19f.codec.codec_C04q1"></a>`r2b2ae19f.codec.codec_C04q1` | codec:C04q1 | 112 | 443 | 100.0% | 33.00% | 28.60–37.60% | 0.722 | 0.723 | 0.612 | 0.171 |  |
+| <a id="r2b2ae19f.codec.codec_C04q2"></a>`r2b2ae19f.codec.codec_C04q2` | codec:C04q2 | 114 | 447 | 100.0% | 17.50% | 14.06–21.04% | 0.427 | 0.909 | 0.659 | 0.078 |  |
+| <a id="r2b2ae19f.codec.codec_C04q3"></a>`r2b2ae19f.codec.codec_C04q3` | codec:C04q3 | 114 | 453 | 100.0% | 7.04% | 4.29–12.32% | 0.191 | 0.978 | 0.754 | 0.058 |  |
+| <a id="r2b2ae19f.codec.codec_C04q4"></a>`r2b2ae19f.codec.codec_C04q4` | codec:C04q4 | 112 | 450 | 100.0% | 3.56% | 1.78–6.24% | 0.083 | 0.994 | 0.912 | 0.104 |  |
+| <a id="r2b2ae19f.codec.codec_C04q5"></a>`r2b2ae19f.codec.codec_C04q5` | codec:C04q5 | 118 | 438 | 100.0% | 0.88% | 0.00–1.65% | 0.009 | 1.000 | 0.996 | 0.107 |  |
+| <a id="r2b2ae19f.codec.codec_C05q1"></a>`r2b2ae19f.codec.codec_C05q1` | codec:C05q1 | 116 | 445 | 100.0% | 1.65% | 0.77–2.64% | 0.032 | 0.999 | 0.983 | 0.115 |  |
+| <a id="r2b2ae19f.codec.codec_C05q2"></a>`r2b2ae19f.codec.codec_C05q2` | codec:C05q2 | 115 | 441 | 100.0% | 0.66% | 0.00–1.00% | 0.005 | 1.000 | 0.998 | 0.106 |  |
+| <a id="r2b2ae19f.codec.codec_C05q3"></a>`r2b2ae19f.codec.codec_C05q3` | codec:C05q3 | 109 | 443 | 100.0% | 0.91% | 0.00–2.73% | 0.024 | 0.999 | 0.979 | 0.115 |  |
+| <a id="r2b2ae19f.codec.codec_C05q4"></a>`r2b2ae19f.codec.codec_C05q4` | codec:C05q4 | 117 | 443 | 100.0% | 0.88% | 0.00–1.76% | 0.014 | 1.000 | 0.994 | 0.109 |  |
+| <a id="r2b2ae19f.codec.codec_C05q5"></a>`r2b2ae19f.codec.codec_C05q5` | codec:C05q5 | 113 | 448 | 100.0% | 0.78% | 0.00–1.55% | 0.007 | 1.000 | 0.997 | 0.122 |  |
+| <a id="r2b2ae19f.codec.codec_C06q1"></a>`r2b2ae19f.codec.codec_C06q1` | codec:C06q1 | 105 | 389 | 100.0% | 1.98% | 0.99–3.71% | 0.039 | 0.996 | 0.981 | 0.103 |  |
+| <a id="r2b2ae19f.codec.codec_C06q2"></a>`r2b2ae19f.codec.codec_C06q2` | codec:C06q2 | 105 | 384 | 100.0% | 1.86% | 0.99–3.01% | 0.034 | 0.998 | 0.983 | 0.092 |  |
+| <a id="r2b2ae19f.codec.codec_C06q3"></a>`r2b2ae19f.codec.codec_C06q3` | codec:C06q3 | 107 | 376 | 100.0% | 1.73% | 0.00–2.86% | 0.034 | 0.999 | 0.969 | 0.088 |  |
+| <a id="r2b2ae19f.codec.codec_C06q4"></a>`r2b2ae19f.codec.codec_C06q4` | codec:C06q4 | 106 | 384 | 100.0% | 2.85% | 0.99–4.70% | 0.064 | 0.998 | 0.933 | 0.109 |  |
+| <a id="r2b2ae19f.codec.codec_C06q5"></a>`r2b2ae19f.codec.codec_C06q5` | codec:C06q5 | 104 | 385 | 100.0% | 2.87% | 1.00–4.74% | 0.060 | 0.998 | 0.970 | 0.111 |  |
+| <a id="r2b2ae19f.codec.codec_C07q1"></a>`r2b2ae19f.codec.codec_C07q1` | codec:C07q1 | 109 | 454 | 100.0% | 35.62% | 31.90–40.34% | 0.821 | 0.702 | 0.544 | 0.168 |  |
+| <a id="r2b2ae19f.codec.codec_C07q2"></a>`r2b2ae19f.codec.codec_C07q2` | codec:C07q2 | 115 | 442 | 100.0% | 25.05% | 20.71–29.62% | 0.591 | 0.849 | 0.606 | 0.096 |  |
+| <a id="r2b2ae19f.codec.codec_C07q3"></a>`r2b2ae19f.codec.codec_C07q3` | codec:C07q3 | 111 | 440 | 100.0% | 19.68% | 15.38–25.23% | 0.516 | 0.889 | 0.569 | 0.064 |  |
+| <a id="r2b2ae19f.codec.codec_C07q4"></a>`r2b2ae19f.codec.codec_C07q4` | codec:C07q4 | 116 | 441 | 100.0% | 9.28% | 6.19–12.82% | 0.250 | 0.972 | 0.829 | 0.054 |  |
+| <a id="r2b2ae19f.codec.codec_C07q5"></a>`r2b2ae19f.codec.codec_C07q5` | codec:C07q5 | 114 | 439 | 100.0% | 2.45% | 0.89–3.46% | 0.046 | 0.998 | 0.978 | 0.107 |  |
+| <a id="r2b2ae19f.codec.codec_C08q1"></a>`r2b2ae19f.codec.codec_C08q1` | codec:C08q1 | 105 | 441 | 100.0% | 18.12% | 15.21–22.08% | 0.464 | 0.886 | 0.569 | 0.045 |  |
+| <a id="r2b2ae19f.codec.codec_C08q2"></a>`r2b2ae19f.codec.codec_C08q2` | codec:C08q2 | 107 | 439 | 100.0% | 1.85% | 0.92–3.01% | 0.036 | 0.995 | 0.887 | 0.106 |  |
+| <a id="r2b2ae19f.codec.codec_C08q3"></a>`r2b2ae19f.codec.codec_C08q3` | codec:C08q3 | 105 | 440 | 100.0% | 1.98% | 0.82–3.02% | 0.027 | 0.999 | 0.986 | 0.088 |  |
+| <a id="r2b2ae19f.codec.codec_C08q4"></a>`r2b2ae19f.codec.codec_C08q4` | codec:C08q4 | 100 | 447 | 100.0% | 2.12% | 0.22–4.01% | 0.046 | 0.998 | 0.942 | 0.112 |  |
+| <a id="r2b2ae19f.codec.codec_C08q5"></a>`r2b2ae19f.codec.codec_C08q5` | codec:C08q5 | 111 | 447 | 100.0% | 1.68% | 0.22–2.69% | 0.018 | 0.999 | 0.991 | 0.092 |  |
+| <a id="r2b2ae19f.codec.codec_C09q1"></a>`r2b2ae19f.codec.codec_C09q1` | codec:C09q1 | 103 | 383 | 100.0% | 7.93% | 5.78–10.69% | 0.186 | 0.974 | 0.759 | 0.043 |  |
+| <a id="r2b2ae19f.codec.codec_C09q2"></a>`r2b2ae19f.codec.codec_C09q2` | codec:C09q2 | 105 | 382 | 100.0% | 3.74% | 1.87–5.74% | 0.071 | 0.995 | 0.965 | 0.069 |  |
+| <a id="r2b2ae19f.codec.codec_C09q3"></a>`r2b2ae19f.codec.codec_C09q3` | codec:C09q3 | 107 | 386 | 100.0% | 3.68% | 1.97–6.38% | 0.083 | 0.992 | 0.925 | 0.064 |  |
+| <a id="r2b2ae19f.codec.codec_C09q4"></a>`r2b2ae19f.codec.codec_C09q4` | codec:C09q4 | 105 | 379 | 100.0% | 1.74% | 0.74–2.88% | 0.034 | 0.999 | 0.977 | 0.094 |  |
+| <a id="r2b2ae19f.codec.codec_C09q5"></a>`r2b2ae19f.codec.codec_C09q5` | codec:C09q5 | 109 | 388 | 100.0% | 1.82% | 0.13–3.64% | 0.040 | 0.999 | 0.973 | 0.107 |  |
+| <a id="r2b2ae19f.codec.codec_C10q1"></a>`r2b2ae19f.codec.codec_C10q1` | codec:C10q1 | 114 | 445 | 100.0% | 11.43% | 8.77–14.88% | 0.293 | 0.950 | 0.703 | 0.029 |  |
+| <a id="r2b2ae19f.codec.codec_C10q2"></a>`r2b2ae19f.codec.codec_C10q2` | codec:C10q2 | 114 | 449 | 100.0% | 7.07% | 5.06–9.61% | 0.162 | 0.978 | 0.876 | 0.039 |  |
+| <a id="r2b2ae19f.codec.codec_C10q3"></a>`r2b2ae19f.codec.codec_C10q3` | codec:C10q3 | 117 | 443 | 100.0% | 1.87% | 0.88–3.40% | 0.041 | 0.998 | 0.981 | 0.085 |  |
+| <a id="r2b2ae19f.codec.codec_C10q4"></a>`r2b2ae19f.codec.codec_C10q4` | codec:C10q4 | 108 | 443 | 100.0% | 3.54% | 0.91–4.71% | 0.050 | 0.998 | 0.975 | 0.085 |  |
+| <a id="r2b2ae19f.codec.codec_C10q5"></a>`r2b2ae19f.codec.codec_C10q5` | codec:C10q5 | 115 | 437 | 100.0% | 0.89% | 0.11–1.78% | 0.016 | 0.999 | 0.993 | 0.087 |  |
+| <a id="r2b2ae19f.codec.codec_C11q1"></a>`r2b2ae19f.codec.codec_C11q1` | codec:C11q1 | 67 | 275 | 100.0% | 1.47% | 0.00–2.95% | 0.022 | 0.999 | 0.989 | 0.124 |  |
+| <a id="r2b2ae19f.codec.codec_C11q2"></a>`r2b2ae19f.codec.codec_C11q2` | codec:C11q2 | 65 | 277 | 100.0% | 1.85% | 0.18–4.48% | 0.032 | 0.999 | 0.984 | 0.145 |  |
+| <a id="r2b2ae19f.codec.codec_C11q3"></a>`r2b2ae19f.codec.codec_C11q3` | codec:C11q3 | 67 | 278 | 100.0% | 0.18% | 0.00–1.29% | 0.004 | 1.000 | 0.998 | 0.134 |  |
+| <a id="r2b2ae19f.codec.codec_C11q4"></a>`r2b2ae19f.codec.codec_C11q4` | codec:C11q4 | 65 | 278 | 100.0% | 0.36% | 0.00–1.49% | 0.007 | 1.000 | 0.996 | 0.145 |  |
+| <a id="r2b2ae19f.codec.codec_C11q5"></a>`r2b2ae19f.codec.codec_C11q5` | codec:C11q5 | 66 | 278 | 100.0% | 4.43% | 1.48–6.09% | 0.058 | 0.996 | 0.971 | 0.145 |  |
+| <a id="r2b2ae19f.codec.codec_C11q6"></a>`r2b2ae19f.codec.codec_C11q6` | codec:C11q6 | 67 | 275 | 100.0% | 1.47% | 0.00–2.95% | 0.029 | 1.000 | 0.985 | 0.140 |  |
+| <a id="r2b2ae19f.codec.codec_C11q7"></a>`r2b2ae19f.codec.codec_C11q7` | codec:C11q7 | 66 | 274 | 100.0% | 2.98% | 0.00–4.46% | 0.033 | 0.999 | 0.983 | 0.149 |  |
+| <a id="r2b2ae19f.codec.codec_C11q8"></a>`r2b2ae19f.codec.codec_C11q8` | codec:C11q8 | 67 | 275 | 100.0% | 1.47% | 0.00–4.42% | 0.039 | 0.999 | 0.980 | 0.136 |  |
+| <a id="r2b2ae19f.codec.none"></a>`r2b2ae19f.codec.none` | none | 2065 | 8017 | 100.0% | 1.44% | 1.17–1.80% | 0.041 | 0.999 | 0.967 | 0.123 |  |
+
+### Per SNR bin
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r2b2ae19f.snr.clean_unknown"></a>`r2b2ae19f.snr.clean_unknown` | clean/unknown | 8149 | 31840 | 100.0% | 8.31% | 7.90–8.65% | 0.238 | 0.968 | 0.599 | 0.079 |  |
+
+### Codec sweep (same audio, re-encoded)
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r2b2ae19f.codec_sweep.clean"></a>`r2b2ae19f.codec_sweep.clean` | clean | 200 | 200 | 100.0% | 6.50% | 4.00–9.50% | 0.179 | 0.978 | 0.607 | 0.073 |  |
+| <a id="r2b2ae19f.codec_sweep.codec_amr_nb"></a>`r2b2ae19f.codec_sweep.codec_amr_nb` | codec_amr_nb | 200 | 200 | 100.0% | 7.50% | 5.00–10.50% | 0.199 | 0.972 | 0.617 | 0.085 | eer_minus_clean=0.01 |
+| <a id="r2b2ae19f.codec_sweep.codec_g711a"></a>`r2b2ae19f.codec_sweep.codec_g711a` | codec_g711a | 200 | 200 | 100.0% | 9.50% | 7.00–12.50% | 0.248 | 0.967 | 0.588 | 0.065 | eer_minus_clean=0.03 |
+| <a id="r2b2ae19f.codec_sweep.codec_g711u"></a>`r2b2ae19f.codec_sweep.codec_g711u` | codec_g711u | 200 | 200 | 100.0% | 9.00% | 6.00–11.50% | 0.228 | 0.971 | 0.593 | 0.070 | eer_minus_clean=0.025 |
+| <a id="r2b2ae19f.codec_sweep.codec_g722"></a>`r2b2ae19f.codec_sweep.codec_g722` | codec_g722 | 200 | 200 | 100.0% | 8.00% | 5.50–11.00% | 0.212 | 0.971 | 0.563 | 0.066 | eer_minus_clean=0.015 |
+| <a id="r2b2ae19f.codec_sweep.codec_gsm"></a>`r2b2ae19f.codec_sweep.codec_gsm` | codec_gsm | 200 | 200 | 100.0% | 8.50% | 6.49–11.50% | 0.228 | 0.968 | 0.616 | 0.067 | eer_minus_clean=0.02 |
+| <a id="r2b2ae19f.codec_sweep.codec_opus"></a>`r2b2ae19f.codec_sweep.codec_opus` | codec_opus | 200 | 200 | 100.0% | 7.00% | 4.49–10.00% | 0.182 | 0.979 | 0.609 | 0.068 | eer_minus_clean=0.005 |
+
+### SNR sweep (same audio, noise added)
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r2b2ae19f.snr_sweep.clean"></a>`r2b2ae19f.snr_sweep.clean` | clean | 200 | 200 | 100.0% | 6.50% | 4.00–9.50% | 0.179 | 0.978 | 0.607 | 0.073 |  |
+| <a id="r2b2ae19f.snr_sweep.snr_0dB"></a>`r2b2ae19f.snr_sweep.snr_0dB` | snr_0dB | 200 | 200 | 100.0% | 27.50% | 23.50–32.50% | 0.615 | 0.801 | 0.548 | 0.407 | eer_minus_clean=0.21 |
+| <a id="r2b2ae19f.snr_sweep.snr_10dB"></a>`r2b2ae19f.snr_sweep.snr_10dB` | snr_10dB | 200 | 200 | 100.0% | 13.00% | 9.50–16.00% | 0.336 | 0.940 | 0.627 | 0.169 | eer_minus_clean=0.065 |
+| <a id="r2b2ae19f.snr_sweep.snr_20dB"></a>`r2b2ae19f.snr_sweep.snr_20dB` | snr_20dB | 200 | 200 | 100.0% | 11.50% | 8.00–14.00% | 0.267 | 0.964 | 0.622 | 0.097 | eer_minus_clean=0.05 |
+| <a id="r2b2ae19f.snr_sweep.snr_5dB"></a>`r2b2ae19f.snr_sweep.snr_5dB` | snr_5dB | 200 | 200 | 100.0% | 18.00% | 14.49–22.50% | 0.425 | 0.905 | 0.598 | 0.282 | eer_minus_clean=0.115 |
+
+### Adversarial / laundering robustness
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r2b2ae19f.adversarial.clean"></a>`r2b2ae19f.adversarial.clean` | clean | 100 | 100 | 100.0% | 7.00% | 2.00–10.00% | 0.153 | 0.986 | 0.749 | 0.078 |  |
+| <a id="r2b2ae19f.adversarial.clean_3s_crop"></a>`r2b2ae19f.adversarial.clean_3s_crop` | clean_3s_crop | 100 | 100 | 100.0% | 10.00% | 5.00–14.00% | 0.246 | 0.973 | 0.678 | 0.074 |  |
+| <a id="r2b2ae19f.adversarial.noise_pink_10dB"></a>`r2b2ae19f.adversarial.noise_pink_10dB` | noise_pink_10dB | 100 | 100 | 100.0% | 4.00% | 1.00–7.00% | 0.079 | 0.992 | 0.734 | 0.069 | eer_minus_clean=-0.03 |
+| <a id="r2b2ae19f.adversarial.noise_pink_20dB"></a>`r2b2ae19f.adversarial.noise_pink_20dB` | noise_pink_20dB | 100 | 100 | 100.0% | 4.00% | 1.00–7.00% | 0.097 | 0.992 | 0.769 | 0.065 | eer_minus_clean=-0.03 |
+| <a id="r2b2ae19f.adversarial.pgd_linf"></a>`r2b2ae19f.adversarial.pgd_linf` | pgd_linf | 100 | 100 | 100.0% | 99.00% | 97.00–100.00% | 1.000 | 0.001 | 0.497 | 0.446 | eer_minus_clean=0.89 |
+| <a id="r2b2ae19f.adversarial.pitch__2st"></a>`r2b2ae19f.adversarial.pitch__2st` | pitch_+2st | 100 | 100 | 100.0% | 17.00% | 11.00–22.00% | 0.436 | 0.915 | 0.528 | 0.159 | eer_minus_clean=0.1 |
+| <a id="r2b2ae19f.adversarial.pitch_-2st"></a>`r2b2ae19f.adversarial.pitch_-2st` | pitch_-2st | 100 | 100 | 100.0% | 11.00% | 6.00–16.00% | 0.263 | 0.960 | 0.573 | 0.079 | eer_minus_clean=0.04 |
+| <a id="r2b2ae19f.adversarial.reencode_amr_nb"></a>`r2b2ae19f.adversarial.reencode_amr_nb` | reencode_amr_nb | 100 | 100 | 100.0% | 8.00% | 5.00–12.00% | 0.213 | 0.977 | 0.688 | 0.095 | eer_minus_clean=0.01 |
+| <a id="r2b2ae19f.adversarial.reencode_g711u"></a>`r2b2ae19f.adversarial.reencode_g711u` | reencode_g711u | 100 | 100 | 100.0% | 8.00% | 5.00–13.00% | 0.213 | 0.976 | 0.729 | 0.093 | eer_minus_clean=0.01 |
+| <a id="r2b2ae19f.adversarial.reencode_opus"></a>`r2b2ae19f.adversarial.reencode_opus` | reencode_opus | 100 | 100 | 100.0% | 7.00% | 2.00–10.00% | 0.143 | 0.987 | 0.774 | 0.085 | eer_minus_clean=0.0 |
+| <a id="r2b2ae19f.adversarial.speed_0.9"></a>`r2b2ae19f.adversarial.speed_0.9` | speed_0.9 | 100 | 100 | 100.0% | 7.00% | 4.00–10.00% | 0.173 | 0.984 | 0.724 | 0.090 | eer_minus_clean=0.0 |
+| <a id="r2b2ae19f.adversarial.speed_1.1"></a>`r2b2ae19f.adversarial.speed_1.1` | speed_1.1 | 100 | 100 | 100.0% | 9.00% | 5.00–14.00% | 0.217 | 0.976 | 0.714 | 0.080 | eer_minus_clean=0.02 |
+| <a id="r2b2ae19f.adversarial.universal_filter"></a>`r2b2ae19f.adversarial.universal_filter` | universal_filter | 100 | 100 | 100.0% | 19.00% | 13.00–24.00% | 0.508 | 0.887 | 0.523 | 0.186 | eer_minus_clean=0.09 |
+
+### Operational
+
+| Row id | Slice | Calls | Details |
+|---|---|---:|---|
+| <a id="r2b2ae19f.operational.spoof"></a>`r2b2ae19f.operational.spoof` | spoof | 31840 | threshold=0.17058661173716605, alerted_fraction=0.9715, median_seconds_to_first_alert=3.0, p90_seconds_to_first_alert=3.0, mean_window_std=0.07097775218861585, mean_flips_per_min=2.8974735884935225 |
+| <a id="r2b2ae19f.operational.bona_fide"></a>`r2b2ae19f.operational.bona_fide` | bona_fide | 8149 | threshold=0.17058661173716605, alerted_fraction=0.1436, median_seconds_to_first_alert=3.0, p90_seconds_to_first_alert=6.0, mean_window_std=0.02571417773185115, mean_flips_per_min=1.6345920862777612 |
+
+### Fairness — bona fide false-positive rate per group (B15-T05)
+
+Release gate: **not_configured** — max FPR gap not set (PROJECT_STATUS Q9)
+
+| Row id | Attribute | Group | Bona fide | FPR | 95% CI | Gap (max−min) |
+|---|---|---|---:|---:|---|---:|
+| <a id="r2b2ae19f.fairness_gender.female"></a>`r2b2ae19f.fairness_gender.female` | gender | female | 4147 | 7.16% | 6.42%–7.99% | 2.33% |
+| <a id="r2b2ae19f.fairness_gender.male"></a>`r2b2ae19f.fairness_gender.male` | gender | male | 4002 | 9.50% | 8.63%–10.44% | 2.33% |
 
 ## Serving latency and capacity (B14 load tests, B15-T07)  <a id="serving"></a>
 

@@ -43,6 +43,17 @@ def status() -> dict[str, bool]:
 
         return bool(np.load(d).all())
 
+    def train_done() -> bool:
+        # best.pt appears after the first epoch, so it alone does not mean training finished
+        if not (RUN / "best.pt").exists() or not (RUN / "last.pt").exists():
+            return False
+        import torch
+        import yaml
+
+        st = torch.load(RUN / "last.pt", map_location="cpu", weights_only=False)  # noqa: S614
+        t = yaml.safe_load((ROOT / CONFIG).read_text(encoding="utf-8"))["train"]
+        return st.get("bad", 0) >= int(t.get("patience", 6)) or st["epoch"] + 1 >= int(t["epochs"])
+
     tars = list((ROOT / "data/asvspoof5").glob("flac_*.tar"))
     st = {
         "extract": bool(tars) and all((EXTRACTED / f"{t.name}.done").exists() for t in tars),
@@ -51,7 +62,7 @@ def status() -> dict[str, bool]:
             for s in ("train", "dev", "eval")
         ),
         "cache": cache_done("train") and cache_done("dev"),
-        "train": (RUN / "best.pt").exists(),
+        "train": train_done(),
         "eval": any((ROOT / "docs/benchmarks/runs").glob("A_xlsr300m-nes2net-v0.1.0*.json")),
     }
     return st

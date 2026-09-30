@@ -116,9 +116,16 @@ Every 30 seconds it prints a progress line:
   train: 12480/58400  95 utt/s  ETA 8 min  batch 24  gpu: NVIDIA GeForce RTX 4060 ..., peak mem 3.1/8.0 GB
 ```
 
-**Checking that the GPU is really working:** open **Task Manager** → **Performance** → **GPU 1 (NVIDIA)**.
-Click the name of one small graph (e.g. "Video Decode") and switch it to **Cuda**. It should be busy,
-at 70–100%. Or, in a *second* Anaconda Prompt, run `nvidia-smi -l 5`, which shows "GPU-Util" and the temperature every 5 s.
+**Checking that the GPU is really working:** in a *second* Anaconda Prompt, run
+
+```bat
+nvidia-smi --query-gpu=utilization.gpu,memory.used,temperature.gpu,power.draw --format=csv -l 5
+```
+
+`utilization.gpu` should be mostly 70–100%. Press Ctrl+C to stop it. Task Manager on Windows 11
+usually has **no "Cuda" graph**, because "Hardware-accelerated GPU scheduling" hides it. That's
+normal. Watch the **3D** graph and **Dedicated GPU memory** there instead, or add the **GPU engine**
+column in the Details tab and look at `python.exe`.
 
 If utilisation stays low (under ~50%) while the CPU is at 100%, the CPU can't decode audio fast
 enough. Raise `cache: workers` from 6 to 8 in the config. If you get "out of GPU memory", the batch size

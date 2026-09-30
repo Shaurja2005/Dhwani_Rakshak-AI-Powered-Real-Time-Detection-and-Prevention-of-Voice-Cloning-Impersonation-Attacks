@@ -81,7 +81,10 @@ class HFSSLFrontend(SSLFrontend):
     def forward(self, wav: torch.Tensor) -> tuple[torch.Tensor, ...]:
         # SSL models expect zero-mean unit-variance input.
         wav = (wav - wav.mean(-1, keepdim=True)) / (wav.std(-1, keepdim=True) + 1e-5)
-        with torch.set_grad_enabled(not self.freeze and self.training):
+        # A frozen model still passes gradients to its *input* when asked (white-box attacks
+        # such as PGD need d score / d audio); otherwise skip building the graph to save memory.
+        track = (not self.freeze and self.training) or wav.requires_grad
+        with torch.set_grad_enabled(track):
             out = self.model(wav, output_hidden_states=True)
         return tuple(out.hidden_states)
 
