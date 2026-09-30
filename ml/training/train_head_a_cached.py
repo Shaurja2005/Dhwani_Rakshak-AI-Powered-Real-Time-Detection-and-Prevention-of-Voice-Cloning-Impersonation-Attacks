@@ -267,7 +267,17 @@ def train(cfg: dict[str, Any], resume: bool = True) -> dict[str, Any]:
         print(
             f"resumed from epoch {st['epoch']} (best dev EER {best['eer']:.4f} @ {best['epoch']})"
         )
+    elif t.get("init_from"):
+        # fine-tune: start from an earlier model (e.g. the previous language's best.pt)
+        init = resolve(t["init_from"])
+        src = torch.load(init, map_location=device, weights_only=False)  # noqa: S614 - own file
+        state = {k: v for k, v in src["state"].items() if not k.startswith("frontend.")}
+        missing, unexpected = model.load_state_dict(state, strict=False)
+        if unexpected or any(not k.startswith("frontend.") for k in missing):
+            raise SystemExit(f"{init} does not match this model ({missing}, {unexpected})")
+        print(f"fine-tuning from {init} ({src['meta'].get('run_name')})")
     patience = int(t.get("patience", 6))
+    stop_on = str(t.get("early_stop", "pooled"))  # pooled | mean_by_set
     if bad >= patience:  # the resumed run had already early-stopped: nothing left to train
         print(f"already finished (early stop at epoch {start - 1})")
         start = epochs
@@ -301,11 +311,15 @@ def train(cfg: dict[str, Any], resume: bool = True) -> dict[str, Any]:
                     m = ds_dv.part_of == k
                     s_k, y_k = scores[m], labels[m]
                     by_set[name] = round(compute_eer(s_k[y_k == 1], s_k[y_k == 0])[0], 5)
+            if stop_on == "mean_by_set" and by_set:
+                # every dev set (each language, clean and augmented) counts equally, so
+                # forgetting an earlier language is penalised even if it is small
+                eer = float(np.mean(list(by_set.values())))
             rec = {
                 "epoch": epoch,
                 "loss": round(float(np.mean(losses)), 5),
                 "dev_eer": round(eer, 5),
-                **({"dev_eer_by_set": by_set} if by_set else {}),
+                **({"dev_eer_by_set": by_set, "early_stop": stop_on} if by_set else {}),
                 "lr": sched.get_last_lr()[0],
                 "seconds": round(time.time() - t0, 1),
                 "layer_weights": [round(w, 3) for w in model.layer_sum.weights()],
@@ -326,6 +340,7 @@ def train(cfg: dict[str, Any], resume: bool = True) -> dict[str, Any]:
                         "allow_noncommercial": cfg["allow_noncommercial"],
                         "run_name": cfg["run_name"],
                         "trainer": "train_head_a_cached",
+                        "init_from": str(t["init_from"]) if t.get("init_from") else None,
                         "dev_eer_training_only": eer,  # not reportable: use make eval (B15)
                         "calibration": {
                             "scale": scale,

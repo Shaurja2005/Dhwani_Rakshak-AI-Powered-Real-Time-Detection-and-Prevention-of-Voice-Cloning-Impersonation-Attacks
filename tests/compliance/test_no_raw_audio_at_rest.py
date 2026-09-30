@@ -79,10 +79,13 @@ class WriteSpy:
 
 
 def files_under(*roots: Path) -> set[Path]:
+    # os.walk skips entries that vanish mid-walk; rglob raised when another process
+    # (pip, a browser, a training run) deleted its temp folder during the scan
     out = set()
     for r in roots:
-        if r.exists():
-            for p in r.rglob("*"):
+        for d, _, names in os.walk(r, onerror=lambda _e: None):
+            for n in names:
+                p = Path(d) / n
                 if p.is_file():
                     out.add(p.resolve())
     return out

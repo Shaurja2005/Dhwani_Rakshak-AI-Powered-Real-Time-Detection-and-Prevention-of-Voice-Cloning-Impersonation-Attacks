@@ -201,12 +201,12 @@ datasets:
     license: CC-BY-NC-4.0
     commercial_use: false
     license_checked_by: SOURCE_OF_TRUTH.md §8
-    access: gated_hf
+    access: public              # HF API 2026-09-30: gated=false
     url: https://huggingface.co/datasets/vdivyasharma/IndicSynth
-    size_gb: 500
-    languages: [hi, bn, ta, te, mr, gu, kn, ml, pa, or, as, ur]
+    size_gb: 845
+    languages: [bn, gu, hi, kn, ml, mr, or, pa, sa, ta, te, ur]   # HF configs (Sanskrit, no Assamese)
     files: []
-    notes: Research lineage only (I7).
+    notes: Research lineage only (I7). Spoof only (bona fide comes from Kathbath); sampled per language by ml/data/importers/indic.py.
 
   - name: sea_spoof
     kind: spoof_corpus
@@ -252,7 +252,7 @@ datasets:
     license: CC BY 4.0
     commercial_use: false
     license_checked_by: null
-    access: public
+    access: gated_hf            # huggingface.co/datasets/ai4bharat/Kathbath: accept terms + login
     url: https://github.com/AI4Bharat/IndicSUPERB
     size_gb: 150
     languages: [hi, bn, ta, te, mr, gu, kn, ml, pa, or, sa, ur]

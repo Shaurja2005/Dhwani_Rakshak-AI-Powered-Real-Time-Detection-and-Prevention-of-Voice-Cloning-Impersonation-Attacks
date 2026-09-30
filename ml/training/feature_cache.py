@@ -203,7 +203,9 @@ def extract_split(
             augment,
         )
     else:
-        ds = CropDataset(paths, seconds, train=(split == "train"), seed=int(cfg.get("seed", 0)))
+        # random crops for training splits ("train", "indic_bn/train", ...), centre crops otherwise
+        is_train = Path(split).name.startswith("train")
+        ds = CropDataset(paths, seconds, train=is_train, seed=int(cfg.get("seed", 0)))
 
     def save_progress() -> None:
         feats.flush()

@@ -52,6 +52,9 @@ class RunRecord:
         default_factory=lambda: dt.datetime.now(dt.UTC).isoformat(timespec="seconds")
     )
     notes: list[str] = field(default_factory=list)
+    # distinguishes evaluations of one model on different eval-set collections (e.g. the
+    # per-language continual steps); not part of run_id, so existing row ids never change
+    tag: str = ""
 
     @property
     def run_id(self) -> str:
@@ -86,7 +89,8 @@ class RunRecord:
     def save(self, directory: Path | str) -> Path:
         d = Path(directory)
         d.mkdir(parents=True, exist_ok=True)
-        path = d / f"{_slug(self.model_version)}.json"
+        name = _slug(self.model_version) + (f"__{_slug(self.tag)}" if self.tag else "")
+        path = d / f"{name}.json"
         payload = asdict(self) | {"run_id": self.run_id}
         path.write_text(json.dumps(payload, indent=2, default=_json_default), encoding="utf-8")
         return path
@@ -132,7 +136,7 @@ def _extra(e: dict[str, Any]) -> str:
 def render_run(rec: RunRecord) -> str:
     rid = rec.run_id
     out = [
-        f'## {rec.model_version}  <a id="{rid}"></a>',
+        f'## {rec.model_version}{f" · {rec.tag}" if rec.tag else ""}  <a id="{rid}"></a>',
         "",
         f"- Run id: `{rid}` · scorer: `{rec.scorer}` · generated {rec.created_at}",
         f"- Eval data: {', '.join(rec.data.get('eval_sets', [])) or '—'} "
@@ -224,7 +228,7 @@ def render(records: list[RunRecord], allow_synthetic: bool = False, serving: str
         ]
         for r in recs:
             index.append(
-                f"| {r.model_version} | [`{r.run_id}`](#{r.run_id}) | {r.created_at} | "
+                f"| {r.model_version}{f' ({r.tag})' if r.tag else ''} | [`{r.run_id}`](#{r.run_id}) | {r.created_at} | "
                 f"{', '.join(r.data.get('eval_sets', []))} | {r.gate.get('status', '—')} |"
             )
         banner = []

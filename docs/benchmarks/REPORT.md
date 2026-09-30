@@ -11,7 +11,190 @@ worse than in-domain numbers — that gap is the honest measure of field perform
 
 | Model version | Run id | Generated | Eval sets | Fairness gate |
 |---|---|---|---|---|
+| A@xlsr300m-nes2net-v0.2.0 | [`r9ffe9c63`](#r9ffe9c63) | 2026-09-30T17:22:37+00:00 | asvspoof5_eval | not_configured |
 | A@xlsr300m-nes2net-v0.1.0 | [`r2b2ae19f`](#r2b2ae19f) | 2026-09-30T12:31:23+00:00 | asvspoof5_eval | not_configured |
+
+## A@xlsr300m-nes2net-v0.2.0  <a id="r9ffe9c63"></a>
+
+- Run id: `r9ffe9c63` · scorer: `head_a` · generated 2026-09-30T17:22:37+00:00
+- Eval data: asvspoof5_eval (lineage: research, manifest sha256: `49ebbc487200`)
+- Seen attack families in training: A01, A02, A03, A04, A05, A06, A07, A08
+- Training datasets (in-domain): asvspoof5
+- Note: trained with channel augmentation (train_aug1: aac, amr_nb, amr_wb, g711a, g711u, g722, gsm, mp3, opus, opus_nb, speex, speex_nb); the codec/SNR sweeps below use the same encoders, so they are not independent - the per-codec rows of the eval corpus are the independent check
+- Note: pgd_linf: eps=0.002, mean perturbation SNR 39.5 dB on 100 spoofs
+- Note: universal_filter: 64-tap FIR learnt on 50 spoofs, applied to 100; gain range -8.6..6.2 dB (linear filtering: SNR not meaningful)
+
+### Overall
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r9ffe9c63.overall.all"></a>`r9ffe9c63.overall.all` | all | 8149 | 31840 | 100.0% | 8.09% | 7.73–8.45% | 0.230 | 0.977 | 0.767 | 0.175 |  |
+
+### Leave-one-generator-out (per attack family)
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r9ffe9c63.logo.A17"></a>`r9ffe9c63.logo.A17` | A17 | 8149 | 2021 | 100.0% | 0.95% | 0.79–1.23% | 0.027 | 0.999 | 0.977 | 0.185 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A18"></a>`r9ffe9c63.logo.A18` | A18 | 8149 | 2019 | 100.0% | 6.44% | 5.93–7.03% | 0.183 | 0.982 | 0.706 | 0.186 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A19"></a>`r9ffe9c63.logo.A19` | A19 | 8149 | 1815 | 100.0% | 9.25% | 8.75–9.81% | 0.261 | 0.961 | 0.587 | 0.182 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A20"></a>`r9ffe9c63.logo.A20` | A20 | 8149 | 1846 | 100.0% | 11.17% | 10.40–11.81% | 0.319 | 0.948 | 0.556 | 0.170 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A21"></a>`r9ffe9c63.logo.A21` | A21 | 8149 | 2016 | 100.0% | 0.54% | 0.35–0.79% | 0.013 | 1.000 | 0.992 | 0.188 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A22"></a>`r9ffe9c63.logo.A22` | A22 | 8149 | 2020 | 100.0% | 2.67% | 2.28–3.03% | 0.069 | 0.997 | 0.920 | 0.180 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A23"></a>`r9ffe9c63.logo.A23` | A23 | 8149 | 2019 | 100.0% | 2.78% | 2.47–3.22% | 0.080 | 0.996 | 0.875 | 0.184 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A24"></a>`r9ffe9c63.logo.A24` | A24 | 8149 | 2016 | 100.0% | 4.47% | 4.02–4.95% | 0.117 | 0.992 | 0.850 | 0.177 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A25"></a>`r9ffe9c63.logo.A25` | A25 | 8149 | 2021 | 100.0% | 2.97% | 2.62–3.36% | 0.084 | 0.995 | 0.869 | 0.182 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A26"></a>`r9ffe9c63.logo.A26` | A26 | 8149 | 2018 | 100.0% | 2.57% | 2.23–2.92% | 0.069 | 0.997 | 0.933 | 0.179 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A27"></a>`r9ffe9c63.logo.A27` | A27 | 8149 | 2011 | 100.0% | 12.62% | 11.89–13.27% | 0.364 | 0.941 | 0.561 | 0.163 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A28"></a>`r9ffe9c63.logo.A28` | A28 | 8149 | 2021 | 100.0% | 8.27% | 7.63–8.90% | 0.231 | 0.974 | 0.676 | 0.183 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A29"></a>`r9ffe9c63.logo.A29` | A29 | 8149 | 2024 | 100.0% | 0.74% | 0.49–1.04% | 0.016 | 1.000 | 0.994 | 0.187 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A30"></a>`r9ffe9c63.logo.A30` | A30 | 8149 | 2002 | 100.0% | 11.60% | 10.83–12.19% | 0.324 | 0.950 | 0.571 | 0.174 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A31"></a>`r9ffe9c63.logo.A31` | A31 | 8149 | 1993 | 100.0% | 11.39% | 10.78–12.04% | 0.328 | 0.951 | 0.580 | 0.171 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.A32"></a>`r9ffe9c63.logo.A32` | A32 | 8149 | 1978 | 100.0% | 11.52% | 10.91–12.17% | 0.329 | 0.950 | 0.576 | 0.175 | seen_in_training=False |
+| <a id="r9ffe9c63.logo.ALL_UNSEEN"></a>`r9ffe9c63.logo.ALL_UNSEEN` | ALL_UNSEEN | 8149 | 31840 | 100.0% | 8.09% | 7.73–8.45% | 0.230 | 0.977 | 0.767 | 0.175 |  |
+
+### Cross-dataset
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r9ffe9c63.cross_dataset.asvspoof5"></a>`r9ffe9c63.cross_dataset.asvspoof5` | asvspoof5 | 8149 | 31840 | 100.0% | 8.09% | 7.73–8.45% | 0.230 | 0.977 | 0.767 | 0.175 | in_domain=True, eer_minus_in_domain=0.0 |
+
+### Per language
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r9ffe9c63.language.en"></a>`r9ffe9c63.language.en` | en | 8149 | 31840 | 100.0% | 8.09% | 7.73–8.45% | 0.230 | 0.977 | 0.767 | 0.175 |  |
+
+### Per accent
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r9ffe9c63.accent.unknown"></a>`r9ffe9c63.accent.unknown` | unknown | 8149 | 31840 | 100.0% | 8.09% | 7.73–8.45% | 0.230 | 0.977 | 0.767 | 0.175 |  |
+
+### Per codec (as recorded in the manifest)
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r9ffe9c63.codec.codec_C01q1"></a>`r9ffe9c63.codec.codec_C01q1` | codec:C01q1 | 112 | 443 | 100.0% | 9.88% | 7.18–13.36% | 0.244 | 0.964 | 0.821 | 0.255 |  |
+| <a id="r9ffe9c63.codec.codec_C01q2"></a>`r9ffe9c63.codec.codec_C01q2` | codec:C01q2 | 109 | 438 | 100.0% | 4.80% | 2.75–7.32% | 0.134 | 0.991 | 0.931 | 0.152 |  |
+| <a id="r9ffe9c63.codec.codec_C01q3"></a>`r9ffe9c63.codec.codec_C01q3` | codec:C01q3 | 114 | 443 | 100.0% | 4.34% | 2.55–6.23% | 0.116 | 0.992 | 0.889 | 0.139 |  |
+| <a id="r9ffe9c63.codec.codec_C01q4"></a>`r9ffe9c63.codec.codec_C01q4` | codec:C01q4 | 113 | 449 | 100.0% | 1.78% | 0.67–3.55% | 0.043 | 0.998 | 0.976 | 0.180 |  |
+| <a id="r9ffe9c63.codec.codec_C01q5"></a>`r9ffe9c63.codec.codec_C01q5` | codec:C01q5 | 112 | 442 | 100.0% | 1.80% | 0.67–3.49% | 0.037 | 0.998 | 0.947 | 0.191 |  |
+| <a id="r9ffe9c63.codec.codec_C02q1"></a>`r9ffe9c63.codec.codec_C02q1` | codec:C02q1 | 114 | 446 | 100.0% | 10.64% | 8.09–13.21% | 0.238 | 0.959 | 0.845 | 0.154 |  |
+| <a id="r9ffe9c63.codec.codec_C02q2"></a>`r9ffe9c63.codec.codec_C02q2` | codec:C02q2 | 112 | 448 | 100.0% | 6.47% | 4.46–8.93% | 0.157 | 0.986 | 0.902 | 0.177 |  |
+| <a id="r9ffe9c63.codec.codec_C02q3"></a>`r9ffe9c63.codec.codec_C02q3` | codec:C02q3 | 115 | 440 | 100.0% | 5.22% | 2.55–7.00% | 0.101 | 0.993 | 0.890 | 0.155 |  |
+| <a id="r9ffe9c63.codec.codec_C02q4"></a>`r9ffe9c63.codec.codec_C02q4` | codec:C02q4 | 113 | 446 | 100.0% | 2.67% | 1.67–4.23% | 0.057 | 0.997 | 0.941 | 0.166 |  |
+| <a id="r9ffe9c63.codec.codec_C02q5"></a>`r9ffe9c63.codec.codec_C02q5` | codec:C02q5 | 113 | 438 | 100.0% | 2.70% | 0.90–5.28% | 0.069 | 0.996 | 0.912 | 0.165 |  |
+| <a id="r9ffe9c63.codec.codec_C03q1"></a>`r9ffe9c63.codec.codec_C03q1` | codec:C03q1 | 110 | 448 | 100.0% | 21.73% | 17.45–24.33% | 0.479 | 0.879 | 0.599 | 0.283 |  |
+| <a id="r9ffe9c63.codec.codec_C03q2"></a>`r9ffe9c63.codec.codec_C03q2` | codec:C03q2 | 111 | 453 | 100.0% | 9.92% | 7.25–12.60% | 0.173 | 0.970 | 0.865 | 0.199 |  |
+| <a id="r9ffe9c63.codec.codec_C03q3"></a>`r9ffe9c63.codec.codec_C03q3` | codec:C03q3 | 119 | 445 | 100.0% | 6.73% | 4.00–9.23% | 0.156 | 0.987 | 0.883 | 0.143 |  |
+| <a id="r9ffe9c63.codec.codec_C03q4"></a>`r9ffe9c63.codec.codec_C03q4` | codec:C03q4 | 113 | 452 | 100.0% | 2.65% | 0.88–4.43% | 0.061 | 0.997 | 0.943 | 0.170 |  |
+| <a id="r9ffe9c63.codec.codec_C03q5"></a>`r9ffe9c63.codec.codec_C03q5` | codec:C03q5 | 117 | 448 | 100.0% | 2.51% | 0.87–4.26% | 0.058 | 0.997 | 0.877 | 0.163 |  |
+| <a id="r9ffe9c63.codec.codec_C04q1"></a>`r9ffe9c63.codec.codec_C04q1` | codec:C04q1 | 112 | 443 | 100.0% | 33.00% | 29.40–37.49% | 0.631 | 0.734 | 0.587 | 0.207 |  |
+| <a id="r9ffe9c63.codec.codec_C04q2"></a>`r9ffe9c63.codec.codec_C04q2` | codec:C04q2 | 114 | 447 | 100.0% | 20.15% | 17.37–24.59% | 0.418 | 0.894 | 0.679 | 0.190 |  |
+| <a id="r9ffe9c63.codec.codec_C04q3"></a>`r9ffe9c63.codec.codec_C04q3` | codec:C04q3 | 114 | 453 | 100.0% | 10.45% | 7.04–12.45% | 0.214 | 0.965 | 0.635 | 0.188 |  |
+| <a id="r9ffe9c63.codec.codec_C04q4"></a>`r9ffe9c63.codec.codec_C04q4` | codec:C04q4 | 112 | 450 | 100.0% | 6.46% | 4.45–9.69% | 0.146 | 0.980 | 0.827 | 0.191 |  |
+| <a id="r9ffe9c63.codec.codec_C04q5"></a>`r9ffe9c63.codec.codec_C04q5` | codec:C04q5 | 118 | 438 | 100.0% | 2.53% | 0.99–4.29% | 0.046 | 0.996 | 0.977 | 0.181 |  |
+| <a id="r9ffe9c63.codec.codec_C05q1"></a>`r9ffe9c63.codec.codec_C05q1` | codec:C05q1 | 116 | 445 | 100.0% | 3.41% | 0.88–5.17% | 0.071 | 0.995 | 0.870 | 0.144 |  |
+| <a id="r9ffe9c63.codec.codec_C05q2"></a>`r9ffe9c63.codec.codec_C05q2` | codec:C05q2 | 115 | 441 | 100.0% | 1.78% | 0.00–3.68% | 0.044 | 0.999 | 0.967 | 0.155 |  |
+| <a id="r9ffe9c63.codec.codec_C05q3"></a>`r9ffe9c63.codec.codec_C05q3` | codec:C05q3 | 109 | 443 | 100.0% | 2.73% | 0.91–5.46% | 0.064 | 0.997 | 0.939 | 0.159 |  |
+| <a id="r9ffe9c63.codec.codec_C05q4"></a>`r9ffe9c63.codec.codec_C05q4` | codec:C05q4 | 117 | 443 | 100.0% | 1.76% | 0.88–3.40% | 0.036 | 0.999 | 0.983 | 0.168 |  |
+| <a id="r9ffe9c63.codec.codec_C05q5"></a>`r9ffe9c63.codec.codec_C05q5` | codec:C05q5 | 113 | 448 | 100.0% | 1.78% | 0.65–3.56% | 0.040 | 0.999 | 0.980 | 0.173 |  |
+| <a id="r9ffe9c63.codec.codec_C06q1"></a>`r9ffe9c63.codec.codec_C06q1` | codec:C06q1 | 105 | 389 | 100.0% | 6.68% | 4.69–8.53% | 0.157 | 0.985 | 0.866 | 0.202 |  |
+| <a id="r9ffe9c63.codec.codec_C06q2"></a>`r9ffe9c63.codec.codec_C06q2` | codec:C06q2 | 105 | 384 | 100.0% | 4.72% | 1.86–8.45% | 0.117 | 0.993 | 0.886 | 0.149 |  |
+| <a id="r9ffe9c63.codec.codec_C06q3"></a>`r9ffe9c63.codec.codec_C06q3` | codec:C06q3 | 107 | 376 | 100.0% | 0.73% | 0.00–1.73% | 0.005 | 1.000 | 0.997 | 0.147 |  |
+| <a id="r9ffe9c63.codec.codec_C06q4"></a>`r9ffe9c63.codec.codec_C06q4` | codec:C06q4 | 106 | 384 | 100.0% | 1.99% | 0.86–2.99% | 0.041 | 0.998 | 0.970 | 0.147 |  |
+| <a id="r9ffe9c63.codec.codec_C06q5"></a>`r9ffe9c63.codec.codec_C06q5` | codec:C06q5 | 104 | 385 | 100.0% | 2.87% | 1.00–4.87% | 0.065 | 0.997 | 0.940 | 0.149 |  |
+| <a id="r9ffe9c63.codec.codec_C07q1"></a>`r9ffe9c63.codec.codec_C07q1` | codec:C07q1 | 109 | 454 | 100.0% | 32.92% | 28.43–37.64% | 0.693 | 0.744 | 0.613 | 0.179 |  |
+| <a id="r9ffe9c63.codec.codec_C07q2"></a>`r9ffe9c63.codec.codec_C07q2` | codec:C07q2 | 115 | 442 | 100.0% | 23.50% | 19.29–28.49% | 0.466 | 0.855 | 0.681 | 0.162 |  |
+| <a id="r9ffe9c63.codec.codec_C07q3"></a>`r9ffe9c63.codec.codec_C07q3` | codec:C07q3 | 111 | 440 | 100.0% | 17.08% | 14.24–21.61% | 0.428 | 0.908 | 0.749 | 0.175 |  |
+| <a id="r9ffe9c63.codec.codec_C07q4"></a>`r9ffe9c63.codec.codec_C07q4` | codec:C07q4 | 116 | 441 | 100.0% | 9.50% | 6.19–13.70% | 0.258 | 0.968 | 0.801 | 0.171 |  |
+| <a id="r9ffe9c63.codec.codec_C07q5"></a>`r9ffe9c63.codec.codec_C07q5` | codec:C07q5 | 114 | 439 | 100.0% | 4.58% | 2.80–7.04% | 0.095 | 0.992 | 0.911 | 0.198 |  |
+| <a id="r9ffe9c63.codec.codec_C08q1"></a>`r9ffe9c63.codec.codec_C08q1` | codec:C08q1 | 105 | 441 | 100.0% | 18.00% | 14.51–22.08% | 0.460 | 0.883 | 0.674 | 0.319 |  |
+| <a id="r9ffe9c63.codec.codec_C08q2"></a>`r9ffe9c63.codec.codec_C08q2` | codec:C08q2 | 107 | 439 | 100.0% | 7.50% | 4.73–12.11% | 0.210 | 0.978 | 0.820 | 0.201 |  |
+| <a id="r9ffe9c63.codec.codec_C08q3"></a>`r9ffe9c63.codec.codec_C08q3` | codec:C08q3 | 105 | 440 | 100.0% | 4.77% | 1.98–7.67% | 0.127 | 0.989 | 0.897 | 0.194 |  |
+| <a id="r9ffe9c63.codec.codec_C08q4"></a>`r9ffe9c63.codec.codec_C08q4` | codec:C08q4 | 100 | 447 | 100.0% | 2.95% | 1.06–4.96% | 0.075 | 0.993 | 0.830 | 0.216 |  |
+| <a id="r9ffe9c63.codec.codec_C08q5"></a>`r9ffe9c63.codec.codec_C08q5` | codec:C08q5 | 111 | 447 | 100.0% | 6.40% | 4.38–8.87% | 0.145 | 0.991 | 0.906 | 0.171 |  |
+| <a id="r9ffe9c63.codec.codec_C09q1"></a>`r9ffe9c63.codec.codec_C09q1` | codec:C09q1 | 103 | 383 | 100.0% | 14.46% | 10.69–17.48% | 0.327 | 0.940 | 0.800 | 0.167 |  |
+| <a id="r9ffe9c63.codec.codec_C09q2"></a>`r9ffe9c63.codec.codec_C09q2` | codec:C09q2 | 105 | 382 | 100.0% | 10.47% | 6.73–12.49% | 0.230 | 0.971 | 0.822 | 0.147 |  |
+| <a id="r9ffe9c63.codec.codec_C09q3"></a>`r9ffe9c63.codec.codec_C09q3` | codec:C09q3 | 107 | 386 | 100.0% | 10.32% | 7.49–13.02% | 0.237 | 0.966 | 0.823 | 0.167 |  |
+| <a id="r9ffe9c63.codec.codec_C09q4"></a>`r9ffe9c63.codec.codec_C09q4` | codec:C09q4 | 105 | 379 | 100.0% | 5.76% | 3.62–8.51% | 0.149 | 0.988 | 0.901 | 0.161 |  |
+| <a id="r9ffe9c63.codec.codec_C09q5"></a>`r9ffe9c63.codec.codec_C09q5` | codec:C09q5 | 109 | 388 | 100.0% | 5.46% | 2.79–8.25% | 0.125 | 0.990 | 0.884 | 0.188 |  |
+| <a id="r9ffe9c63.codec.codec_C10q1"></a>`r9ffe9c63.codec.codec_C10q1` | codec:C10q1 | 114 | 445 | 100.0% | 20.20% | 16.65–25.31% | 0.488 | 0.881 | 0.593 | 0.214 |  |
+| <a id="r9ffe9c63.codec.codec_C10q2"></a>`r9ffe9c63.codec.codec_C10q2` | codec:C10q2 | 114 | 449 | 100.0% | 14.14% | 11.38–18.24% | 0.379 | 0.929 | 0.671 | 0.152 |  |
+| <a id="r9ffe9c63.codec.codec_C10q3"></a>`r9ffe9c63.codec.codec_C10q3` | codec:C10q3 | 117 | 443 | 100.0% | 7.57% | 5.16–9.44% | 0.153 | 0.982 | 0.889 | 0.151 |  |
+| <a id="r9ffe9c63.codec.codec_C10q4"></a>`r9ffe9c63.codec.codec_C10q4` | codec:C10q4 | 108 | 443 | 100.0% | 4.69% | 2.74–8.12% | 0.125 | 0.992 | 0.907 | 0.159 |  |
+| <a id="r9ffe9c63.codec.codec_C10q5"></a>`r9ffe9c63.codec.codec_C10q5` | codec:C10q5 | 115 | 437 | 100.0% | 2.56% | 1.00–5.24% | 0.075 | 0.997 | 0.942 | 0.160 |  |
+| <a id="r9ffe9c63.codec.codec_C11q1"></a>`r9ffe9c63.codec.codec_C11q1` | codec:C11q1 | 67 | 275 | 100.0% | 1.66% | 0.18–4.42% | 0.047 | 0.998 | 0.973 | 0.176 |  |
+| <a id="r9ffe9c63.codec.codec_C11q2"></a>`r9ffe9c63.codec.codec_C11q2` | codec:C11q2 | 65 | 277 | 100.0% | 3.16% | 1.31–6.15% | 0.080 | 0.994 | 0.882 | 0.195 |  |
+| <a id="r9ffe9c63.codec.codec_C11q3"></a>`r9ffe9c63.codec.codec_C11q3` | codec:C11q3 | 67 | 278 | 100.0% | 2.93% | 1.47–6.04% | 0.054 | 0.998 | 0.973 | 0.191 |  |
+| <a id="r9ffe9c63.codec.codec_C11q4"></a>`r9ffe9c63.codec.codec_C11q4` | codec:C11q4 | 65 | 278 | 100.0% | 0.18% | 0.00–1.31% | 0.004 | 1.000 | 0.998 | 0.177 |  |
+| <a id="r9ffe9c63.codec.codec_C11q5"></a>`r9ffe9c63.codec.codec_C11q5` | codec:C11q5 | 66 | 278 | 100.0% | 7.56% | 2.95–13.47% | 0.209 | 0.982 | 0.854 | 0.213 |  |
+| <a id="r9ffe9c63.codec.codec_C11q6"></a>`r9ffe9c63.codec.codec_C11q6` | codec:C11q6 | 67 | 275 | 100.0% | 2.95% | 1.29–5.72% | 0.065 | 0.997 | 0.967 | 0.182 |  |
+| <a id="r9ffe9c63.codec.codec_C11q7"></a>`r9ffe9c63.codec.codec_C11q7` | codec:C11q7 | 66 | 274 | 100.0% | 2.98% | 0.36–5.77% | 0.072 | 0.996 | 0.932 | 0.201 |  |
+| <a id="r9ffe9c63.codec.codec_C11q8"></a>`r9ffe9c63.codec.codec_C11q8` | codec:C11q8 | 67 | 275 | 100.0% | 1.47% | 0.00–2.77% | 0.015 | 0.999 | 0.993 | 0.172 |  |
+| <a id="r9ffe9c63.codec.none"></a>`r9ffe9c63.codec.none` | none | 2065 | 8017 | 100.0% | 2.62% | 2.14–2.91% | 0.069 | 0.997 | 0.946 | 0.166 |  |
+
+### Per SNR bin
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r9ffe9c63.snr.clean_unknown"></a>`r9ffe9c63.snr.clean_unknown` | clean/unknown | 8149 | 31840 | 100.0% | 8.09% | 7.73–8.45% | 0.230 | 0.977 | 0.767 | 0.175 |  |
+
+### Codec sweep (same audio, re-encoded)
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r9ffe9c63.codec_sweep.clean"></a>`r9ffe9c63.codec_sweep.clean` | clean | 200 | 200 | 100.0% | 8.00% | 5.49–11.00% | 0.190 | 0.978 | 0.747 | 0.167 |  |
+| <a id="r9ffe9c63.codec_sweep.codec_amr_nb"></a>`r9ffe9c63.codec_sweep.codec_amr_nb` | codec_amr_nb | 200 | 200 | 100.0% | 10.00% | 7.50–13.01% | 0.257 | 0.966 | 0.735 | 0.126 | eer_minus_clean=0.02 |
+| <a id="r9ffe9c63.codec_sweep.codec_g711a"></a>`r9ffe9c63.codec_sweep.codec_g711a` | codec_g711a | 200 | 200 | 100.0% | 9.50% | 6.99–13.01% | 0.265 | 0.969 | 0.692 | 0.122 | eer_minus_clean=0.015 |
+| <a id="r9ffe9c63.codec_sweep.codec_g711u"></a>`r9ffe9c63.codec_sweep.codec_g711u` | codec_g711u | 200 | 200 | 100.0% | 9.50% | 6.50–13.50% | 0.259 | 0.970 | 0.688 | 0.118 | eer_minus_clean=0.015 |
+| <a id="r9ffe9c63.codec_sweep.codec_g722"></a>`r9ffe9c63.codec_sweep.codec_g722` | codec_g722 | 200 | 200 | 100.0% | 8.00% | 5.00–11.01% | 0.212 | 0.976 | 0.716 | 0.156 | eer_minus_clean=0.0 |
+| <a id="r9ffe9c63.codec_sweep.codec_gsm"></a>`r9ffe9c63.codec_sweep.codec_gsm` | codec_gsm | 200 | 200 | 100.0% | 11.00% | 8.50–15.00% | 0.249 | 0.962 | 0.705 | 0.143 | eer_minus_clean=0.03 |
+| <a id="r9ffe9c63.codec_sweep.codec_opus"></a>`r9ffe9c63.codec_sweep.codec_opus` | codec_opus | 200 | 200 | 100.0% | 7.50% | 4.99–10.50% | 0.199 | 0.978 | 0.731 | 0.161 | eer_minus_clean=-0.005 |
+
+### SNR sweep (same audio, noise added)
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r9ffe9c63.snr_sweep.clean"></a>`r9ffe9c63.snr_sweep.clean` | clean | 200 | 200 | 100.0% | 8.00% | 5.49–11.00% | 0.190 | 0.978 | 0.747 | 0.167 |  |
+| <a id="r9ffe9c63.snr_sweep.snr_0dB"></a>`r9ffe9c63.snr_sweep.snr_0dB` | snr_0dB | 200 | 200 | 100.0% | 30.00% | 26.00–34.00% | 0.691 | 0.754 | 0.525 | 0.067 | eer_minus_clean=0.22 |
+| <a id="r9ffe9c63.snr_sweep.snr_10dB"></a>`r9ffe9c63.snr_sweep.snr_10dB` | snr_10dB | 200 | 200 | 100.0% | 16.50% | 13.00–20.00% | 0.386 | 0.921 | 0.652 | 0.094 | eer_minus_clean=0.085 |
+| <a id="r9ffe9c63.snr_sweep.snr_20dB"></a>`r9ffe9c63.snr_sweep.snr_20dB` | snr_20dB | 200 | 200 | 100.0% | 12.50% | 9.50–15.50% | 0.285 | 0.960 | 0.763 | 0.119 | eer_minus_clean=0.045 |
+| <a id="r9ffe9c63.snr_sweep.snr_5dB"></a>`r9ffe9c63.snr_sweep.snr_5dB` | snr_5dB | 200 | 200 | 100.0% | 23.00% | 18.99–26.50% | 0.542 | 0.855 | 0.565 | 0.068 | eer_minus_clean=0.15 |
+
+### Adversarial / laundering robustness
+
+| Row id | Slice | Bona fide | Spoof | Coverage | EER | EER 95% CI | minDCF | AUC | pAUC@1% | ECE | Notes |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---|
+| <a id="r9ffe9c63.adversarial.clean"></a>`r9ffe9c63.adversarial.clean` | clean | 100 | 100 | 100.0% | 8.00% | 4.00–12.00% | 0.166 | 0.984 | 0.864 | 0.179 |  |
+| <a id="r9ffe9c63.adversarial.clean_3s_crop"></a>`r9ffe9c63.adversarial.clean_3s_crop` | clean_3s_crop | 100 | 100 | 100.0% | 6.00% | 4.00–11.00% | 0.174 | 0.975 | 0.759 | 0.088 |  |
+| <a id="r9ffe9c63.adversarial.noise_pink_10dB"></a>`r9ffe9c63.adversarial.noise_pink_10dB` | noise_pink_10dB | 100 | 100 | 100.0% | 5.00% | 2.00–9.00% | 0.135 | 0.991 | 0.884 | 0.184 | eer_minus_clean=-0.03 |
+| <a id="r9ffe9c63.adversarial.noise_pink_20dB"></a>`r9ffe9c63.adversarial.noise_pink_20dB` | noise_pink_20dB | 100 | 100 | 100.0% | 6.00% | 2.00–9.03% | 0.149 | 0.990 | 0.884 | 0.152 | eer_minus_clean=-0.02 |
+| <a id="r9ffe9c63.adversarial.pgd_linf"></a>`r9ffe9c63.adversarial.pgd_linf` | pgd_linf | 100 | 100 | 100.0% | 82.00% | 77.00–87.00% | 1.000 | 0.083 | 0.497 | 0.297 | eer_minus_clean=0.76 |
+| <a id="r9ffe9c63.adversarial.pitch__2st"></a>`r9ffe9c63.adversarial.pitch__2st` | pitch_+2st | 100 | 100 | 100.0% | 12.00% | 6.97–18.00% | 0.318 | 0.942 | 0.683 | 0.155 | eer_minus_clean=0.04 |
+| <a id="r9ffe9c63.adversarial.pitch_-2st"></a>`r9ffe9c63.adversarial.pitch_-2st` | pitch_-2st | 100 | 100 | 100.0% | 12.00% | 7.00–18.00% | 0.308 | 0.952 | 0.693 | 0.147 | eer_minus_clean=0.04 |
+| <a id="r9ffe9c63.adversarial.reencode_amr_nb"></a>`r9ffe9c63.adversarial.reencode_amr_nb` | reencode_amr_nb | 100 | 100 | 100.0% | 9.00% | 5.00–13.00% | 0.242 | 0.974 | 0.829 | 0.128 | eer_minus_clean=0.01 |
+| <a id="r9ffe9c63.adversarial.reencode_g711u"></a>`r9ffe9c63.adversarial.reencode_g711u` | reencode_g711u | 100 | 100 | 100.0% | 7.00% | 3.00–12.00% | 0.202 | 0.982 | 0.859 | 0.146 | eer_minus_clean=-0.01 |
+| <a id="r9ffe9c63.adversarial.reencode_opus"></a>`r9ffe9c63.adversarial.reencode_opus` | reencode_opus | 100 | 100 | 100.0% | 7.00% | 4.00–11.03% | 0.166 | 0.985 | 0.859 | 0.181 | eer_minus_clean=-0.01 |
+| <a id="r9ffe9c63.adversarial.speed_0.9"></a>`r9ffe9c63.adversarial.speed_0.9` | speed_0.9 | 100 | 100 | 100.0% | 8.00% | 5.00–13.00% | 0.207 | 0.980 | 0.854 | 0.155 | eer_minus_clean=0.0 |
+| <a id="r9ffe9c63.adversarial.speed_1.1"></a>`r9ffe9c63.adversarial.speed_1.1` | speed_1.1 | 100 | 100 | 100.0% | 10.00% | 5.00–14.00% | 0.217 | 0.974 | 0.849 | 0.153 | eer_minus_clean=0.02 |
+| <a id="r9ffe9c63.adversarial.universal_filter"></a>`r9ffe9c63.adversarial.universal_filter` | universal_filter | 100 | 100 | 100.0% | 16.00% | 9.97–21.00% | 0.374 | 0.938 | 0.663 | 0.127 | eer_minus_clean=0.1 |
+
+### Operational
+
+| Row id | Slice | Calls | Details |
+|---|---|---:|---|
+| <a id="r9ffe9c63.operational.spoof"></a>`r9ffe9c63.operational.spoof` | spoof | 31840 | threshold=0.2320339929251801, alerted_fraction=0.9802, median_seconds_to_first_alert=3.0, p90_seconds_to_first_alert=3.0, mean_window_std=0.10400613069636082, mean_flips_per_min=3.730334763187482 |
+| <a id="r9ffe9c63.operational.bona_fide"></a>`r9ffe9c63.operational.bona_fide` | bona_fide | 8149 | threshold=0.2320339929251801, alerted_fraction=0.2089, median_seconds_to_first_alert=4.0, p90_seconds_to_first_alert=7.0, mean_window_std=0.015641015571639914, mean_flips_per_min=3.384636544055018 |
+
+### Fairness — bona fide false-positive rate per group (B15-T05)
+
+Release gate: **not_configured** — max FPR gap not set (PROJECT_STATUS Q9)
+
+| Row id | Attribute | Group | Bona fide | FPR | 95% CI | Gap (max−min) |
+|---|---|---|---:|---:|---|---:|
+| <a id="r9ffe9c63.fairness_gender.female"></a>`r9ffe9c63.fairness_gender.female` | gender | female | 4147 | 7.55% | 6.78%–8.39% | 1.10% |
+| <a id="r9ffe9c63.fairness_gender.male"></a>`r9ffe9c63.fairness_gender.male` | gender | male | 4002 | 8.65% | 7.81%–9.56% | 1.10% |
 
 ## A@xlsr300m-nes2net-v0.1.0  <a id="r2b2ae19f"></a>
 

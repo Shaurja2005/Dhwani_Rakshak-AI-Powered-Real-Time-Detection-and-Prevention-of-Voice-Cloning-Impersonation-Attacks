@@ -1,0 +1,62 @@
+# Per-language continual training on IndicSynth (fake) + Kathbath (real), one language at a
+# time (B4-T13). Driven by scripts/train_indic_language.py, which writes the per-language
+# configs under runs/indic/configs/ from this file. Guide: TRAINING_INDIC.md
+lineage: research                # IndicSynth is CC-BY-NC-4.0: research lineage only (I7)
+allow_noncommercial: true
+seed: 1337
+
+# The model the FIRST language starts from. Later languages start from the previous
+# language's best.pt automatically. Pick v0.1 or v0.2 after comparing them in REPORT.md.
+init_from: runs/head_a_aug/best.pt
+
+# must match the caches being reused (the ASVspoof 5 replay comes from the base caches)
+frontend: facebook/wav2vec2-xls-r-300m
+frontend_revision: 1a640f32ac3e39899438a2931f9924c02f080a54
+frontend_layers: [5, 6, 7, 8, 9]
+freeze_frontend: true
+backend: nes2net
+emb_dim: 160
+loss: oc_softmax
+
+import:
+  spoof: 12000                   # IndicSynth clips per language (user decision, 2026-09-30)
+  bona: 12000                    # Kathbath clips per language
+  fracs: {train: 0.7, dev: 0.1, eval: 0.2}   # by speaker, clip-balanced per label
+  workers: 4                     # parallel downloads
+
+cache:
+  root: data/features/xlsr300m_L5-9
+  batch: 24
+  workers: 8
+  aug_fraction: 0.5              # one augmented view of half the language's train/dev clips
+augment_from: ml/training/configs/head_a_aug.yaml   # same channel augmentation as v0.2
+
+replay:
+  asvspoof5:                     # built once from the base caches (CPU copy, ~15 GB)
+    train: {bona: 2000, spoof: 4000}
+    dev: {bona: 500, spoof: 1000}
+  language:                      # kept per finished language (~7-8 GB each)
+    train: {bona: 1500, spoof: 1500}
+    dev: {bona: 400, spoof: 400}
+
+train:                           # fine-tuning: lower LR, fewer epochs than from scratch
+  epochs: 12
+  batch_size: 64
+  lr: 1.0e-4
+  weight_decay: 1.0e-4
+  patience: 4
+  feature_mask_prob: 0.5
+  num_workers: 4
+  seconds: 4.0
+  early_stop: mean_by_set        # every dev set (each language, clean + augmented) counts equally
+
+eval:
+  asvspoof5_sample: 10000        # same stratified sample every time, so steps are comparable
+  full: false                    # true: + codec/SNR sweeps and attacks (adds ~1 h)
+  bootstrap: 200
+
+compare:
+  # Largest acceptable EER increase (absolute, e.g. 0.01 = 1 point) on any earlier language
+  # or ASVspoof 5 after adding a language. Not set until a human decides (PROJECT_STATUS Q13);
+  # until then `compare` shows the changes but does not pass/fail them.
+  max_regression_eer: null

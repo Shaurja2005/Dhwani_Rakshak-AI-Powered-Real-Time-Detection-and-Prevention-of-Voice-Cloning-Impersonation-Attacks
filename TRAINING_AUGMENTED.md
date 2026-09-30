@@ -169,5 +169,6 @@ python scripts/train_augmented_model.py all
 
 - Send me the new `REPORT.md` section, or just tell me it's done, and we'll compare v0.1 with v0.2.
 - **Back up** `runs\head_a_aug\best.pt` like the base model. `runs/` is not in git.
-- Next: IndicSynth, one language at a time, starting from whichever model the comparison favours.
+- Next: IndicSynth, one language at a time: **[TRAINING_INDIC.md](TRAINING_INDIC.md)**, starting from
+  whichever model the comparison favours.
   The same augmentation settings are reused for each language.

@@ -370,6 +370,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--runs-dir", type=Path, default=None)
     ap.add_argument("--allow-synthetic-in-report", action="store_true")
+    ap.add_argument("--tag", default="", help="names this eval-set collection (saved side by side)")
     args = ap.parse_args(argv)
 
     cfg = yaml.safe_load(args.config.read_text(encoding="utf-8"))
@@ -384,6 +385,7 @@ def main(argv: list[str] | None = None) -> int:
         runs_dir, out = args.runs_dir or RUNS, args.out or REPORT
     scorer = build_scorer(args.model)
     rec = evaluate(scorer, df, load, info, cfg)
+    rec.tag = args.tag
     path = rec.save(runs_dir)
     rebuild(runs_dir, out, allow_synthetic=args.synthetic)
     print(

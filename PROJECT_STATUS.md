@@ -38,8 +38,8 @@
 | B0 | Repo, contracts, CI | agent-antigravity | DONE | 9/9 |
 | B1 | Capture adapters | agent-antigravity | DONE | 9/9 |
 | B2 | Stream conditioning | agent-antigravity | DONE | 8/8 |
-| B3 | Data & corpus engineering | claude-b3 | WIP | 7/12 |
-| B4 | Head A — SSL anti-spoof | claude-b4 | WIP | 3/12 |
+| B3 | Data & corpus engineering | claude-b3 | WIP | 7/13 |
+| B4 | Head A — SSL anti-spoof | claude-b4 | WIP | 3/13 |
 | B5 | Head B — DSP & scene | claude-b5 | WIP | 4/6 |
 | B6 | Head C — prosody | claude-b6 | WIP | 3/6 |
 | B7 | Head D — speaker verification | claude-b7 | WIP | 4/6 |
@@ -113,6 +113,7 @@ Artifact = the path, PR, or report that proves the task is done.
 | B3-T10 | Speaker/generator-disjoint splits | claude-b3 | DONE | B3-T04 | ml/data/splits.py | speaker-disjoint + leave-generator-out |
 | B3-T11 | Consent + ethics register | claude-b3 | DONE | — | ml/data/consent_register.yaml, ml/data/consent.py, docs/ETHICS.md | register empty: clone_job refuses everything until a human adds entries |
 | B3-T12 | ASVspoof 5 + ASVspoof 2019 LA importers (protocols -> manifests + official splits) | claude-b3 | REVIEW | B3-T01 | ml/data/importers/, scripts/setup/extract_asvspoof5.py | md5-verified resumable extraction; attack label = generator family, codec conditions kept; tested on a miniature layout; real run done (182,357 train / 140,950 dev / 680,774 eval rows; train+dev contain no codec conditions). ASVspoof 5 LICENSE.txt says ODC-By 1.0 (+CC BY 4.0 bona fide) while the registry says non-commercial EULA: needs human sign-off (Q12) |
+| B3-T13 | IndicSynth + Kathbath per-language importer (sampled parquet row groups, speaker-disjoint splits) | claude-b3 | REVIEW | B3-T01, B3-T10 | ml/data/importers/indic.py, tests/unit/test_indic_continual.py | random row groups over the whole language (IndicSynth rows are stored sorted by generator/gender), pinned revisions, resumable parts, 16 kHz FLAC; clone + genuine voice share a speaker id (Kathbath ids) so splits are speaker-disjoint, clip-balanced per label; import report lists original sample rates and cross-split VC source speakers; Hub layer tested on local parquet (needs pyarrow); Kathbath is gated (user login) |
 
 ### B4 — Head A (SSL anti-spoof)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -129,6 +130,7 @@ Artifact = the path, PR, or report that proves the task is done.
 | B4-T10 | Continual-learning update procedure | claude-b4 | REVIEW | B4-T08 | ml/training/continual.py | EWC + replay buffer + procedure; not exercised on a real new family |
 | B4-T11 | Base-model training path for an 8 GB GPU (frozen XLS-R feature cache + cached back-end trainer) | claude-b4 | REVIEW | B4-T06, B3-T12 | ml/training/feature_cache.py, ml/training/train_head_a_cached.py, ml/training/configs/head_a_base.yaml, scripts/train_base_model.py, docs/TRAINING_GUIDE.md, REPORT.md#r2b2ae19f | first real run done on the RTX 4060 (early stop at epoch 6, best dev epoch 0): r2b2ae19f.overall.all; codec-free eval slice r2b2ae19f.codec.none vs worst r2b2ae19f.codec.codec_C07q1 / codec_C04q1 (Encodec) -> next: codec-augmented cache. fp16 extraction of only the layers used (truncate_to_used_layers: identical states, 10/24 layers), resumable memmap cache, AMP + balanced sampling + early stop + resume; standard checkpoint (cached-vs-audio scores equal in tests); eval scorer on GPU; waits for the user's GPU run |
 | B4-T12 | Channel-augmented views in the feature cache + v0.2 model (label-blind codec/noise/RawBoost chains before XLS-R) | claude-b4 | REVIEW | B4-T11, B3-T07 | ml/training/channel_aug.py, ml/training/feature_cache.py, ml/training/train_head_a_cached.py, ml/training/configs/head_a_aug.yaml, scripts/train_augmented_model.py, TRAINING_AUGMENTED.md | augmented splits (source + view) with chains.json provenance; multi-set training with pooled dev early stop + per-set dev EER; eval notes that its codec/SNR sweeps share encoders with training; chain seeded by (seed, view, utt id) only (I3); tested on a miniature layout + real-data check (13 codecs, ~68 clips/s with 8 workers); waits for the user's GPU run |
+| B4-T13 | Per-language continual fine-tuning (replay caches, init from previous model, mean-by-set early stop, before/after eval per language) | claude-b4 | REVIEW | B4-T12, B3-T13, B15-T04 | scripts/train_indic_language.py, ml/training/replay_cache.py, ml/training/configs/indic_continual.yaml, TRAINING_INDIC.md | ledger fixes the language order; language k starts from k-1 and trains on its clean + augmented cache plus ASVspoof 5 + all earlier replays; eval scores the previous and the new model on all test sets so far (tagged run records); compare shows per-language deltas, pass/fail limit pending Q13; two-language chain tested end to end on a miniature layout; EWC (ml/training/continual.py) not used: replay only |
 
 ### B5 — Head B (DSP & scene)
 | ID | Task | Owner | Status | Depends | Artifact | Notes |
@@ -298,6 +300,11 @@ YYYY-MM-DDTHH:MMZ | <agent-or-human> | <TASK-ID> | <OLD> -> <NEW> | <artifact/PR
 
 | When | Who | Task | Change | Artifact | Note |
 |---|---|---|---|---|---|
+| 2026-10-01T09:00Z | claude-b4 | B4-T13 | REVIEW (note) | scripts/train_indic_language.py, TRAINING_INDIC.md | queue command (several languages in a row); run commands + download estimates for all 12 languages; manual disk clean-up table; first real run stopped at the Kathbath gate (no HF login yet) |
+| 2026-10-01T08:00Z | claude-b4 | B4-T12 | REVIEW (note) | docs/benchmarks/runs/A_xlsr300m-nes2net-v0.2.0.json, REPORT.md#r9ffe9c63 | v0.2 evaluated: r9ffe9c63.overall.all within CI of r2b2ae19f.overall.all; pAUC@1% up (r9ffe9c63.overall.all), codec.none and most per-codec rows worse, own codec/SNR sweeps not improved, operational.bona_fide worse; augmentation likely too strong (dev_aug1 14.4% at best epoch). Not a clear win; Indic init choice left to the user |
+| 2026-09-30T18:00Z | claude-b3 | B3-T13 | new -> REVIEW | ml/data/importers/indic.py | per-language IndicSynth + Kathbath sampler; registry: IndicSynth access public, languages incl. sa (no as), 845 GB; Kathbath access gated_hf |
+| 2026-09-30T18:00Z | claude-b4 | B4-T13 | new -> REVIEW | scripts/train_indic_language.py, TRAINING_INDIC.md | continual per-language training; trainer: train.init_from + train.early_stop=mean_by_set; user decisions: 12k+12k per language, manual cache deletion, Bengali first |
+| 2026-09-30T18:00Z | claude-b15 | B15-T04 | REVIEW (note) | packages/vg_eval/report.py, ml/eval/run_eval.py | optional run tag (--tag) so one model can be evaluated on several eval-set collections; not part of run_id (existing row ids unchanged) |
 | 2026-09-30T15:30Z | claude-b4 | B4-T12 | new -> REVIEW | ml/training/channel_aug.py, TRAINING_AUGMENTED.md | augmented-view cache + v0.2 config; Augmenter.run returns the applied chain |
 | 2026-09-30T15:30Z | claude-b3 | B3-T07 | DONE (note) | ml/data/channel/codecs.py, ml/data/channel/webrtc_chain.py | + opus_nb, amr_wb, mp3, aac, speex, speex_nb via ffmpeg; per-codec bitrate choices; AMR bitrates snap to valid modes; defaults unchanged |
 | 2026-09-30T13:10Z | claude-b4 | B4-T11 | REVIEW (note) | docs/benchmarks/runs/A_xlsr300m-nes2net-v0.1.0.json, REPORT.md#r2b2ae19f | first GPU run + eval; fixed frozen-frontend input gradients (PGD) and chunked universal-filter learning; status now checks last.pt for a finished run |
@@ -352,6 +359,7 @@ Anything that needs a human decision. Agents append here rather than guessing.
 | Q10 | Confirm retention periods in config/privacy/tenants/default.yaml (evidence 365 d, timeline 90 d, feedback 365 d, raw audio 0 h, voiceprints 730 d inactive). | claude-b16 | B16-T06 | Engineering placeholders; the DPO must set them per tenant and lawful basis. |
 | Q11 | Operational alert levels (PSI 0.1/0.25 drift, abstain rate 2x yesterday, alert rate 3x, p95 700 ms) in deploy/observability/alerts.yml and services/observability/drift.py. | claude-b17 | B17-T04, B17-T06 | Start with these conventional values, re-baseline after 2 weeks of shadow mode. They are not detection thresholds. |
 | Q12 | ASVspoof 5 licence: the dataset's own LICENSE.txt / README.txt state ODC-By 1.0 (database) and CC BY 4.0 (bona fide speech), both allowing commercial use; ml/data/registry.yaml records 'ASVspoof 5 EULA, commercial_use: false'. Update the registry? | claude-b3 | B3, B4, I7 lineage | Recommended: a human confirms from the shipped licence files and sets license + license_checked_by; lineage of models trained with IndicSynth stays research either way (CC BY-NC). |
+| Q13 | Continual Indic training: largest acceptable EER increase on an earlier language / ASVspoof 5 after adding a language (compare.max_regression_eer in ml/training/configs/indic_continual.yaml)? | claude-b4 | B4-T13, B15 | Not set: `compare` reports the deltas without pass/fail. Needs a human decision; tighter limits mean bigger replay samples (disk) or more epochs. |
 
 ## 7. Blocked items
 
