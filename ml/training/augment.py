@@ -60,7 +60,14 @@ class Augmenter:
     channel: ChannelSimulator | None = None
 
     def __call__(self, x: np.ndarray, rng: np.random.Generator, key: str) -> np.ndarray:
+        return self.run(x, rng, key)[0]
+
+    def run(
+        self, x: np.ndarray, rng: np.random.Generator, key: str, base_seed: int = 0
+    ) -> tuple[np.ndarray, list[str]]:
+        """Augmented audio plus the list of what was applied (for provenance)."""
         y = x.astype(np.float64)
+        applied: list[str] = []
         if self.rawboost_algo and rng.random() < self.p_rawboost:
             if self.rawboost_algo in (1, 4):
                 y = rawboost_convolutive(y, rng, self.sr)
@@ -68,9 +75,11 @@ class Augmenter:
                 y = rawboost_impulsive(y, rng)
             if self.rawboost_algo in (3, 4):
                 y = rawboost_additive(y, rng, self.sr)
+            applied.append(f"rawboost{self.rawboost_algo}")
         if self.channel is not None and rng.random() < self.p_channel:
             # Fresh chain per draw: key + a random nonce, never the label.
-            y, _, _ = self.channel.simulate(
-                y.astype(np.float32), self.sr, f"{key}:{rng.integers(1 << 30)}"
+            y, _, rec = self.channel.simulate(
+                y.astype(np.float32), self.sr, f"{key}:{rng.integers(1 << 30)}", base_seed
             )
-        return np.clip(y, -1, 1).astype(np.float32)
+            applied += rec.codec_chain or ["clean"]
+        return np.clip(y, -1, 1).astype(np.float32), applied

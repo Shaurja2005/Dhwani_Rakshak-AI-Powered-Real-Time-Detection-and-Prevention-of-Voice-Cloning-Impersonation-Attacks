@@ -82,6 +82,18 @@ FFMPEG_CODECS: dict[str, tuple[str, str, int]] = {
     "amr_nb": ("libopencore_amrnb", "amr", 8000),
     "gsm": ("libgsm", "gsm", 8000),
     "g722": ("g722", "g722", 16000),
+    # wideband / consumer codecs used by channel augmentation (VoIP apps, voice notes)
+    "opus_nb": ("libopus", "ogg", 8000),
+    "amr_wb": ("libvo_amrwbenc", "amr", 16000),
+    "mp3": ("libmp3lame", "mp3", 16000),
+    "aac": ("aac", "adts", 16000),
+    "speex": ("libspeex", "ogg", 16000),
+    "speex_nb": ("libspeex", "ogg", 8000),
+}
+# AMR only has fixed modes: requested bitrates snap to the nearest one.
+AMR_MODES_KBPS = {
+    "amr_nb": (4.75, 5.15, 5.9, 6.7, 7.4, 7.95, 10.2, 12.2),
+    "amr_wb": (6.6, 8.85, 12.65, 14.25, 15.85, 18.25, 19.85, 23.05, 23.85),
 }
 
 
@@ -133,13 +145,16 @@ class FFmpegCodec:
         pcm = (to_float32(x) * 32767).astype("<i2").tobytes()
         raw = ["-f", "s16le", "-ar", str(codec_sr), "-ac", "1"]
         enc_args = [*raw, "-i", "pipe:0", "-c:a", encoder]
-        if self.name == "amr_nb":
-            # AMR-NB only supports fixed modes; pick the nearest.
-            enc_args += ["-b:a", f"{int((self.bitrate_kbps or 12.2) * 1000)}"]
+        if self.name in AMR_MODES_KBPS:
+            modes = AMR_MODES_KBPS[self.name]
+            want = self.bitrate_kbps or modes[-1 if self.name == "amr_nb" else 2]
+            mode = min(modes, key=lambda m: abs(m - want))
+            enc_args += ["-b:a", f"{int(round(mode * 1000))}"]
         elif self.bitrate_kbps:
             enc_args += ["-b:a", f"{int(self.bitrate_kbps * 1000)}"]
         encoded = _ffmpeg([*enc_args, "-f", fmt, "pipe:1"], pcm)
-        decoded = _ffmpeg(["-f", fmt, "-i", "pipe:0", *raw, "pipe:1"], encoded)
+        demux = {"adts": "aac"}.get(fmt, fmt)  # muxer and demuxer names differ for AAC
+        decoded = _ffmpeg(["-f", demux, "-i", "pipe:0", *raw, "pipe:1"], encoded)
         y = np.frombuffer(decoded, dtype="<i2").astype(np.float32) / 32768
         # Codecs add priming samples / padding; keep length stable.
         n = len(x)

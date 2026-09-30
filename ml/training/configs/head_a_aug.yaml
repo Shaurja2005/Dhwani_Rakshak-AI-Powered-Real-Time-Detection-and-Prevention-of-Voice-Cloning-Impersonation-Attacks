@@ -1,0 +1,91 @@
+# v0.2: base model + channel augmentation. Same frozen XLS-R 300M (layers 5-9) +
+# Nes2Net back-end, trained on the clean ASVspoof 5 cache (reused, not recomputed)
+# PLUS one augmented view: clips that went through a random call channel (codec,
+# bitrate, noise, room, AGC, noise suppression, packet loss, RawBoost) before XLS-R.
+# Augmentation is label-blind (I3). Guide: TRAINING_AUGMENTED.md
+run_name: head_a_aug
+lineage: research
+allow_noncommercial: true
+seed: 1337
+out_dir: runs
+
+frontend: facebook/wav2vec2-xls-r-300m
+frontend_revision: 1a640f32ac3e39899438a2931f9924c02f080a54   # the XLS-R revision of the clean cache
+frontend_layers: [5, 6, 7, 8, 9]
+freeze_frontend: true
+backend: nes2net
+emb_dim: 160
+loss: oc_softmax
+version: 0.2.0              # model version: A@xlsr300m-nes2net-v0.2.0
+
+data:
+  manifests: data/manifests/asvspoof5_*.jsonl
+  splits: splits/asvspoof5.json
+  data_root: data
+
+cache:
+  dir: data/features/xlsr300m_L5-9
+  batch: 24
+  workers: 8                # augmentation runs ffmpeg on the CPU: more workers keep the GPU fed
+  train: {max_bona: null, spoof_per_family: 5000}   # the existing clean cache (already built)
+  dev: {max_bona: 4000, spoof_per_family: 500}      # the existing clean cache (already built)
+  train_aug1:               # ~10k bona fide + 2500 x 8 attacks = ~30k clips ~= 61 GB
+    source: train
+    view: 1
+    max_bona: 10000
+    spoof_per_family: 2500
+  dev_aug1:                 # ~2k + 250 x 8 = ~4k clips ~= 8 GB; lets early stopping see codecs
+    source: dev
+    view: 1
+    max_bona: 2000
+    spoof_per_family: 250
+
+augment:
+  seed: 20260930
+  rawboost_algo: 4          # RawBoost 1+2+3 in series (convolutive, impulsive, coloured noise)
+  p_rawboost: 0.3
+  p_channel: 0.9            # 10% of the view keeps only RawBoost / nothing
+  channel:
+    p_rir: 0.2
+    p_noise: 0.5
+    snr_range_db: [5, 25]
+    p_agc: 0.2
+    p_ns: 0.2
+    p_loss: 0.3
+    loss_rates: [0.01, 0.03, 0.05]
+    p_jitter: 0.1
+    codec_weights:          # relative chance of each codec; clean = no codec
+      clean: 1.0
+      g711u: 1.5            # landline / PSTN
+      g711a: 1.0
+      amr_nb: 1.5           # 2G/3G mobile
+      amr_wb: 1.0           # VoLTE HD voice
+      gsm: 0.5
+      g722: 0.5
+      opus: 1.5             # WhatsApp / VoIP apps
+      opus_nb: 1.0
+      speex: 0.5
+      speex_nb: 0.5
+      mp3: 1.0              # forwarded voice notes / recordings
+      aac: 1.0
+    bitrates_kbps:
+      opus: [6, 8, 12, 16, 24]
+      opus_nb: [4, 6, 8, 12]
+      amr_nb: [4.75, 5.9, 7.4, 12.2]
+      amr_wb: [6.6, 8.85, 12.65, 23.85]
+      speex: [6, 10, 16]
+      speex_nb: [4, 6, 11]
+      mp3: [24, 32, 48, 64]
+      aac: [16, 24, 32, 64]
+
+train:
+  train_sets: [train, train_aug1]
+  dev_sets: [dev, dev_aug1]   # pooled dev EER drives early stopping
+  epochs: 30
+  batch_size: 64
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+  patience: 6
+  feature_mask_prob: 0.5
+  num_workers: 4
+  seconds: 4.0

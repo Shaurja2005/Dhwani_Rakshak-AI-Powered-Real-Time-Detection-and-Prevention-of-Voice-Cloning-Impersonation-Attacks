@@ -12,6 +12,10 @@ then dev EER. Writes ``runs/<run_name>/``:
     last.pt        optimizer + scaler + epoch, so ``--resume`` (default) continues after a stop
     metrics.jsonl  one line per epoch
 
+``train.train_sets`` / ``train.dev_sets`` list the cache splits to use (default
+``[train]`` / ``[dev]``); augmented views are just more splits. With several dev sets the
+pooled dev EER drives early stopping and each set's EER is logged.
+
 Dev EER here is a training signal only. Reportable numbers come from ``make eval`` (B15).
 """
 
@@ -81,6 +85,41 @@ class CachedFeatures(Dataset[tuple[torch.Tensor, int, int]]):
         return x, int(self.labels[i]), i
 
 
+class MultiCached(Dataset[tuple[torch.Tensor, int, int]]):
+    """Several cache splits read as one (e.g. clean ``train`` + augmented ``train_aug1``)."""
+
+    def __init__(self, parts: list[CachedFeatures]) -> None:
+        self.parts = parts
+        self.offsets = np.cumsum([0] + [len(p) for p in parts])
+        self.labels = np.concatenate([p.labels for p in parts])
+        self.families = [f for p in parts for f in p.families]
+        self.part_of = np.concatenate([np.full(len(p), k) for k, p in enumerate(parts)])
+        first = parts[0].meta
+        keys = ("layers", "frames", "dim", "frontend", "frontend_revision")
+        for p in parts[1:]:
+            if [p.meta.get(k) for k in keys] != [first.get(k) for k in keys]:
+                raise SystemExit(
+                    f"{p.dir}: cache was built with a different front-end/geometry than "
+                    f"{parts[0].dir} ({keys}); rebuild it"
+                )
+        self.meta = {
+            **first,
+            **{
+                k: sorted({x for p in parts for x in p.meta[k]})
+                for k in ("corpora", "languages", "families")
+            },
+        }
+        self.epoch = 0
+
+    def __len__(self) -> int:
+        return int(self.offsets[-1])
+
+    def __getitem__(self, i: int) -> tuple[torch.Tensor, int, int]:
+        k = int(np.searchsorted(self.offsets, i, side="right") - 1)
+        x, y, _ = self.parts[k][i - int(self.offsets[k])]
+        return x, y, i
+
+
 class BalancedSampler(Sampler[int]):
     """Half bona fide, half spoof split equally across attack families (seeded per epoch)."""
 
@@ -148,11 +187,19 @@ def train(cfg: dict[str, Any], resume: bool = True) -> dict[str, Any]:
     device = setup_cuda(cfg.get("device"))
     t = cfg.get("train", {})
     cache = resolve(cfg["cache"]["dir"])
-    ds_tr = CachedFeatures(
-        cache / "train", True, float(t.get("feature_mask_prob", 0.5)), int(cfg.get("seed", 0))
+    train_sets = list(t.get("train_sets", ["train"]))
+    dev_sets = list(t.get("dev_sets", ["dev"]))
+    mask = float(t.get("feature_mask_prob", 0.5))
+    ds_tr = MultiCached(
+        [CachedFeatures(cache / s, True, mask, int(cfg.get("seed", 0))) for s in train_sets]
     )
-    ds_dv = CachedFeatures(cache / "dev", False)
+    ds_dv = MultiCached([CachedFeatures(cache / s, False) for s in dev_sets])
     meta = ds_tr.meta
+    augmentation = [
+        {"split": s, **p.meta["augmentation"]}
+        for s, p in zip(train_sets, ds_tr.parts, strict=True)
+        if "augmentation" in p.meta
+    ]
     if meta["layers"] != list(cfg["frontend_layers"]):
         raise SystemExit("cache layers differ from config frontend_layers; rebuild the cache")
     workers = int(t.get("num_workers", 4))
@@ -248,10 +295,17 @@ def train(cfg: dict[str, Any], resume: bool = True) -> dict[str, Any]:
                 sched.step()
                 losses.append(float(loss.item()))
             eer, scores, labels = evaluate(model, dl_dv, device)
+            by_set = {}
+            if len(dev_sets) > 1:  # pooled EER drives early stopping; per-set EERs are for reading
+                for k, name in enumerate(dev_sets):
+                    m = ds_dv.part_of == k
+                    s_k, y_k = scores[m], labels[m]
+                    by_set[name] = round(compute_eer(s_k[y_k == 1], s_k[y_k == 0])[0], 5)
             rec = {
                 "epoch": epoch,
                 "loss": round(float(np.mean(losses)), 5),
                 "dev_eer": round(eer, 5),
+                **({"dev_eer_by_set": by_set} if by_set else {}),
                 "lr": sched.get_last_lr()[0],
                 "seconds": round(time.time() - t0, 1),
                 "layer_weights": [round(w, 3) for w in model.layer_sum.weights()],
@@ -282,6 +336,9 @@ def train(cfg: dict[str, Any], resume: bool = True) -> dict[str, Any]:
                         "train_families": sorted({f for f in meta["families"] if f != "bona_fide"}),
                         "languages": sorted(set(meta["languages"])),
                         "n_train": len(ds_tr),
+                        "train_sets": train_sets,
+                        "dev_sets": dev_sets,
+                        "augmentation": augmentation,
                         "feature_cache": {
                             "dir": str(cache),
                             "frames": meta["frames"],

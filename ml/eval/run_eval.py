@@ -237,6 +237,13 @@ def evaluate(
         meta.get("train_datasets") or info.get("train_datasets") or cfg.get("train_datasets") or []
     )
     rec.data["seen_families"], rec.data["train_datasets"] = seen, train_ds
+    for a in meta.get("augmentation") or []:
+        codecs = sorted((a.get("channel", {}).get("codec_weights") or {}).keys() - {"clean"})
+        rec.notes.append(
+            f"trained with channel augmentation ({a.get('split')}: {', '.join(codecs)}); "
+            "the codec/SNR sweeps below use the same encoders, so they are not independent - "
+            "the per-codec rows of the eval corpus are the independent check"
+        )
 
     log(f"scoring {len(df)} utterances with {scorer.name} ({scorer.model_version})")
     scored = score_all(scorer, df, load)

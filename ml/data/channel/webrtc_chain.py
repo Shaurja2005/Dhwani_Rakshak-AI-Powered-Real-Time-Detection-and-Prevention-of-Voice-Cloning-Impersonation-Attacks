@@ -86,6 +86,8 @@ class ChannelConfig:
         }
     )
     opus_kbps: tuple[float, ...] = (6, 12, 16, 24)
+    # optional per-codec bitrate choices (kbps) for the other ffmpeg codecs
+    bitrates_kbps: dict[str, tuple[float, ...]] = field(default_factory=dict)
     output_sr: int = 16000
 
 
@@ -130,7 +132,8 @@ class ChannelSimulator:
         elif codec == "opus":
             chain.append(FFmpegCodec("opus", float(rng.choice(c.opus_kbps))))
         elif codec != "clean":
-            chain.append(FFmpegCodec(codec))
+            rates = c.bitrates_kbps.get(codec)
+            chain.append(FFmpegCodec(codec, float(rng.choice(rates)) if rates else None))
         if rng.random() < c.p_loss:
             chain.append(PacketLoss(loss_rate=float(rng.choice(c.loss_rates))))
         if rng.random() < c.p_jitter:

@@ -229,3 +229,135 @@ def test_selection_and_stratified_eval_sample() -> None:
     s = stratified(rows, 20, 0)
     assert any(r.generator_family == "A09" for r in s)  # rare attack+codec kept
     assert 15 <= len(s) <= 30
+
+
+def test_augmented_views_end_to_end(mini_asv5: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Clean cache + augmented view (label-blind) -> multi-set training -> provenance in ckpt."""
+    from ml.data.importers import asvspoof5 as imp
+    from ml.training import feature_cache as fc
+    from ml.training import train_head_a_cached as tr
+    from packages.vg_models.heads.head_a_ssl.model import load_checkpoint
+    from scripts.setup import extract_asvspoof5 as ex
+
+    root = mini_asv5
+    src = root / "data/asvspoof5"
+    assert ex.main(["--src", str(src), "--no-md5"]) == 0
+    argv = ["--extracted", str(src / "extracted"), "--data-root", str(root / "data")]
+    argv += ["--manifests", str(root / "data/manifests")]
+    assert imp.main([*argv, "--splits", str(root / "splits/asvspoof5.json")]) == 0
+    monkeypatch.setattr(fc, "ROOT", root)
+    aug = {
+        "seed": 3,
+        "rawboost_algo": 4,
+        "p_rawboost": 0.5,
+        "p_channel": 1.0,
+        "channel": {
+            "p_noise": 0.5,
+            "snr_range_db": [10, 20],
+            "p_loss": 0.5,
+            "codec_weights": {"clean": 1.0, "g711u": 1.0, "opus": 1.0},
+            "bitrates_kbps": {"opus": [6, 12]},
+        },
+    }
+    cfg = {
+        "run_name": "mini_aug",
+        "lineage": "research",
+        "allow_noncommercial": True,
+        "seed": 0,
+        "out_dir": str(root / "runs"),
+        "frontend": "tiny",
+        "frontend_layers": [3, 4, 5],
+        "freeze_frontend": True,
+        "backend": "nes2net",
+        "emb_dim": 16,
+        "loss": "oc_softmax",
+        "version": "0.0.2",
+        "device": "cpu",
+        "data": {
+            "manifests": str(root / "data/manifests/asvspoof5_*.jsonl"),
+            "splits": str(root / "splits/asvspoof5.json"),
+            "data_root": str(root / "data"),
+        },
+        "cache": {
+            "dir": str(root / "data/features/tiny"),
+            "batch": 4,
+            "workers": 0,
+            "train": {"max_bona": None, "spoof_per_family": 3},
+            "dev": {"max_bona": 6, "spoof_per_family": 2},
+            "train_aug1": {"source": "train", "view": 1, "max_bona": 6, "spoof_per_family": 2},
+            "dev_aug1": {"source": "dev", "view": 1, "max_bona": 4, "spoof_per_family": 1},
+        },
+        "augment": aug,
+        "train": {
+            "train_sets": ["train", "train_aug1"],
+            "dev_sets": ["dev", "dev_aug1"],
+            "epochs": 2,
+            "batch_size": 8,
+            "lr": 1e-3,
+            "num_workers": 0,
+            "seconds": 1.0,
+        },
+    }
+    cfg_path = root / "cfg.yaml"
+    cfg_path.write_text(yaml.safe_dump(cfg), encoding="utf-8")
+    splits = ["--splits", "train", "dev", "train_aug1", "dev_aug1"]
+    assert fc.main(["--config", str(cfg_path), *splits]) == 0
+    d = root / "data/features/tiny/train_aug1"
+    meta = json.loads((d / "meta.json").read_text(encoding="utf-8"))
+    chains = json.loads((d / "chains.json").read_text(encoding="utf-8"))
+    assert meta["n"] == 6 + 6 and meta["augmentation"]["view"] == 1
+    assert all(chains) and any("codec:g711u" in c or "codec:opus" in c for c in chains)
+    clean = np.load(root / "data/features/tiny/train/feats.npy", mmap_mode="r")
+    augd = np.load(d / "feats.npy", mmap_mode="r")
+    clean_ids = json.loads((root / "data/features/tiny/train/meta.json").read_text("utf-8"))
+    both = [u for u in meta["utt_ids"] if u in clean_ids["utt_ids"]]  # views re-sample clips
+    assert both
+    i, j = meta["utt_ids"].index(both[0]), clean_ids["utt_ids"].index(both[0])
+    assert not np.allclose(clean[j], augd[i])  # the view really differs from the clean features
+    assert fc.main(["--config", str(cfg_path), *splits]) == 0  # resumable: nothing left
+
+    res = tr.train(cfg)
+    rec = json.loads((root / "runs/mini_aug/metrics.jsonl").read_text("utf-8").splitlines()[-1])
+    assert set(rec["dev_eer_by_set"]) == {"dev", "dev_aug1"}
+    _, ck = load_checkpoint(res["checkpoint"])
+    assert ck["train_sets"] == ["train", "train_aug1"] and ck["n_train"] == 21 + 12
+    assert ck["augmentation"][0]["split"] == "train_aug1"
+
+
+def test_augmentation_is_label_blind_and_deterministic() -> None:
+    import inspect
+
+    from ml.training import channel_aug as ca
+
+    aug = {
+        "seed": 5,
+        "rawboost_algo": 4,
+        "p_rawboost": 0.5,
+        "p_channel": 1.0,
+        "channel": {"p_noise": 1.0, "codec_weights": {"clean": 1.0, "g711u": 1.0}},
+    }
+    a = ca.build_augmenter(aug)
+    x = (0.3 * np.sin(np.arange(16000) / 7)).astype(np.float32)
+    y1, c1 = ca.augment_clip(x, "utt_1", 1, aug, a)
+    y2, c2 = ca.augment_clip(x, "utt_1", 1, aug, ca.build_augmenter(aug))
+    assert c1 == c2 and np.array_equal(y1, y2)  # (seed, view, utt id) fully determines it
+    assert len(y1) == len(x) and np.isfinite(y1).all()
+    chains = {ca.augment_clip(x, f"u{i}", 1, aug, a)[1] for i in range(20)}
+    assert len(chains) > 3  # different clips get different channels
+    # I3, structurally: nothing on the augmentation path can see a label
+    for fn in (ca.augment_clip, ca.AugCropDataset.__init__, ca.build_augmenter):
+        assert "label" not in inspect.signature(fn).parameters
+
+
+@pytest.mark.parametrize("name,kbps", [("mp3", 32), ("aac", 24), ("speex_nb", 6), ("amr_wb", 8.85)])
+def test_new_ffmpeg_codecs_roundtrip(name: str, kbps: float) -> None:
+    from ml.data.channel.base import ChannelRecord
+    from ml.data.channel.codecs import FFmpegCodec, codec_available
+
+    if not codec_available(name):
+        pytest.skip(f"ffmpeg without {name}")
+    x = (0.3 * np.sin(2 * np.pi * 300 * np.arange(32000) / 16000)).astype(np.float32)
+    rec = ChannelRecord()
+    y, sr = FFmpegCodec(name, kbps).apply(x, 16000, np.random.default_rng(0), rec)
+    assert len(y) == len(x) * sr // 16000 and np.isfinite(y).all() and np.abs(y).max() > 0.05
+    assert rec.codec_chain[-1].startswith(f"codec:{name}")

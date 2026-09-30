@@ -34,29 +34,37 @@ def run(*args: str) -> int:
     return subprocess.call([PY, *args], cwd=ROOT, env={**os.environ, "PYTHONPATH": str(ROOT)})
 
 
+def cache_done(split: str, cache: Path = CACHE) -> bool:
+    d = cache / split / "done.npy"
+    if not d.exists():
+        return False
+    import numpy as np
+
+    return bool(np.load(d).all())
+
+
+def train_done(run_dir: Path = RUN, config: str = CONFIG) -> bool:
+    # best.pt appears after the first epoch, so it alone does not mean training finished
+    if not (run_dir / "best.pt").exists() or not (run_dir / "last.pt").exists():
+        return False
+    import torch
+    import yaml
+
+    st = torch.load(run_dir / "last.pt", map_location="cpu", weights_only=False)  # noqa: S614
+    t = yaml.safe_load((ROOT / config).read_text(encoding="utf-8"))["train"]
+    return st.get("bad", 0) >= int(t.get("patience", 6)) or st["epoch"] + 1 >= int(t["epochs"])
+
+
 def status() -> dict[str, bool]:
-    def cache_done(split: str) -> bool:
-        d = CACHE / split / "done.npy"
-        if not d.exists():
-            return False
-        import numpy as np
-
-        return bool(np.load(d).all())
-
-    def train_done() -> bool:
-        # best.pt appears after the first epoch, so it alone does not mean training finished
-        if not (RUN / "best.pt").exists() or not (RUN / "last.pt").exists():
-            return False
-        import torch
-        import yaml
-
-        st = torch.load(RUN / "last.pt", map_location="cpu", weights_only=False)  # noqa: S614
-        t = yaml.safe_load((ROOT / CONFIG).read_text(encoding="utf-8"))["train"]
-        return st.get("bad", 0) >= int(t.get("patience", 6)) or st["epoch"] + 1 >= int(t["epochs"])
-
     tars = list((ROOT / "data/asvspoof5").glob("flac_*.tar"))
+    markers = list(EXTRACTED.glob("flac_*.tar.done"))
     st = {
-        "extract": bool(tars) and all((EXTRACTED / f"{t.name}.done").exists() for t in tars),
+        # the tars may be deleted after a verified extraction: the .done markers remain
+        "extract": (
+            all((EXTRACTED / f"{t.name}.done").exists() for t in tars)
+            if tars
+            else len(markers) >= 18
+        ),
         "manifests": all(
             (ROOT / f"data/manifests/asvspoof5_{s}.jsonl").exists()
             for s in ("train", "dev", "eval")

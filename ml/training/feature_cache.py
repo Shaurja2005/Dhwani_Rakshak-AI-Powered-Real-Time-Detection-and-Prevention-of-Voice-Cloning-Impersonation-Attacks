@@ -13,9 +13,13 @@ on-the-fly trainer. Per split the cache is
 GPU use: fp16 autocast, only the layers the head reads are computed
 (``truncate_to_used_layers``), pinned-memory loader with worker processes decoding FLAC
 in parallel, cuDNN autotune, and the batch size halves automatically on out-of-memory.
-Trade-off (documented, not hidden): one fixed 4 s crop per utterance and no waveform
-augmentation — the trainer adds feature-space masking instead; the on-the-fly trainer
-(train_head_a.py) remains the path for waveform/codec augmentation (Stage 2/3).
+Trade-off (documented, not hidden): one fixed 4 s crop per utterance, and waveform
+augmentation only as a fixed number of pre-computed *augmented views*: a cache split
+with ``source: <split>`` and ``view: k`` stores clips that went through a random call
+channel before XLS-R (ml/training/channel_aug.py, label-blind, I3), plus
+``chains.json`` recording what each clip got. The trainer adds feature-space masking;
+the on-the-fly trainer (train_head_a.py) remains the path for fresh augmentation every
+epoch.
 """
 
 from __future__ import annotations
@@ -116,7 +120,9 @@ def extract_split(
     device: str,
     batch: int,
     workers: int,
+    augment: dict[str, Any] | None = None,
 ) -> Path:
+    """``augment`` = {"view": k, **cfg["augment"]} builds an augmented view (channel_aug)."""
     layers = list(cfg["frontend_layers"])
     seconds = float(cfg.get("train", {}).get("seconds", 4.0))
     fe, revision = build_frontend_for_cache(cfg, device)
@@ -141,11 +147,23 @@ def extract_split(
         "corpora": [r.source_corpus for r in rows],
         "languages": [r.language for r in rows],
     }
+    if augment is not None:
+        meta["augmentation"] = augment
     feats_path, done_path, meta_path = out / "feats.npy", out / "done.npy", out / "meta.json"
+    chains_path = out / "chains.json"
+    chains: list[str | None] = (
+        json.loads(chains_path.read_text(encoding="utf-8"))
+        if augment is not None and chains_path.exists()
+        else [None] * n
+    )
     shape = (n, len(layers), t_frames, dim)
     if meta_path.exists():
         old = json.loads(meta_path.read_text(encoding="utf-8"))
-        if old["utt_ids"] != meta["utt_ids"] or old["layers"] != layers:
+        if (
+            old["utt_ids"] != meta["utt_ids"]
+            or old["layers"] != layers
+            or old.get("augmentation") != meta.get("augmentation")
+        ):
             raise SystemExit(f"{out} holds a different selection; delete it to rebuild")
         feats = np.load(feats_path, mmap_mode="r+")
         done = np.load(done_path)
@@ -172,7 +190,27 @@ def extract_split(
         return out
     data_root = resolve(cfg.get("data", {}).get("data_root", "data"))
     paths = [str(data_root / rows[i].path) for i in todo]
-    ds = CropDataset(paths, seconds, train=(split == "train"), seed=int(cfg.get("seed", 0)))
+    ds: Dataset[Any]
+    if augment is not None:
+        from ml.training.channel_aug import AugCropDataset
+
+        ds = AugCropDataset(
+            paths,
+            [rows[i].utt_id for i in todo],
+            seconds,
+            int(cfg.get("seed", 0)),
+            int(augment["view"]),
+            augment,
+        )
+    else:
+        ds = CropDataset(paths, seconds, train=(split == "train"), seed=int(cfg.get("seed", 0)))
+
+    def save_progress() -> None:
+        feats.flush()
+        np.save(done_path, done)
+        if augment is not None:
+            chains_path.write_text(json.dumps(chains), encoding="utf-8")
+
     t0, done_since, last = time.time(), 0, time.time()
     pos = 0
     while pos < len(todo):
@@ -185,8 +223,8 @@ def extract_split(
             prefetch_factor=4 if workers else None,
         )
         try:
-            for wav, local in loader:
-                wav = wav.to(device, non_blocking=True)
+            for item in loader:
+                wav, local = item[0].to(device, non_blocking=True), item[1]
                 with (
                     torch.inference_mode(),
                     torch.autocast(
@@ -200,6 +238,9 @@ def extract_split(
                 idx = todo[local.numpy()]
                 feats[idx] = x.cpu().numpy()
                 done[idx] = True
+                if len(item) > 2:  # augmented view: remember which channel each clip got
+                    for j, chain in zip(idx.tolist(), item[2], strict=True):
+                        chains[j] = chain
                 pos += len(idx)
                 done_since += len(idx)
                 if time.time() - last > 30:
@@ -210,16 +251,14 @@ def extract_split(
                         f"batch {batch}  {gpu_report()}",
                         flush=True,
                     )
-                    feats.flush()
-                    np.save(done_path, done)
+                    save_progress()
                     last = time.time()
         except torch.cuda.OutOfMemoryError:
             torch.cuda.empty_cache()
             batch = max(1, batch // 2)
             print(f"  out of GPU memory -> batch size {batch}", flush=True)
             continue
-    feats.flush()
-    np.save(done_path, done)
+    save_progress()
     print(f"{split}: done in {(time.time() - t0) / 60:.1f} min ({gpu_report()})", flush=True)
     return out
 
@@ -251,11 +290,14 @@ def main(argv: list[str] | None = None) -> int:
     c = cfg["cache"]
     for split in args.splits:
         sel = c.get(split, {})
+        # an augmented split names its source split and view: {source: train, view: 1, ...}
+        source, view = sel.get("source", split), sel.get("view")
+        augment = None if view is None else {"view": int(view), **cfg["augment"]}
         rows = select_rows(
-            load_rows(cfg, split),
+            load_rows(cfg, source),
             sel.get("max_bona"),
             sel.get("spoof_per_family"),
-            int(cfg.get("seed", 0)),
+            int(cfg.get("seed", 0)) + 1000 * int(view or 0),
         )
         extract_split(
             cfg,
@@ -265,6 +307,7 @@ def main(argv: list[str] | None = None) -> int:
             device,
             args.batch or int(c.get("batch", 24)),
             args.workers if args.workers is not None else int(c.get("workers", 6)),
+            augment,
         )
     return 0
 

@@ -140,5 +140,7 @@ faster and simpler option here.
 CC BY 4.0, while `ml/data/registry.yaml` still says "non-commercial EULA". A human needs to confirm
 before the registry is changed. Training isn't blocked either way.
 
-**Next:** Indic languages, one at a time: IndicSynth (streamed, sampled) plus Kathbath for genuine
-speech, then continual fine-tuning with a replay buffer, then re-evaluation of every language.
+**Next:** the augmented model v0.2 (phone and app channels, codecs, noise), in
+**[TRAINING_AUGMENTED.md](TRAINING_AUGMENTED.md)**. After that come the Indic languages, one at a
+time: IndicSynth (streamed, sampled) plus Kathbath for genuine speech, then continual fine-tuning
+with a replay buffer, then re-evaluation of every language.
